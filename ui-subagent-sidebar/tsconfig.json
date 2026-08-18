@@ -1,0 +1,58 @@
+{
+  // Standalone project for the @liuyera/dsh-client-ui-subagent-sidebar plugin.
+  // Extends the harness client compiler shape. Type resolution for the
+  // @deepseek-ai/* imports is declared locally (paths replace the base map):
+  // the plugin repo has no node_modules links to workspace packages, so the
+  // src-plane is the only resolution that works outside the harness build.
+  // This project typechecks only while the repo lives inside a
+  // deepseek-harness checkout (the intended layout: deekseek-harness-plugin/
+  // at the harness root).
+  "extends": "../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "paths": {
+      "@deepseek-ai/cordis": ["./../../vendor/cordis/src/index.ts"],
+      "@deepseek-ai/dsh-invariants": ["./../../packages/runtime-diagnostics/invariants/src/index.ts"],
+      "@deepseek-ai/dsh-client-runtime/client": ["./../../packages/client/runtime/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-locale/client": ["./../../packages/client/locale/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-ui-layout/client": ["./../../packages/client/ui-layout/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-ui-slots": ["./../../packages/client/ui-slots/src/index.ts"],
+      "@deepseek-ai/dsh-client-ui-primitives": ["./../../packages/client/ui-primitives/src/index.ts"],
+      "@deepseek-ai/dsh-token-meter/client": ["./../../packages/llm/token-meter/src/client.ts"],
+      "@deepseek-ai/dsh-subagent/client": ["./../../packages/subagent/subagent/src/client.ts"]
+    }
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../vendor/cordis"
+    },
+    {
+      "path": "../../packages/client/locale"
+    },
+    {
+      "path": "../../packages/client/runtime"
+    },
+    {
+      "path": "../../packages/client/ui-layout"
+    },
+    {
+      "path": "../../packages/client/ui-primitives"
+    },
+    {
+      "path": "../../packages/client/ui-slots"
+    },
+    {
+      "path": "../../packages/llm/token-meter"
+    },
+    {
+      "path": "../../packages/subagent/subagent"
+    },
+    {
+      "path": "../../packages/runtime-diagnostics/invariants"
+    }
+  ]
+}
