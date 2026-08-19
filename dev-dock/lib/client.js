@@ -170,10 +170,10 @@ window.__ModuleLoader__.load({
 		}
 		var DevDockEntry_module_css_default = {
 			"count": "_6B0Roq_count",
+			"railDot": "_6B0Roq_railDot",
 			"title": "_6B0Roq_title",
-			"railIcon": "_6B0Roq_railIcon",
 			"row": "_6B0Roq_row",
-			"railDot": "_6B0Roq_railDot"
+			"railIcon": "_6B0Roq_railIcon"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockEntry.js
@@ -223,21 +223,21 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ProjectListPage_module_css_default = {
-			"importButton": "m4dz6G_importButton",
-			"action": "m4dz6G_action",
-			"cardHeader": "m4dz6G_cardHeader",
-			"list": "m4dz6G_list",
-			"badge": "m4dz6G_badge",
-			"actionDanger": "m4dz6G_actionDanger",
-			"count": "m4dz6G_count",
-			"header": "m4dz6G_header",
-			"title": "m4dz6G_title",
-			"name": "m4dz6G_name",
 			"empty": "m4dz6G_empty",
-			"meta": "m4dz6G_meta",
-			"card": "m4dz6G_card",
+			"importButton": "m4dz6G_importButton",
+			"name": "m4dz6G_name",
 			"page": "m4dz6G_page",
-			"cardActions": "m4dz6G_cardActions"
+			"count": "m4dz6G_count",
+			"cardActions": "m4dz6G_cardActions",
+			"list": "m4dz6G_list",
+			"card": "m4dz6G_card",
+			"actionDanger": "m4dz6G_actionDanger",
+			"cardHeader": "m4dz6G_cardHeader",
+			"action": "m4dz6G_action",
+			"badge": "m4dz6G_badge",
+			"header": "m4dz6G_header",
+			"meta": "m4dz6G_meta",
+			"title": "m4dz6G_title"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ProjectListPage.js
@@ -364,28 +364,28 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var QuickStartPage_module_css_default = {
-			"empty": "_2p8fxq_empty",
-			"remove": "_2p8fxq_remove",
-			"label": "_2p8fxq_label",
-			"pickerEmpty": "_2p8fxq_pickerEmpty",
-			"pickerList": "_2p8fxq_pickerList",
-			"hint": "_2p8fxq_hint",
-			"name": "_2p8fxq_name",
-			"chip": "_2p8fxq_chip",
-			"chipActive": "_2p8fxq_chipActive",
-			"cardHeader": "_2p8fxq_cardHeader",
 			"header": "_2p8fxq_header",
-			"input": "_2p8fxq_input",
-			"controlRow": "_2p8fxq_controlRow",
-			"scriptRow": "_2p8fxq_scriptRow",
 			"addButton": "_2p8fxq_addButton",
+			"headerActions": "_2p8fxq_headerActions",
 			"pickerRow": "_2p8fxq_pickerRow",
-			"card": "_2p8fxq_card",
-			"page": "_2p8fxq_page",
 			"picker": "_2p8fxq_picker",
-			"editorRow": "_2p8fxq_editorRow",
+			"chip": "_2p8fxq_chip",
+			"pickerEmpty": "_2p8fxq_pickerEmpty",
+			"remove": "_2p8fxq_remove",
 			"list": "_2p8fxq_list",
-			"headerActions": "_2p8fxq_headerActions"
+			"chipActive": "_2p8fxq_chipActive",
+			"name": "_2p8fxq_name",
+			"empty": "_2p8fxq_empty",
+			"pickerList": "_2p8fxq_pickerList",
+			"controlRow": "_2p8fxq_controlRow",
+			"editorRow": "_2p8fxq_editorRow",
+			"scriptRow": "_2p8fxq_scriptRow",
+			"input": "_2p8fxq_input",
+			"cardHeader": "_2p8fxq_cardHeader",
+			"hint": "_2p8fxq_hint",
+			"page": "_2p8fxq_page",
+			"card": "_2p8fxq_card",
+			"label": "_2p8fxq_label"
 		};
 		//#endregion
 		//#region lib/types/client/pages/QuickStartPage.js
@@ -609,7 +609,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/pages/ImportPage.module.css.mjs
-		const css$1 = ".Csy4Lq_page{flex-direction:column;gap:8px;display:flex}.Csy4Lq_title{margin:0;font-size:14px;font-weight:600;line-height:22px}.Csy4Lq_desc{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:18px}.Csy4Lq_label{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:16px}.Csy4Lq_controlRow{align-items:center;gap:8px;display:flex}.Csy4Lq_input{cursor:pointer;flex:1;min-width:0}.Csy4Lq_startButton{align-self:flex-start;margin-top:4px}.Csy4Lq_hint{color:var(--dsw-alias-state-success-primary);font-size:11px;line-height:16px}";
+		const css$1 = ".Csy4Lq_page{flex-direction:column;gap:8px;display:flex}.Csy4Lq_title{margin:0;font-size:14px;font-weight:600;line-height:22px}.Csy4Lq_desc{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:18px}.Csy4Lq_label{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:16px}.Csy4Lq_controlRow{align-items:center;gap:8px;display:flex}.Csy4Lq_input{cursor:pointer;flex:1;min-width:0}.Csy4Lq_startButton{align-self:flex-start;margin-top:4px}.Csy4Lq_hint{color:var(--dsw-alias-state-success-primary);font-size:11px;line-height:16px}.Csy4Lq_waiting{flex-direction:column;gap:10px;display:flex}.Csy4Lq_skeletonList{flex-direction:column;gap:6px;display:flex}.Csy4Lq_skeletonRow{background:var(--dsw-alias-bg-skeleton);border-radius:8px;height:52px;animation:1.2s ease-in-out infinite Csy4Lq_dsh-import-pulse}@keyframes Csy4Lq_dsh-import-pulse{0%,to{opacity:.5}50%{opacity:1}}.Csy4Lq_error{color:var(--dsw-alias-state-error-primary);font-size:11px;line-height:16px}";
 		const tagId$1 = "@liyuera/dsh-dev-dock/ImportPage.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -619,14 +619,19 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ImportPage_module_css_default = {
-			"hint": "Csy4Lq_hint",
-			"startButton": "Csy4Lq_startButton",
-			"label": "Csy4Lq_label",
-			"title": "Csy4Lq_title",
 			"page": "Csy4Lq_page",
+			"title": "Csy4Lq_title",
+			"startButton": "Csy4Lq_startButton",
+			"waiting": "Csy4Lq_waiting",
+			"label": "Csy4Lq_label",
+			"input": "Csy4Lq_input",
 			"desc": "Csy4Lq_desc",
 			"controlRow": "Csy4Lq_controlRow",
-			"input": "Csy4Lq_input"
+			"skeletonList": "Csy4Lq_skeletonList",
+			"skeletonRow": "Csy4Lq_skeletonRow",
+			"dsh-import-pulse": "Csy4Lq_dsh-import-pulse",
+			"error": "Csy4Lq_error",
+			"hint": "Csy4Lq_hint"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ImportPage.js
@@ -634,35 +639,57 @@ window.__ModuleLoader__.load({
 		* devDock import page: pick a directory through the system chooser and let
 		* the agent scan candidates, analyze which are frontend projects, and
 		* present the save list for confirmation. The analysis and saving run
-		* through agent tools.
+		* through agent tools; the page shows a waiting skeleton and detects
+		* completion through the project-registry count.
 		*/
+		/** Skeleton rows shown while the agent analyzes. */
+		const SKELETON_ROWS = 3;
 		/**
 		* Render the import page.
-		* @param props - prompt channel, directory picker, translator.
+		* @param props - prompt channel, directory picker, data hook, translator.
 		* @returns the import form.
 		*/
-		function ImportPage({ promptAgent, pickDirectory, t }) {
+		function ImportPage({ useDevDockData, promptAgent, pickDirectory, t }) {
+			const settings = useDevDockData((data) => data.settings);
 			const [dir, setDir] = (0, react.useState)("");
-			const [sent, setSent] = (0, react.useState)(false);
+			const [status, setStatus] = (0, react.useState)("idle");
+			const [error, setError] = (0, react.useState)("");
+			const [savedCount, setSavedCount] = (0, react.useState)(0);
 			const [picking, setPicking] = (0, react.useState)(false);
+			const baseCountRef = (0, react.useRef)(0);
 			const pick = async () => {
 				setPicking(true);
 				try {
 					const path = await pickDirectory();
 					if (path !== null) {
 						setDir(path);
-						setSent(false);
+						setStatus("idle");
+						setError("");
 					}
 				} finally {
 					setPicking(false);
 				}
 			};
-			const start = () => {
+			const start = async () => {
 				const target = dir.trim();
 				if (target.length === 0) return;
-				setSent(true);
-				promptAgent(`使用 dev-dock_scan-candidates 扫描目录 ${target}，判断其中哪些候选是前端工程（node / uni-app / 小程序），为每个前端工程分析：类型、包管理器、Node 版本、scripts、构建命令、别名，然后逐个调用 dev-dock_save-project 保存。保存前先在对话中列出待保存清单让用户确认。`);
+				baseCountRef.current = settings?.projects.length ?? 0;
+				if (!await promptAgent(`使用 dev-dock_scan-candidates 扫描目录 ${target}，判断其中哪些候选是前端工程（node / uni-app / 小程序），为每个前端工程分析：类型、包管理器、Node 版本、scripts、构建命令、别名，然后逐个调用 dev-dock_save-project 保存。保存前先在对话中列出待保存清单让用户确认。`)) {
+					setStatus("error");
+					setError(t("import.noSession"));
+					return;
+				}
+				setStatus("waiting");
 			};
+			(0, react.useEffect)(() => {
+				if (status !== "waiting") return;
+				const count = settings?.projects.length ?? 0;
+				if (count > baseCountRef.current) {
+					setSavedCount(count - baseCountRef.current);
+					setStatus("done");
+				}
+			}, [settings, status]);
+			const busy = status === "waiting";
 			return (0, react_jsx_runtime.jsxs)("div", {
 				className: ImportPage_module_css_default.page,
 				children: [
@@ -690,7 +717,7 @@ window.__ModuleLoader__.load({
 							size: "sm",
 							variant: "outline",
 							onClick: pick,
-							disabled: picking,
+							disabled: picking || busy,
 							children: t("import.pickDir")
 						})]
 					}),
@@ -698,13 +725,32 @@ window.__ModuleLoader__.load({
 						size: "sm",
 						variant: "primary",
 						className: ImportPage_module_css_default.startButton,
-						onClick: start,
-						disabled: dir.trim().length === 0 || sent,
-						children: sent ? t("import.sent") : t("import.start")
+						onClick: () => {
+							start();
+						},
+						disabled: dir.trim().length === 0 || busy,
+						children: t("import.start")
 					}),
-					sent && (0, react_jsx_runtime.jsx)("p", {
+					status === "waiting" && (0, react_jsx_runtime.jsxs)("div", {
+						className: ImportPage_module_css_default.waiting,
+						role: "status",
+						children: [(0, react_jsx_runtime.jsx)("div", {
+							className: ImportPage_module_css_default.skeletonList,
+							children: Array.from({ length: SKELETON_ROWS }).map((_, i) => (0, react_jsx_runtime.jsx)("div", { className: ImportPage_module_css_default.skeletonRow }, i))
+						}), (0, react_jsx_runtime.jsx)("p", {
+							className: ImportPage_module_css_default.hint,
+							children: t("import.waiting")
+						})]
+					}),
+					status === "done" && (0, react_jsx_runtime.jsx)("p", {
 						className: ImportPage_module_css_default.hint,
-						children: t("import.sentHint")
+						role: "status",
+						children: t("import.done", { count: String(savedCount) })
+					}),
+					status === "error" && (0, react_jsx_runtime.jsx)("p", {
+						className: ImportPage_module_css_default.error,
+						role: "alert",
+						children: error
 					})
 				]
 			});
@@ -722,13 +768,13 @@ window.__ModuleLoader__.load({
 		}
 		var DevDockDrawer_module_css_default = {
 			"tab": "_63vEIa_tab",
-			"close": "_63vEIa_close",
-			"content": "_63vEIa_content",
+			"root": "_63vEIa_root",
 			"tabs": "_63vEIa_tabs",
 			"tabActive": "_63vEIa_tabActive",
-			"panel": "_63vEIa_panel",
 			"mask": "_63vEIa_mask",
-			"root": "_63vEIa_root"
+			"panel": "_63vEIa_panel",
+			"close": "_63vEIa_close",
+			"content": "_63vEIa_content"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockDrawer.js
@@ -876,7 +922,10 @@ window.__ModuleLoader__.load({
 			"import.dirLabel": "目录路径",
 			"import.start": "开始分析",
 			"import.sent": "已发送，请查看对话",
-			"import.sentHint": "分析请求已发送给当前会话的 AI，请在对话中确认保存清单。"
+			"import.sentHint": "分析请求已发送给当前会话的 AI，请在对话中确认保存清单。",
+			"import.waiting": "AI 正在分析目录，保存清单将出现在对话中...",
+			"import.noSession": "未找到活跃会话，请先在左侧打开一个会话，再重新分析",
+			"import.done": "已保存 {count} 个新项目，可在项目页查看"
 		};
 		/** English dictionary. */
 		const en = {
@@ -919,7 +968,10 @@ window.__ModuleLoader__.load({
 			"import.dirLabel": "Directory",
 			"import.start": "Start analysis",
 			"import.sent": "Sent — check the conversation",
-			"import.sentHint": "The analysis request was sent to the current session; confirm the save list in the conversation."
+			"import.sentHint": "The analysis request was sent to the current session; confirm the save list in the conversation.",
+			"import.waiting": "AI is analyzing the directory; the save list will appear in the conversation...",
+			"import.noSession": "No active session — open one in the sidebar first, then analyze again",
+			"import.done": "Saved {count} new projects — see the Projects tab"
 		};
 		//#endregion
 		//#region lib/types/client/index.js

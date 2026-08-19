@@ -11,6 +11,7 @@ import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
 import { DevDockEntry } from '../src/client/DevDockEntry.tsx'
 import { ProjectListPage } from '../src/client/pages/ProjectListPage.tsx'
 import { QuickStartPage } from '../src/client/pages/QuickStartPage.tsx'
+import { ImportPage } from '../src/client/pages/ImportPage.tsx'
 import { NS, zh, type DevDockKey } from '../src/client/locales.ts'
 import type { DevDockData } from '../src/client/api.ts'
 import type { DevDockSettings } from '../src/schema.ts'
@@ -179,5 +180,71 @@ describe('QuickStartPage', () => {
     fireEvent.click(screen.getByText('启动'))
     expect(promptAgent).toHaveBeenCalledWith(expect.stringContaining('dev-dock_quick-start'))
     expect(promptAgent).toHaveBeenCalledWith(expect.stringContaining('daily'))
+  })
+})
+
+describe('ImportPage', () => {
+  /** Mutable settings doc; the hook returns the live object so growth is visible. */
+  function makeDoc(): DevDockSettings {
+    return {
+      projects: [],
+      editors: [],
+      quickStarts: [],
+      terminalApp: 'default',
+    }
+  }
+
+  function baseProps(doc: DevDockSettings) {
+    const data: DevDockData = { ready: true, settings: doc }
+    return {
+      useDevDockData: ((selector: (d: DevDockData) => unknown) => selector(data)) as never,
+      promptAgent: vi.fn(async () => true) as never,
+      pickDirectory: vi.fn(async () => '/tmp/projects') as never,
+      t,
+    }
+  }
+
+  it('picks a directory and enables the analysis button', async () => {
+    const doc = makeDoc()
+    const pickDirectory = vi.fn(async () => '/tmp/projects')
+    render(<ImportPage {...baseProps(doc)} pickDirectory={pickDirectory as never} />)
+    fireEvent.click(screen.getByText('选择目录'))
+    await screen.findByDisplayValue('/tmp/projects')
+    const start = screen.getByText('开始分析') as HTMLButtonElement
+    expect(start.disabled).toBe(false)
+  })
+
+  it('shows an error when no session accepts the prompt', async () => {
+    const doc = makeDoc()
+    const promptAgent = vi.fn(async () => false)
+    render(<ImportPage {...baseProps(doc)} promptAgent={promptAgent as never} />)
+    fireEvent.click(screen.getByText('选择目录'))
+    await screen.findByDisplayValue('/tmp/projects')
+    fireEvent.click(screen.getByText('开始分析'))
+    expect(promptAgent).toHaveBeenCalledWith(expect.stringContaining('dev-dock_scan-candidates'))
+    expect(await screen.findByRole('alert')).toBeTruthy()
+  })
+
+  it('shows the waiting skeleton after the request is accepted', async () => {
+    const doc = makeDoc()
+    render(<ImportPage {...baseProps(doc)} />)
+    fireEvent.click(screen.getByText('选择目录'))
+    await screen.findByDisplayValue('/tmp/projects')
+    fireEvent.click(screen.getByText('开始分析'))
+    expect(await screen.findByRole('status')).toBeTruthy()
+  })
+
+  it('settles into the done banner once the registry grows', async () => {
+    const doc = makeDoc()
+    render(<ImportPage {...baseProps(doc)} />)
+    fireEvent.click(screen.getByText('选择目录'))
+    await screen.findByDisplayValue('/tmp/projects')
+    fireEvent.click(screen.getByText('开始分析'))
+    // Simulate the agent saving projects through settings.
+    doc.projects.push({
+      id: '1', name: 'app', path: '/tmp/projects/app', type: 'node',
+      packageManager: 'pnpm', scripts: { dev: 'vite' }, createdAt: '2026-01-01T00:00:00.000Z',
+    })
+    expect(await screen.findByText(/已保存 1 个新项目/)).toBeTruthy()
   })
 })

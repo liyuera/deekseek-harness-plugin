@@ -19,8 +19,8 @@ export interface ImportInjected {
 export type ImportPageProps = PropsLocale<typeof NS> & InjectFace<ImportInjected>;
 /**
  * Render the import page.
- * @param props - prompt channel, directory picker, translator.
+ * @param props - prompt channel, directory picker, data hook, translator.
  * @returns the import form.
  */
-export declare function ImportPage({ promptAgent, pickDirectory, t }: ImportPageProps): import("react").JSX.Element;
+export declare function ImportPage({ useDevDockData, promptAgent, pickDirectory, t }: ImportPageProps): import("react").JSX.Element;
 //# sourceMappingURL=ImportPage.d.ts.map

@@ -43,6 +43,9 @@ export declare const zh: {
     readonly 'import.start': "开始分析";
     readonly 'import.sent': "已发送，请查看对话";
     readonly 'import.sentHint': "分析请求已发送给当前会话的 AI，请在对话中确认保存清单。";
+    readonly 'import.waiting': "AI 正在分析目录，保存清单将出现在对话中...";
+    readonly 'import.noSession': "未找到活跃会话，请先在左侧打开一个会话，再重新分析";
+    readonly 'import.done': "已保存 {count} 个新项目，可在项目页查看";
 };
 /** English dictionary. */
 export declare const en: Record<keyof typeof zh, string>;

@@ -45,3 +45,33 @@
   line-height: 16px;
   color: var(--dsw-alias-state-success-primary);
 }
+
+.waiting {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeletonRow {
+  height: 52px;
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-skeleton);
+  animation: dsh-import-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dsh-import-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.error {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-state-error-primary);
+}

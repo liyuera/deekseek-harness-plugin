@@ -43,6 +43,9 @@ export const zh = {
     'import.start': '开始分析',
     'import.sent': '已发送，请查看对话',
     'import.sentHint': '分析请求已发送给当前会话的 AI，请在对话中确认保存清单。',
+    'import.waiting': 'AI 正在分析目录，保存清单将出现在对话中...',
+    'import.noSession': '未找到活跃会话，请先在左侧打开一个会话，再重新分析',
+    'import.done': '已保存 {count} 个新项目，可在项目页查看',
 };
 /** English dictionary. */
 export const en = {
@@ -86,5 +89,8 @@ export const en = {
     'import.start': 'Start analysis',
     'import.sent': 'Sent — check the conversation',
     'import.sentHint': 'The analysis request was sent to the current session; confirm the save list in the conversation.',
+    'import.waiting': 'AI is analyzing the directory; the save list will appear in the conversation...',
+    'import.noSession': 'No active session — open one in the sidebar first, then analyze again',
+    'import.done': 'Saved {count} new projects — see the Projects tab',
 };
 //# sourceMappingURL=locales.js.map
