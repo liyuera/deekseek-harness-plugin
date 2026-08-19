@@ -12,13 +12,15 @@ export interface ImportInjected {
     };
     /** Prompt the current session to run a dev-dock action tool. */
     promptAgent: (text: string) => Promise<boolean>;
+    /** Open the host's native single-directory chooser; null when cancelled. */
+    pickDirectory: () => Promise<string | null>;
 }
 /** Full component props. */
 export type ImportPageProps = PropsLocale<typeof NS> & InjectFace<ImportInjected>;
 /**
  * Render the import page.
- * @param props - prompt channel and translator.
+ * @param props - prompt channel, directory picker, translator.
  * @returns the import form.
  */
-export declare function ImportPage({ promptAgent, t }: ImportPageProps): import("react").JSX.Element;
+export declare function ImportPage({ promptAgent, pickDirectory, t }: ImportPageProps): import("react").JSX.Element;
 //# sourceMappingURL=ImportPage.d.ts.map

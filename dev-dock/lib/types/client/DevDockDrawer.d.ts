@@ -15,6 +15,8 @@ export interface DevDockDrawerInjected {
     dataActions: DevDockActions;
     /** Prompt the current session to run a dev-dock action tool. */
     promptAgent: (text: string) => Promise<boolean>;
+    /** Open the host's native single-directory chooser; null when cancelled. */
+    pickDirectory: () => Promise<string | null>;
 }
 /** Full component props for the drawer. */
 export type DevDockDrawerProps = PropsRuntime<'shell.overlay'> & PropsStore<ReturnType<typeof createDevDockStore>> & PropsLocale<typeof NS> & InjectFace<DevDockDrawerInjected>;
@@ -23,5 +25,5 @@ export type DevDockDrawerProps = PropsRuntime<'shell.overlay'> & PropsStore<Retu
  * @param props - overlay runtime, view store, data hook, actions, translator.
  * @returns the drawer panel, or null when closed.
  */
-export declare function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, t }: DevDockDrawerProps): import("react").JSX.Element | null;
+export declare function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, pickDirectory, t }: DevDockDrawerProps): import("react").JSX.Element | null;
 //# sourceMappingURL=DevDockDrawer.d.ts.map

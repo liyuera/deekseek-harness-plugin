@@ -169,11 +169,11 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockEntry_module_css_default = {
-			"row": "_6B0Roq_row",
-			"railIcon": "_6B0Roq_railIcon",
-			"railDot": "_6B0Roq_railDot",
+			"count": "_6B0Roq_count",
 			"title": "_6B0Roq_title",
-			"count": "_6B0Roq_count"
+			"railIcon": "_6B0Roq_railIcon",
+			"row": "_6B0Roq_row",
+			"railDot": "_6B0Roq_railDot"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockEntry.js
@@ -223,21 +223,21 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ProjectListPage_module_css_default = {
-			"header": "m4dz6G_header",
-			"count": "m4dz6G_count",
-			"badge": "m4dz6G_badge",
 			"importButton": "m4dz6G_importButton",
-			"meta": "m4dz6G_meta",
 			"action": "m4dz6G_action",
-			"empty": "m4dz6G_empty",
 			"cardHeader": "m4dz6G_cardHeader",
-			"actionDanger": "m4dz6G_actionDanger",
-			"name": "m4dz6G_name",
-			"cardActions": "m4dz6G_cardActions",
 			"list": "m4dz6G_list",
+			"badge": "m4dz6G_badge",
+			"actionDanger": "m4dz6G_actionDanger",
+			"count": "m4dz6G_count",
+			"header": "m4dz6G_header",
+			"title": "m4dz6G_title",
+			"name": "m4dz6G_name",
+			"empty": "m4dz6G_empty",
+			"meta": "m4dz6G_meta",
 			"card": "m4dz6G_card",
 			"page": "m4dz6G_page",
-			"title": "m4dz6G_title"
+			"cardActions": "m4dz6G_cardActions"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ProjectListPage.js
@@ -364,28 +364,28 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var QuickStartPage_module_css_default = {
-			"label": "_2p8fxq_label",
-			"input": "_2p8fxq_input",
-			"page": "_2p8fxq_page",
-			"picker": "_2p8fxq_picker",
-			"pickerEmpty": "_2p8fxq_pickerEmpty",
-			"card": "_2p8fxq_card",
-			"chip": "_2p8fxq_chip",
-			"pickerList": "_2p8fxq_pickerList",
-			"pickerRow": "_2p8fxq_pickerRow",
-			"hint": "_2p8fxq_hint",
 			"empty": "_2p8fxq_empty",
-			"addButton": "_2p8fxq_addButton",
+			"remove": "_2p8fxq_remove",
+			"label": "_2p8fxq_label",
+			"pickerEmpty": "_2p8fxq_pickerEmpty",
+			"pickerList": "_2p8fxq_pickerList",
+			"hint": "_2p8fxq_hint",
+			"name": "_2p8fxq_name",
+			"chip": "_2p8fxq_chip",
 			"chipActive": "_2p8fxq_chipActive",
 			"cardHeader": "_2p8fxq_cardHeader",
-			"editorRow": "_2p8fxq_editorRow",
 			"header": "_2p8fxq_header",
-			"list": "_2p8fxq_list",
-			"name": "_2p8fxq_name",
+			"input": "_2p8fxq_input",
+			"controlRow": "_2p8fxq_controlRow",
 			"scriptRow": "_2p8fxq_scriptRow",
-			"headerActions": "_2p8fxq_headerActions",
-			"remove": "_2p8fxq_remove",
-			"controlRow": "_2p8fxq_controlRow"
+			"addButton": "_2p8fxq_addButton",
+			"pickerRow": "_2p8fxq_pickerRow",
+			"card": "_2p8fxq_card",
+			"page": "_2p8fxq_page",
+			"picker": "_2p8fxq_picker",
+			"editorRow": "_2p8fxq_editorRow",
+			"list": "_2p8fxq_list",
+			"headerActions": "_2p8fxq_headerActions"
 		};
 		//#endregion
 		//#region lib/types/client/pages/QuickStartPage.js
@@ -609,7 +609,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/pages/ImportPage.module.css.mjs
-		const css$1 = ".Csy4Lq_page{flex-direction:column;gap:10px;display:flex}.Csy4Lq_title{margin:0;font-size:14px;font-weight:600;line-height:22px}.Csy4Lq_desc{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:18px}.Csy4Lq_field{flex-direction:column;gap:4px;display:flex}.Csy4Lq_label{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:16px}.Csy4Lq_input{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);height:32px;color:var(--dsw-alias-label-primary);font-family:var(--ds-font-family-code);transition:border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);border-radius:8px;outline:none;padding:0 10px;font-size:12px;line-height:18px}.Csy4Lq_input::placeholder{color:var(--dsw-alias-label-dimmed)}.Csy4Lq_input:focus{border-color:var(--dsw-alias-brand-primary)}.Csy4Lq_actionPrimary{background:var(--dsw-alias-button-primary-fill);height:28px;color:var(--dsw-alias-label-primary-foreground);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);border:none;border-radius:14px;padding:0 14px;font-size:12px;font-weight:600;line-height:18px}.Csy4Lq_actionPrimary:hover:not(:disabled){background:var(--dsw-alias-button-primary-hover)}.Csy4Lq_actionPrimary:disabled{opacity:.4;cursor:not-allowed}.Csy4Lq_hint{color:var(--dsw-alias-state-success-primary);font-size:11px;line-height:16px}";
+		const css$1 = ".Csy4Lq_page{flex-direction:column;gap:8px;display:flex}.Csy4Lq_title{margin:0;font-size:14px;font-weight:600;line-height:22px}.Csy4Lq_desc{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:18px}.Csy4Lq_label{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:16px}.Csy4Lq_controlRow{align-items:center;gap:8px;display:flex}.Csy4Lq_input{cursor:pointer;flex:1;min-width:0}.Csy4Lq_startButton{align-self:flex-start;margin-top:4px}.Csy4Lq_hint{color:var(--dsw-alias-state-success-primary);font-size:11px;line-height:16px}";
 		const tagId$1 = "@liyuera/dsh-dev-dock/ImportPage.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -619,30 +619,44 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ImportPage_module_css_default = {
-			"title": "Csy4Lq_title",
-			"desc": "Csy4Lq_desc",
-			"field": "Csy4Lq_field",
+			"hint": "Csy4Lq_hint",
+			"startButton": "Csy4Lq_startButton",
 			"label": "Csy4Lq_label",
-			"input": "Csy4Lq_input",
+			"title": "Csy4Lq_title",
 			"page": "Csy4Lq_page",
-			"actionPrimary": "Csy4Lq_actionPrimary",
-			"hint": "Csy4Lq_hint"
+			"desc": "Csy4Lq_desc",
+			"controlRow": "Csy4Lq_controlRow",
+			"input": "Csy4Lq_input"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ImportPage.js
 		/**
-		* devDock import page: enter a directory and let the agent scan candidates,
-		* analyze which are frontend projects, and present the save list for
-		* confirmation. The analysis and saving run through agent tools.
+		* devDock import page: pick a directory through the system chooser and let
+		* the agent scan candidates, analyze which are frontend projects, and
+		* present the save list for confirmation. The analysis and saving run
+		* through agent tools.
 		*/
 		/**
 		* Render the import page.
-		* @param props - prompt channel and translator.
+		* @param props - prompt channel, directory picker, translator.
 		* @returns the import form.
 		*/
-		function ImportPage({ promptAgent, t }) {
+		function ImportPage({ promptAgent, pickDirectory, t }) {
 			const [dir, setDir] = (0, react.useState)("");
 			const [sent, setSent] = (0, react.useState)(false);
+			const [picking, setPicking] = (0, react.useState)(false);
+			const pick = async () => {
+				setPicking(true);
+				try {
+					const path = await pickDirectory();
+					if (path !== null) {
+						setDir(path);
+						setSent(false);
+					}
+				} finally {
+					setPicking(false);
+				}
+			};
 			const start = () => {
 				const target = dir.trim();
 				if (target.length === 0) return;
@@ -658,33 +672,39 @@ window.__ModuleLoader__.load({
 					}),
 					(0, react_jsx_runtime.jsx)("p", {
 						className: ImportPage_module_css_default.desc,
-						children: "输入要导入的目录（目录本身或其直接子目录都会被扫描为候选工程），AI 将分析并列出待保存的前端工程清单。"
+						children: "选择一个目录（目录本身或其直接子目录都会被扫描为候选工程），AI 将分析并列出待保存的前端工程清单。"
 					}),
-					(0, react_jsx_runtime.jsxs)("label", {
-						className: ImportPage_module_css_default.field,
-						children: [(0, react_jsx_runtime.jsx)("span", {
-							className: ImportPage_module_css_default.label,
-							children: "目录路径"
-						}), (0, react_jsx_runtime.jsx)("input", {
+					(0, react_jsx_runtime.jsx)("span", {
+						className: ImportPage_module_css_default.label,
+						children: t("import.dirLabel")
+					}),
+					(0, react_jsx_runtime.jsxs)("div", {
+						className: ImportPage_module_css_default.controlRow,
+						children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Input, {
 							className: ImportPage_module_css_default.input,
-							placeholder: "/Users/you/Documents/projects",
 							value: dir,
-							onChange: (e) => {
-								setDir(e.target.value);
-								setSent(false);
-							}
+							readOnly: true,
+							placeholder: t("import.noDir"),
+							onClick: pick
+						}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+							size: "sm",
+							variant: "outline",
+							onClick: pick,
+							disabled: picking,
+							children: t("import.pickDir")
 						})]
 					}),
-					(0, react_jsx_runtime.jsx)("button", {
-						type: "button",
-						className: ImportPage_module_css_default.actionPrimary,
+					(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						size: "sm",
+						variant: "primary",
+						className: ImportPage_module_css_default.startButton,
 						onClick: start,
 						disabled: dir.trim().length === 0 || sent,
-						children: sent ? "已发送，请查看对话" : "开始分析"
+						children: sent ? t("import.sent") : t("import.start")
 					}),
 					sent && (0, react_jsx_runtime.jsx)("p", {
 						className: ImportPage_module_css_default.hint,
-						children: "分析请求已发送给当前会话的 AI，请在对话中确认保存清单。"
+						children: t("import.sentHint")
 					})
 				]
 			});
@@ -701,14 +721,14 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockDrawer_module_css_default = {
-			"tabActive": "_63vEIa_tabActive",
-			"root": "_63vEIa_root",
+			"tab": "_63vEIa_tab",
 			"close": "_63vEIa_close",
-			"panel": "_63vEIa_panel",
 			"content": "_63vEIa_content",
 			"tabs": "_63vEIa_tabs",
+			"tabActive": "_63vEIa_tabActive",
+			"panel": "_63vEIa_panel",
 			"mask": "_63vEIa_mask",
-			"tab": "_63vEIa_tab"
+			"root": "_63vEIa_root"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockDrawer.js
@@ -737,7 +757,7 @@ window.__ModuleLoader__.load({
 		* @param props - overlay runtime, view store, data hook, actions, translator.
 		* @returns the drawer panel, or null when closed.
 		*/
-		function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, t }) {
+		function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, pickDirectory, t }) {
 			const { open, page } = useStore((state) => state);
 			const panelRef = (0, react.useRef)(null);
 			(0, react.useEffect)(() => {
@@ -759,6 +779,7 @@ window.__ModuleLoader__.load({
 				useDevDockData,
 				actions: dataActions,
 				promptAgent,
+				pickDirectory,
 				t,
 				onNavigate: navigate
 			};
@@ -849,7 +870,13 @@ window.__ModuleLoader__.load({
 			"quickStart.noAvailable": "没有可添加的项目",
 			"quickStart.cancel": "取消",
 			"quickStart.unsaved": "方案「{name}」尚未保存，保存后生效",
-			"quickStart.removeItem": "移除项目"
+			"quickStart.removeItem": "移除项目",
+			"import.pickDir": "选择目录",
+			"import.noDir": "未选择目录",
+			"import.dirLabel": "目录路径",
+			"import.start": "开始分析",
+			"import.sent": "已发送，请查看对话",
+			"import.sentHint": "分析请求已发送给当前会话的 AI，请在对话中确认保存清单。"
 		};
 		/** English dictionary. */
 		const en = {
@@ -886,7 +913,13 @@ window.__ModuleLoader__.load({
 			"quickStart.noAvailable": "No projects available to add",
 			"quickStart.cancel": "Cancel",
 			"quickStart.unsaved": "Plan \"{name}\" is not saved yet — save to activate",
-			"quickStart.removeItem": "Remove item"
+			"quickStart.removeItem": "Remove item",
+			"import.pickDir": "Choose directory",
+			"import.noDir": "No directory chosen",
+			"import.dirLabel": "Directory",
+			"import.start": "Start analysis",
+			"import.sent": "Sent — check the conversation",
+			"import.sentHint": "The analysis request was sent to the current session; confirm the save list in the conversation."
 		};
 		//#endregion
 		//#region lib/types/client/index.js
@@ -895,7 +928,8 @@ window.__ModuleLoader__.load({
 			"slots",
 			"locale",
 			"settingsScope",
-			"sessions"
+			"sessions",
+			"workspaces"
 		];
 		/**
 		* Client plugin body: register dictionaries and both surface entries.
@@ -912,7 +946,8 @@ window.__ModuleLoader__.load({
 			const drawerInjected = () => ({
 				hooks: { devDockData: dataStore },
 				dataActions,
-				promptAgent: (text) => dataActions.promptAgent(text)
+				promptAgent: (text) => dataActions.promptAgent(text),
+				pickDirectory: () => ctx.workspaces.pickDirectory()
 			});
 			ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({
 				name: "sidebar.footer.action",

@@ -4,7 +4,7 @@ import { DevDockEntry } from "./DevDockEntry.js";
 import { DevDockDrawer } from "./DevDockDrawer.js";
 import { en, NS, zh } from "./locales.js";
 /** Required services for data binding and slot contributions. */
-export const inject = ['slots', 'locale', 'settingsScope', 'sessions'];
+export const inject = ['slots', 'locale', 'settingsScope', 'sessions', 'workspaces'];
 /**
  * Client plugin body: register dictionaries and both surface entries.
  * @param ctx - client root context.
@@ -20,6 +20,7 @@ export function apply(ctx) {
         hooks: { devDockData: dataStore },
         dataActions,
         promptAgent: (text) => dataActions.promptAgent(text),
+        pickDirectory: () => ctx.workspaces.pickDirectory(),
     });
     ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
         name: 'sidebar.footer.action',

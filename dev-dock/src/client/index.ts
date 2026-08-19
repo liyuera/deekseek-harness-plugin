@@ -26,7 +26,7 @@ export type { DevDockDrawerProps, DevDockDrawerInjected } from './DevDockDrawer.
 export type { DevDockData, DevDockActions } from './api.ts'
 
 /** Required services for data binding and slot contributions. */
-export const inject = ['slots', 'locale', 'settingsScope', 'sessions']
+export const inject = ['slots', 'locale', 'settingsScope', 'sessions', 'workspaces']
 
 /**
  * Client plugin body: register dictionaries and both surface entries.
@@ -44,6 +44,7 @@ export function apply(ctx: ClientContext): void {
     hooks: { devDockData: dataStore },
     dataActions,
     promptAgent: (text) => dataActions.promptAgent(text),
+    pickDirectory: () => ctx.workspaces.pickDirectory(),
   })
 
   ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({

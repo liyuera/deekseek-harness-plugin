@@ -24,6 +24,8 @@ export interface DevDockDrawerInjected {
   dataActions: DevDockActions
   /** Prompt the current session to run a dev-dock action tool. */
   promptAgent: (text: string) => Promise<boolean>
+  /** Open the host's native single-directory chooser; null when cancelled. */
+  pickDirectory: () => Promise<string | null>
 }
 
 /** Full component props for the drawer. */
@@ -45,7 +47,7 @@ const TABS: Array<{ page: 'projects' | 'quickStart' | 'import'; key: DevDockKey 
  * @param props - overlay runtime, view store, data hook, actions, translator.
  * @returns the drawer panel, or null when closed.
  */
-export function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, t }: DevDockDrawerProps) {
+export function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, pickDirectory, t }: DevDockDrawerProps) {
   const { open, page } = useStore(state => state)
   const panelRef = useRef<HTMLDivElement | null>(null)
 
@@ -67,6 +69,7 @@ export function DevDockDrawer({ useStore, actions: view, useDevDockData, dataAct
     useDevDockData,
     actions: dataActions,
     promptAgent,
+    pickDirectory,
     t,
     onNavigate: navigate,
   }

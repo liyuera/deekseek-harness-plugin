@@ -37,6 +37,12 @@ export const zh = {
     'quickStart.cancel': '取消',
     'quickStart.unsaved': '方案「{name}」尚未保存，保存后生效',
     'quickStart.removeItem': '移除项目',
+    'import.pickDir': '选择目录',
+    'import.noDir': '未选择目录',
+    'import.dirLabel': '目录路径',
+    'import.start': '开始分析',
+    'import.sent': '已发送，请查看对话',
+    'import.sentHint': '分析请求已发送给当前会话的 AI，请在对话中确认保存清单。',
 };
 /** English dictionary. */
 export const en = {
@@ -74,5 +80,11 @@ export const en = {
     'quickStart.cancel': 'Cancel',
     'quickStart.unsaved': 'Plan "{name}" is not saved yet — save to activate',
     'quickStart.removeItem': 'Remove item',
+    'import.pickDir': 'Choose directory',
+    'import.noDir': 'No directory chosen',
+    'import.dirLabel': 'Directory',
+    'import.start': 'Start analysis',
+    'import.sent': 'Sent — check the conversation',
+    'import.sentHint': 'The analysis request was sent to the current session; confirm the save list in the conversation.',
 };
 //# sourceMappingURL=locales.js.map

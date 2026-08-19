@@ -1,7 +1,7 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .title {
@@ -17,61 +17,27 @@
   color: var(--dsw-alias-label-tertiary);
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .label {
   font-size: 11px;
   line-height: 16px;
   color: var(--dsw-alias-label-tertiary);
 }
 
+.controlRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .input {
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-primary);
-  font-family: var(--ds-font-family-code);
-  font-size: 12px;
-  line-height: 18px;
-  outline: none;
-  transition: border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);
-}
-
-.input::placeholder {
-  color: var(--dsw-alias-label-dimmed);
-}
-
-.input:focus {
-  border-color: var(--dsw-alias-brand-primary);
-}
-
-.actionPrimary {
-  height: 28px;
-  padding: 0 14px;
-  border: none;
-  border-radius: 14px;
-  background: var(--dsw-alias-button-primary-fill);
-  color: var(--dsw-alias-label-primary-foreground);
-  font-size: 12px;
-  line-height: 18px;
-  font-weight: 600;
+  flex: 1;
+  min-width: 0;
   cursor: pointer;
-  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out);
 }
 
-.actionPrimary:hover:not(:disabled) {
-  background: var(--dsw-alias-button-primary-hover);
-}
-
-.actionPrimary:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.startButton {
+  align-self: flex-start;
+  margin-top: 4px;
 }
 
 .hint {

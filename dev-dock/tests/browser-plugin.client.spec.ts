@@ -39,6 +39,7 @@ async function bench(): Promise<{ ctx: Context; fiber: ReturnType<Context['plugi
   ctx.provide('remote', { $on: () => () => {} } as never)
   ctx.provide('settingsScope', { bind: () => stubSettingsScope().scope } as never)
   ctx.provide('sessions', { list: { getSnapshot: () => ({ current: undefined }) }, scope: () => undefined } as never)
+  ctx.provide('workspaces', { pickDirectory: async () => null } as never)
   await ctx.plugin({ inject: localeInject, apply: applyLocale }).await()
   const fiber = ctx.plugin({ inject: [...inject], apply })
   await fiber.await()
@@ -47,7 +48,7 @@ async function bench(): Promise<{ ctx: Context; fiber: ReturnType<Context['plugi
 
 describe('dev-dock browser half', () => {
   it('declares the services it binds', () => {
-    expect(inject).toEqual(['slots', 'locale', 'settingsScope', 'sessions'])
+    expect(inject).toEqual(['slots', 'locale', 'settingsScope', 'sessions', 'workspaces'])
   })
 
   it('registers the footer entry and the drawer, and teardown removes them (HMR safety)', async () => {

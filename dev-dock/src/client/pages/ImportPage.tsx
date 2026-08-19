@@ -1,9 +1,11 @@
 /**
- * devDock import page: enter a directory and let the agent scan candidates,
- * analyze which are frontend projects, and present the save list for
- * confirmation. The analysis and saving run through agent tools.
+ * devDock import page: pick a directory through the system chooser and let
+ * the agent scan candidates, analyze which are frontend projects, and
+ * present the save list for confirmation. The analysis and saving run
+ * through agent tools.
  */
 import { useState } from 'react'
+import { Button, Input } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { DevDockData } from '../api.ts'
 import { NS } from '../locales.ts'
@@ -17,6 +19,8 @@ export interface ImportInjected {
   }
   /** Prompt the current session to run a dev-dock action tool. */
   promptAgent: (text: string) => Promise<boolean>
+  /** Open the host's native single-directory chooser; null when cancelled. */
+  pickDirectory: () => Promise<string | null>
 }
 
 /** Full component props. */
@@ -26,12 +30,26 @@ export type ImportPageProps =
 
 /**
  * Render the import page.
- * @param props - prompt channel and translator.
+ * @param props - prompt channel, directory picker, translator.
  * @returns the import form.
  */
-export function ImportPage({ promptAgent, t }: ImportPageProps) {
+export function ImportPage({ promptAgent, pickDirectory, t }: ImportPageProps) {
   const [dir, setDir] = useState('')
   const [sent, setSent] = useState(false)
+  const [picking, setPicking] = useState(false)
+
+  const pick = async (): Promise<void> => {
+    setPicking(true)
+    try {
+      const path = await pickDirectory()
+      if (path !== null) {
+        setDir(path)
+        setSent(false)
+      }
+    } finally {
+      setPicking(false)
+    }
+  }
 
   const start = (): void => {
     const target = dir.trim()
@@ -48,26 +66,25 @@ export function ImportPage({ promptAgent, t }: ImportPageProps) {
     <div className={css.page}>
       <h2 className={css.title}>{t('drawer.tab.import')}</h2>
       <p className={css.desc}>
-        输入要导入的目录（目录本身或其直接子目录都会被扫描为候选工程），AI 将分析并列出待保存的前端工程清单。
+        选择一个目录（目录本身或其直接子目录都会被扫描为候选工程），AI 将分析并列出待保存的前端工程清单。
       </p>
-      <label className={css.field}>
-        <span className={css.label}>目录路径</span>
-        <input
-          className={css.input}
-          placeholder="/Users/you/Documents/projects"
+      <span className={css.label}>{t('import.dirLabel')}</span>
+      <div className={css.controlRow}>
+        <Input
+          className={css.input as string}
           value={dir}
-          onChange={(e) => { setDir(e.target.value); setSent(false) }}
+          readOnly
+          placeholder={t('import.noDir')}
+          onClick={pick}
         />
-      </label>
-      <button
-        type="button"
-        className={css.actionPrimary}
-        onClick={start}
-        disabled={dir.trim().length === 0 || sent}
-      >
-        {sent ? '已发送，请查看对话' : '开始分析'}
-      </button>
-      {sent && <p className={css.hint}>分析请求已发送给当前会话的 AI，请在对话中确认保存清单。</p>}
+        <Button size="sm" variant="outline" onClick={pick} disabled={picking}>
+          {t('import.pickDir')}
+        </Button>
+      </div>
+      <Button size="sm" variant="primary" className={css.startButton} onClick={start} disabled={dir.trim().length === 0 || sent}>
+        {sent ? t('import.sent') : t('import.start')}
+      </Button>
+      {sent && <p className={css.hint}>{t('import.sentHint')}</p>}
     </div>
   )
 }

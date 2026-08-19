@@ -37,6 +37,12 @@ export declare const zh: {
     readonly 'quickStart.cancel': "取消";
     readonly 'quickStart.unsaved': "方案「{name}」尚未保存，保存后生效";
     readonly 'quickStart.removeItem': "移除项目";
+    readonly 'import.pickDir': "选择目录";
+    readonly 'import.noDir': "未选择目录";
+    readonly 'import.dirLabel': "目录路径";
+    readonly 'import.start': "开始分析";
+    readonly 'import.sent': "已发送，请查看对话";
+    readonly 'import.sentHint': "分析请求已发送给当前会话的 AI，请在对话中确认保存清单。";
 };
 /** English dictionary. */
 export declare const en: Record<keyof typeof zh, string>;
