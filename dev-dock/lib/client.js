@@ -7,6 +7,7 @@ window.__ModuleLoader__.load({
 		let _deepseek_ai_dsh_client_runtime_client = require("@deepseek-ai/dsh-client-runtime/client");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
+		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 		//#region lib/types/client/api.js
 		/**
 		* devDock browser data layer: binds the plugin's settings namespace through
@@ -168,11 +169,11 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockEntry_module_css_default = {
-			"title": "_6B0Roq_title",
 			"count": "_6B0Roq_count",
+			"row": "_6B0Roq_row",
+			"title": "_6B0Roq_title",
 			"railIcon": "_6B0Roq_railIcon",
-			"railDot": "_6B0Roq_railDot",
-			"row": "_6B0Roq_row"
+			"railDot": "_6B0Roq_railDot"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockEntry.js
@@ -222,21 +223,21 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ProjectListPage_module_css_default = {
-			"header": "m4dz6G_header",
-			"action": "m4dz6G_action",
-			"card": "m4dz6G_card",
-			"count": "m4dz6G_count",
-			"cardHeader": "m4dz6G_cardHeader",
-			"page": "m4dz6G_page",
-			"empty": "m4dz6G_empty",
-			"name": "m4dz6G_name",
-			"list": "m4dz6G_list",
-			"actionDanger": "m4dz6G_actionDanger",
-			"importButton": "m4dz6G_importButton",
 			"cardActions": "m4dz6G_cardActions",
-			"title": "m4dz6G_title",
+			"card": "m4dz6G_card",
+			"cardHeader": "m4dz6G_cardHeader",
+			"actionDanger": "m4dz6G_actionDanger",
+			"name": "m4dz6G_name",
+			"meta": "m4dz6G_meta",
+			"header": "m4dz6G_header",
+			"importButton": "m4dz6G_importButton",
+			"empty": "m4dz6G_empty",
+			"action": "m4dz6G_action",
+			"page": "m4dz6G_page",
+			"list": "m4dz6G_list",
 			"badge": "m4dz6G_badge",
-			"meta": "m4dz6G_meta"
+			"count": "m4dz6G_count",
+			"title": "m4dz6G_title"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ProjectListPage.js
@@ -353,7 +354,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/pages/QuickStartPage.module.css.mjs
-		const css$2 = "._2p8fxq_page{flex-direction:column;gap:10px;height:100%;display:flex}._2p8fxq_header{flex-direction:column;gap:6px;display:flex}._2p8fxq_controlRow{align-items:center;gap:8px;display:flex}._2p8fxq_label{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:16px}._2p8fxq_input{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);min-width:0;height:32px;color:var(--dsw-alias-label-primary);transition:border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);border-radius:8px;outline:none;flex:1;padding:0 10px;font-size:13px;line-height:20px}._2p8fxq_input::placeholder{color:var(--dsw-alias-label-dimmed)}._2p8fxq_input:focus{border-color:var(--dsw-alias-brand-primary)}._2p8fxq_headerActions{gap:6px;display:flex}._2p8fxq_action,._2p8fxq_actionPrimary{cursor:pointer;height:32px;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);border:none;border-radius:16px;padding:0 14px;font-size:12px;line-height:18px}._2p8fxq_action{color:var(--dsw-alias-label-secondary);background:0 0}._2p8fxq_action:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}._2p8fxq_actionPrimary{background:var(--dsw-alias-button-primary-fill);color:var(--dsw-alias-label-primary-foreground);font-weight:600}._2p8fxq_actionPrimary:hover:not(:disabled){background:var(--dsw-alias-button-primary-hover)}._2p8fxq_action:disabled,._2p8fxq_actionPrimary:disabled{opacity:.4;cursor:not-allowed}._2p8fxq_list{flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;display:flex}._2p8fxq_card{border:1px solid var(--dsw-alias-border-l1);background:0 0;border-radius:8px;padding:9px 10px}._2p8fxq_cardHeader{align-items:center;gap:8px;display:flex}._2p8fxq_name{text-overflow:ellipsis;white-space:nowrap;min-width:0;font-size:13px;font-weight:600;line-height:20px;overflow:hidden}._2p8fxq_remove{color:var(--dsw-alias-label-tertiary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:none;border-radius:6px;margin-left:auto;padding:0 6px;font-size:13px;line-height:20px}._2p8fxq_remove:hover{color:var(--dsw-alias-state-error-primary);background:var(--dsw-alias-interactive-bg-hover-danger)}._2p8fxq_editorRow,._2p8fxq_scriptRow{flex-wrap:wrap;gap:6px;margin-top:8px;display:flex}._2p8fxq_chip,._2p8fxq_chipActive{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border-radius:8px;padding:3px 10px;font-size:11px;line-height:17px}._2p8fxq_chip:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}._2p8fxq_chipActive{border-color:var(--dsw-alias-brand-primary);background:var(--dsw-alias-bg-multi-select);color:var(--dsw-alias-label-primary);font-weight:600}._2p8fxq_empty{text-align:center;color:var(--dsw-alias-label-tertiary);margin:24px 0;font-size:12px;line-height:18px}._2p8fxq_addButton{border:1px dashed var(--dsw-alias-border-l3);width:100%;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border-radius:8px;margin-top:auto;padding:6px 10px;font-size:12px;line-height:18px}._2p8fxq_addButton:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}._2p8fxq_pickerOverlay{z-index:100;background:var(--dsw-alias-bg-mask-3);justify-content:center;align-items:center;display:flex;position:fixed;inset:0}._2p8fxq_picker{border:1px solid var(--dsw-alias-border-l1);background:var(--dsw-specific-sidebar-fill);border-radius:12px;flex-direction:column;gap:8px;width:320px;max-height:70vh;padding:14px;display:flex;box-shadow:0 12px 40px #0000004d}._2p8fxq_pickerList{--dsh-scrollbar-thumb:var(--dsw-alias-scrollbar-bg-l2);--dsh-scrollbar-thumb-hover:var(--dsw-alias-scrollbar-hover-l2);margin:0;padding:0;list-style:none;overflow-y:auto}._2p8fxq_pickerRow{text-align:left;width:100%;color:var(--dsw-alias-label-primary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:none;border-radius:8px;padding:7px 10px;font-size:13px;line-height:20px}._2p8fxq_pickerRow:hover{background:var(--dsw-alias-interactive-bg-hover)}._2p8fxq_pickerEmpty{text-align:center;color:var(--dsw-alias-label-tertiary);padding:10px;font-size:11px;line-height:16px}._2p8fxq_hint{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:16px}";
+		const css$2 = "._2p8fxq_page{flex-direction:column;gap:10px;height:100%;display:flex}._2p8fxq_header{flex-direction:column;gap:6px;display:flex}._2p8fxq_controlRow{align-items:center;gap:8px;display:flex}._2p8fxq_label{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:16px}._2p8fxq_input{flex:1;min-width:0}._2p8fxq_headerActions{gap:6px;display:flex}._2p8fxq_list{flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;display:flex}._2p8fxq_card{border:1px solid var(--dsw-alias-border-l1);background:0 0;border-radius:8px;padding:9px 10px}._2p8fxq_cardHeader{align-items:center;gap:8px;display:flex}._2p8fxq_name{text-overflow:ellipsis;white-space:nowrap;min-width:0;font-size:13px;font-weight:600;line-height:20px;overflow:hidden}._2p8fxq_remove{color:var(--dsw-alias-label-tertiary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:none;border-radius:6px;margin-left:auto;padding:0 6px;font-size:13px;line-height:20px}._2p8fxq_remove:hover{color:var(--dsw-alias-state-error-primary);background:var(--dsw-alias-interactive-bg-hover-danger)}._2p8fxq_editorRow,._2p8fxq_scriptRow{flex-wrap:wrap;gap:6px;margin-top:8px;display:flex}._2p8fxq_chip,._2p8fxq_chipActive{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border-radius:8px;padding:3px 10px;font-size:11px;line-height:17px}._2p8fxq_chip:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}._2p8fxq_chipActive{border-color:var(--dsw-alias-brand-primary);background:var(--dsw-alias-bg-multi-select);color:var(--dsw-alias-label-primary);font-weight:600}._2p8fxq_empty{text-align:center;color:var(--dsw-alias-label-tertiary);margin:24px 0;font-size:12px;line-height:18px}._2p8fxq_addButton{border:1px dashed var(--dsw-alias-border-l3);width:100%;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border-radius:8px;margin-top:auto;padding:6px 10px;font-size:12px;line-height:18px}._2p8fxq_addButton:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}._2p8fxq_picker{flex-direction:column;gap:10px;min-height:220px;display:flex}._2p8fxq_pickerList{--dsh-scrollbar-thumb:var(--dsw-alias-scrollbar-bg-l2);--dsh-scrollbar-thumb-hover:var(--dsw-alias-scrollbar-hover-l2);margin:0;padding:0;list-style:none;overflow-y:auto}._2p8fxq_pickerRow{text-align:left;width:100%;color:var(--dsw-alias-label-primary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:none;border-radius:8px;padding:7px 10px;font-size:13px;line-height:20px}._2p8fxq_pickerRow:hover{background:var(--dsw-alias-interactive-bg-hover)}._2p8fxq_pickerEmpty{text-align:center;color:var(--dsw-alias-label-tertiary);padding:10px;font-size:11px;line-height:16px}._2p8fxq_hint{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:16px}";
 		const tagId$2 = "@liyuera/dsh-dev-dock/QuickStartPage.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
 			const tag = document.createElement("style");
@@ -363,31 +364,28 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var QuickStartPage_module_css_default = {
-			"controlRow": "_2p8fxq_controlRow",
-			"input": "_2p8fxq_input",
-			"cardHeader": "_2p8fxq_cardHeader",
-			"chip": "_2p8fxq_chip",
-			"hint": "_2p8fxq_hint",
-			"pickerList": "_2p8fxq_pickerList",
-			"label": "_2p8fxq_label",
-			"page": "_2p8fxq_page",
-			"list": "_2p8fxq_list",
 			"headerActions": "_2p8fxq_headerActions",
-			"empty": "_2p8fxq_empty",
-			"chipActive": "_2p8fxq_chipActive",
-			"editorRow": "_2p8fxq_editorRow",
-			"pickerRow": "_2p8fxq_pickerRow",
-			"action": "_2p8fxq_action",
-			"addButton": "_2p8fxq_addButton",
-			"pickerEmpty": "_2p8fxq_pickerEmpty",
-			"name": "_2p8fxq_name",
-			"pickerOverlay": "_2p8fxq_pickerOverlay",
-			"actionPrimary": "_2p8fxq_actionPrimary",
-			"remove": "_2p8fxq_remove",
+			"list": "_2p8fxq_list",
 			"picker": "_2p8fxq_picker",
-			"card": "_2p8fxq_card",
+			"label": "_2p8fxq_label",
+			"remove": "_2p8fxq_remove",
+			"editorRow": "_2p8fxq_editorRow",
 			"scriptRow": "_2p8fxq_scriptRow",
-			"header": "_2p8fxq_header"
+			"chip": "_2p8fxq_chip",
+			"controlRow": "_2p8fxq_controlRow",
+			"name": "_2p8fxq_name",
+			"input": "_2p8fxq_input",
+			"addButton": "_2p8fxq_addButton",
+			"pickerList": "_2p8fxq_pickerList",
+			"page": "_2p8fxq_page",
+			"chipActive": "_2p8fxq_chipActive",
+			"empty": "_2p8fxq_empty",
+			"pickerRow": "_2p8fxq_pickerRow",
+			"pickerEmpty": "_2p8fxq_pickerEmpty",
+			"header": "_2p8fxq_header",
+			"hint": "_2p8fxq_hint",
+			"card": "_2p8fxq_card",
+			"cardHeader": "_2p8fxq_cardHeader"
 		};
 		//#endregion
 		//#region lib/types/client/pages/QuickStartPage.js
@@ -474,37 +472,36 @@ window.__ModuleLoader__.load({
 						className: QuickStartPage_module_css_default.header,
 						children: [(0, react_jsx_runtime.jsx)("span", {
 							className: QuickStartPage_module_css_default.label,
-							children: t("drawer.tab.quickStart")
+							children: t("quickStart.planName")
 						}), (0, react_jsx_runtime.jsxs)("div", {
 							className: QuickStartPage_module_css_default.controlRow,
-							children: [(0, react_jsx_runtime.jsx)("input", {
+							children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Input, {
 								className: QuickStartPage_module_css_default.input,
 								value: planName,
-								placeholder: "plan name",
+								placeholder: t("quickStart.planNamePlaceholder"),
 								onChange: (e) => {
 									setPlanName(e.target.value);
 								}
 							}), (0, react_jsx_runtime.jsxs)("div", {
 								className: QuickStartPage_module_css_default.headerActions,
-								children: [(0, react_jsx_runtime.jsx)("button", {
-									type: "button",
-									className: QuickStartPage_module_css_default.action,
+								children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+									size: "sm",
 									onClick: savePlan,
 									disabled: planName.trim().length === 0,
-									children: "保存"
-								}), (0, react_jsx_runtime.jsx)("button", {
-									type: "button",
-									className: QuickStartPage_module_css_default.actionPrimary,
+									children: t("quickStart.save")
+								}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+									size: "sm",
+									variant: "primary",
 									onClick: launch,
 									disabled: draft.length === 0,
-									children: "启动"
+									children: t("quickStart.launch")
 								})]
 							})]
 						})]
 					}),
 					draft.length === 0 ? (0, react_jsx_runtime.jsx)("p", {
 						className: QuickStartPage_module_css_default.empty,
-						children: "暂无项目，点击下方按钮添加"
+						children: t("quickStart.empty")
 					}) : (0, react_jsx_runtime.jsx)("ul", {
 						className: QuickStartPage_module_css_default.list,
 						children: draft.map((item) => {
@@ -521,6 +518,7 @@ window.__ModuleLoader__.load({
 										}), (0, react_jsx_runtime.jsx)("button", {
 											type: "button",
 											className: QuickStartPage_module_css_default.remove,
+											"aria-label": `${t("quickStart.removeItem")} ${project.name}`,
 											onClick: () => {
 												removeItem(item.projectId);
 											},
@@ -561,63 +559,50 @@ window.__ModuleLoader__.load({
 						onClick: () => {
 							setShowPicker(true);
 						},
-						children: "+ 添加项目"
+						children: t("quickStart.addItem")
 					}),
-					showPicker && (0, react_jsx_runtime.jsx)("div", {
-						className: QuickStartPage_module_css_default.pickerOverlay,
-						role: "presentation",
-						onClick: () => {
+					(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+						open: showPicker,
+						onClose: () => {
 							setShowPicker(false);
 						},
+						title: t("quickStart.addProject"),
+						closeLabel: t("quickStart.cancel"),
+						footer: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+							variant: "outline",
+							onClick: () => {
+								setShowPicker(false);
+							},
+							children: t("quickStart.cancel")
+						}),
 						children: (0, react_jsx_runtime.jsxs)("div", {
 							className: QuickStartPage_module_css_default.picker,
-							role: "dialog",
-							"aria-modal": "true",
-							onClick: (e) => {
-								e.stopPropagation();
-							},
-							children: [
-								(0, react_jsx_runtime.jsx)("input", {
-									className: QuickStartPage_module_css_default.input,
-									placeholder: "搜索项目...",
-									value: query,
-									onChange: (e) => {
-										setQuery(e.target.value);
-									},
-									autoFocus: true
-								}),
-								(0, react_jsx_runtime.jsxs)("ul", {
-									className: QuickStartPage_module_css_default.pickerList,
-									children: [availableProjects.filter((p) => query.trim().length === 0 || p.name.toLowerCase().includes(query.trim().toLowerCase())).map((p) => (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsx)("button", {
-										type: "button",
-										className: QuickStartPage_module_css_default.pickerRow,
-										onClick: () => {
-											addItems([p.id]);
-										},
-										children: p.name
-									}) }, p.id)), availableProjects.length === 0 && (0, react_jsx_runtime.jsx)("li", {
-										className: QuickStartPage_module_css_default.pickerEmpty,
-										children: "没有可添加的项目"
-									})]
-								}),
-								(0, react_jsx_runtime.jsx)("button", {
+							children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Input, {
+								value: query,
+								placeholder: t("quickStart.searchPlaceholder"),
+								onChange: (e) => {
+									setQuery(e.target.value);
+								},
+								autoFocus: true
+							}), (0, react_jsx_runtime.jsxs)("ul", {
+								className: QuickStartPage_module_css_default.pickerList,
+								children: [availableProjects.filter((p) => query.trim().length === 0 || p.name.toLowerCase().includes(query.trim().toLowerCase())).map((p) => (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
-									className: QuickStartPage_module_css_default.action,
+									className: QuickStartPage_module_css_default.pickerRow,
 									onClick: () => {
-										setShowPicker(false);
+										addItems([p.id]);
 									},
-									children: "取消"
-								})
-							]
+									children: p.name
+								}) }, p.id)), availableProjects.length === 0 && (0, react_jsx_runtime.jsx)("li", {
+									className: QuickStartPage_module_css_default.pickerEmpty,
+									children: t("quickStart.noAvailable")
+								})]
+							})]
 						})
 					}),
-					plans.length > 0 && activePlan === void 0 && planName !== "" && (0, react_jsx_runtime.jsxs)("p", {
+					plans.length > 0 && activePlan === void 0 && planName !== "" && (0, react_jsx_runtime.jsx)("p", {
 						className: QuickStartPage_module_css_default.hint,
-						children: [
-							"方案 \"",
-							planName,
-							"\" 尚未保存，保存后生效"
-						]
+						children: t("quickStart.unsaved", { name: planName })
 					})
 				]
 			});
@@ -634,14 +619,14 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ImportPage_module_css_default = {
-			"title": "Csy4Lq_title",
-			"desc": "Csy4Lq_desc",
-			"hint": "Csy4Lq_hint",
-			"input": "Csy4Lq_input",
 			"field": "Csy4Lq_field",
+			"title": "Csy4Lq_title",
+			"label": "Csy4Lq_label",
 			"actionPrimary": "Csy4Lq_actionPrimary",
-			"page": "Csy4Lq_page",
-			"label": "Csy4Lq_label"
+			"desc": "Csy4Lq_desc",
+			"input": "Csy4Lq_input",
+			"hint": "Csy4Lq_hint",
+			"page": "Csy4Lq_page"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ImportPage.js
@@ -716,14 +701,14 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockDrawer_module_css_default = {
-			"mask": "_63vEIa_mask",
-			"tabs": "_63vEIa_tabs",
 			"tabActive": "_63vEIa_tabActive",
-			"panel": "_63vEIa_panel",
-			"tab": "_63vEIa_tab",
-			"content": "_63vEIa_content",
+			"mask": "_63vEIa_mask",
 			"root": "_63vEIa_root",
-			"close": "_63vEIa_close"
+			"panel": "_63vEIa_panel",
+			"tabs": "_63vEIa_tabs",
+			"tab": "_63vEIa_tab",
+			"close": "_63vEIa_close",
+			"content": "_63vEIa_content"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockDrawer.js
@@ -852,7 +837,19 @@ window.__ModuleLoader__.load({
 			"project.openIde": "打开",
 			"project.remove": "删除",
 			"project.remove.confirm": "确认删除项目「{name}」？仅移除插件配置，不删除磁盘文件。",
-			"project.notFound": "项目不存在"
+			"project.notFound": "项目不存在",
+			"quickStart.save": "保存",
+			"quickStart.launch": "启动",
+			"quickStart.planName": "方案名称",
+			"quickStart.planNamePlaceholder": "plan name",
+			"quickStart.empty": "暂无项目，点击下方按钮添加",
+			"quickStart.addItem": "添加项目",
+			"quickStart.addProject": "添加项目到方案",
+			"quickStart.searchPlaceholder": "搜索项目...",
+			"quickStart.noAvailable": "没有可添加的项目",
+			"quickStart.cancel": "取消",
+			"quickStart.unsaved": "方案「{name}」尚未保存，保存后生效",
+			"quickStart.removeItem": "移除项目"
 		};
 		/** English dictionary. */
 		const en = {
@@ -877,7 +874,19 @@ window.__ModuleLoader__.load({
 			"project.openIde": "Open",
 			"project.remove": "Remove",
 			"project.remove.confirm": "Remove project \"{name}\"? Only the plugin configuration is removed; files on disk are untouched.",
-			"project.notFound": "Project not found"
+			"project.notFound": "Project not found",
+			"quickStart.save": "Save",
+			"quickStart.launch": "Launch",
+			"quickStart.planName": "Plan name",
+			"quickStart.planNamePlaceholder": "plan name",
+			"quickStart.empty": "No items yet — use the button below to add",
+			"quickStart.addItem": "Add project",
+			"quickStart.addProject": "Add projects to plan",
+			"quickStart.searchPlaceholder": "Search projects...",
+			"quickStart.noAvailable": "No projects available to add",
+			"quickStart.cancel": "Cancel",
+			"quickStart.unsaved": "Plan \"{name}\" is not saved yet — save to activate",
+			"quickStart.removeItem": "Remove item"
 		};
 		//#endregion
 		//#region lib/types/client/index.js

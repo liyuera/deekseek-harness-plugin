@@ -27,6 +27,18 @@ export const zh = {
   'project.remove': '删除',
   'project.remove.confirm': '确认删除项目「{name}」？仅移除插件配置，不删除磁盘文件。',
   'project.notFound': '项目不存在',
+  'quickStart.save': '保存',
+  'quickStart.launch': '启动',
+  'quickStart.planName': '方案名称',
+  'quickStart.planNamePlaceholder': 'plan name',
+  'quickStart.empty': '暂无项目，点击下方按钮添加',
+  'quickStart.addItem': '添加项目',
+  'quickStart.addProject': '添加项目到方案',
+  'quickStart.searchPlaceholder': '搜索项目...',
+  'quickStart.noAvailable': '没有可添加的项目',
+  'quickStart.cancel': '取消',
+  'quickStart.unsaved': '方案「{name}」尚未保存，保存后生效',
+  'quickStart.removeItem': '移除项目',
 } as const
 
 /** English dictionary. */
@@ -53,6 +65,18 @@ export const en: Record<keyof typeof zh, string> = {
   'project.remove': 'Remove',
   'project.remove.confirm': 'Remove project "{name}"? Only the plugin configuration is removed; files on disk are untouched.',
   'project.notFound': 'Project not found',
+  'quickStart.save': 'Save',
+  'quickStart.launch': 'Launch',
+  'quickStart.planName': 'Plan name',
+  'quickStart.planNamePlaceholder': 'plan name',
+  'quickStart.empty': 'No items yet — use the button below to add',
+  'quickStart.addItem': 'Add project',
+  'quickStart.addProject': 'Add projects to plan',
+  'quickStart.searchPlaceholder': 'Search projects...',
+  'quickStart.noAvailable': 'No projects available to add',
+  'quickStart.cancel': 'Cancel',
+  'quickStart.unsaved': 'Plan "{name}" is not saved yet — save to activate',
+  'quickStart.removeItem': 'Remove item',
 }
 
 /** Dictionary key type for typed translation. */

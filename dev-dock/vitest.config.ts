@@ -9,12 +9,23 @@ import { defineConfig } from 'vitest/config'
 
 const root = fileURLToPath(new URL('../../', import.meta.url))
 
+// React resolves to the plugin's local npm install: the renderer, the
+// ui-primitives source (reached through the workspace alias), and the testing
+// library must share ONE react instance — a second one breaks hooks with a
+// null dispatcher. Absolute replacements skip the root prefix below.
+const reactDir = fileURLToPath(new URL('./node_modules/react', import.meta.url))
+const reactDomDir = fileURLToPath(new URL('./node_modules/react-dom', import.meta.url))
+
 /**
  * Alias the workspace packages this plugin's code and tests import. Exact
  * regexes keep subpaths like `@deepseek-ai/dsh-llm/message` from matching a
  * shorter package alias.
  */
 const ALIASES: Array<[string, string]> = [
+  ['react$', `${reactDir}/index.js`],
+  ['react/jsx-runtime$', `${reactDir}/jsx-runtime.js`],
+  ['react-dom$', `${reactDomDir}/index.js`],
+  ['react-dom/client$', `${reactDomDir}/client.js`],
   ['@deepseek-ai/cordis$', 'vendor/cordis/src/index.ts'],
   ['@deepseek-ai/cordis/', 'vendor/cordis/src/'],
   ['@deepseek-ai/schemastery$', 'vendor/schemastery/src/index.ts'],
@@ -62,11 +73,20 @@ export default defineConfig({
   resolve: {
     alias: ALIASES.map(([find, replacement]) => ({
       find: new RegExp(`^${find}`),
-      replacement: `${root}${replacement}`,
+      // Absolute replacements (the react aliases) are used verbatim; relative
+      // ones anchor to the harness checkout root.
+      replacement: replacement.startsWith('/') ? replacement : `${root}${replacement}`,
     })),
   },
   test: {
     include: ['tests/**/*.spec.ts', 'tests/**/*.spec.tsx'],
     environment: 'node',
+    // Keep the testing library on the vite pipeline so its react/react-dom
+    // imports ride the same aliases as the plugin sources (one react instance).
+    server: {
+      deps: {
+        inline: ['@testing-library/react'],
+      },
+    },
   },
 })

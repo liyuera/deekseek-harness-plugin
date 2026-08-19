@@ -26,67 +26,11 @@
 .input {
   flex: 1;
   min-width: 0;
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-primary);
-  font-size: 13px;
-  line-height: 20px;
-  outline: none;
-  transition: border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);
-}
-
-.input::placeholder {
-  color: var(--dsw-alias-label-dimmed);
-}
-
-.input:focus {
-  border-color: var(--dsw-alias-brand-primary);
 }
 
 .headerActions {
   display: flex;
   gap: 6px;
-}
-
-.action,
-.actionPrimary {
-  height: 32px;
-  padding: 0 14px;
-  border: none;
-  border-radius: 16px;
-  font-size: 12px;
-  line-height: 18px;
-  cursor: pointer;
-  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out);
-}
-
-.action {
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-}
-
-.action:hover {
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-
-.actionPrimary {
-  background: var(--dsw-alias-button-primary-fill);
-  color: var(--dsw-alias-label-primary-foreground);
-  font-weight: 600;
-}
-
-.actionPrimary:hover:not(:disabled) {
-  background: var(--dsw-alias-button-primary-hover);
-}
-
-.action:disabled,
-.actionPrimary:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 .list {
@@ -200,27 +144,11 @@
   background: var(--dsw-alias-interactive-bg-hover);
 }
 
-.pickerOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--dsw-alias-bg-mask-3);
-}
-
 .picker {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: 320px;
-  max-height: 70vh;
-  padding: 14px;
-  border: 1px solid var(--dsw-alias-border-l1);
-  border-radius: 12px;
-  background: var(--dsw-specific-sidebar-fill);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  gap: 10px;
+  min-height: 220px;
 }
 
 .pickerList {

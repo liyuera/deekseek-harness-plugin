@@ -148,7 +148,7 @@ describe('QuickStartPage', () => {
 
   it('adds a project to the draft plan', () => {
     render(<QuickStartPage {...baseProps} />)
-    fireEvent.click(screen.getByText('+ 添加项目'))
+    fireEvent.click(screen.getByText('添加项目'))
     fireEvent.click(screen.getByText('app'))
     expect(screen.getByText('app')).toBeTruthy()
     expect(screen.getByText('dev')).toBeTruthy()
@@ -158,7 +158,7 @@ describe('QuickStartPage', () => {
   it('saves the plan through the data actions', async () => {
     const setQuickStartPlan = vi.fn(async () => {})
     render(<QuickStartPage {...baseProps} actions={{ ...baseProps.actions, setQuickStartPlan } as never} />)
-    fireEvent.click(screen.getByText('+ 添加项目'))
+    fireEvent.click(screen.getByText('添加项目'))
     fireEvent.click(screen.getByText('app'))
     const nameInput = screen.getByPlaceholderText('plan name') as HTMLInputElement
     fireEvent.change(nameInput, { target: { value: 'daily' } })
@@ -172,7 +172,7 @@ describe('QuickStartPage', () => {
   it('launches through the agent with the plan name', () => {
     const promptAgent = vi.fn(async () => true)
     render(<QuickStartPage {...baseProps} promptAgent={promptAgent as never} />)
-    fireEvent.click(screen.getByText('+ 添加项目'))
+    fireEvent.click(screen.getByText('添加项目'))
     fireEvent.click(screen.getByText('app'))
     const nameInput = screen.getByPlaceholderText('plan name') as HTMLInputElement
     fireEvent.change(nameInput, { target: { value: 'daily' } })

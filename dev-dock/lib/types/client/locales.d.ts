@@ -25,6 +25,18 @@ export declare const zh: {
     readonly 'project.remove': "删除";
     readonly 'project.remove.confirm': "确认删除项目「{name}」？仅移除插件配置，不删除磁盘文件。";
     readonly 'project.notFound': "项目不存在";
+    readonly 'quickStart.save': "保存";
+    readonly 'quickStart.launch': "启动";
+    readonly 'quickStart.planName': "方案名称";
+    readonly 'quickStart.planNamePlaceholder': "plan name";
+    readonly 'quickStart.empty': "暂无项目，点击下方按钮添加";
+    readonly 'quickStart.addItem': "添加项目";
+    readonly 'quickStart.addProject': "添加项目到方案";
+    readonly 'quickStart.searchPlaceholder': "搜索项目...";
+    readonly 'quickStart.noAvailable': "没有可添加的项目";
+    readonly 'quickStart.cancel': "取消";
+    readonly 'quickStart.unsaved': "方案「{name}」尚未保存，保存后生效";
+    readonly 'quickStart.removeItem': "移除项目";
 };
 /** English dictionary. */
 export declare const en: Record<keyof typeof zh, string>;

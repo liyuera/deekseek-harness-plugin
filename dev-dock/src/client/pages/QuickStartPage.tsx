@@ -3,6 +3,7 @@
  * editors and one script each) and launch them through the agent.
  */
 import { useMemo, useState } from 'react'
+import { Button, Input, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { DevDockActions, DevDockData } from '../api.ts'
 import { NS } from '../locales.ts'
@@ -102,27 +103,27 @@ export function QuickStartPage({ useDevDockData, actions, promptAgent, t }: Quic
   return (
     <div className={css.page}>
       <div className={css.header}>
-        <span className={css.label}>{t('drawer.tab.quickStart')}</span>
+        <span className={css.label}>{t('quickStart.planName')}</span>
         <div className={css.controlRow}>
-          <input
+          <Input
             className={css.input}
             value={planName}
-            placeholder="plan name"
+            placeholder={t('quickStart.planNamePlaceholder')}
             onChange={(e) => { setPlanName(e.target.value) }}
           />
           <div className={css.headerActions}>
-            <button type="button" className={css.action} onClick={savePlan} disabled={planName.trim().length === 0}>
-              保存
-            </button>
-            <button type="button" className={css.actionPrimary} onClick={launch} disabled={draft.length === 0}>
-              启动
-            </button>
+            <Button size="sm" onClick={savePlan} disabled={planName.trim().length === 0}>
+              {t('quickStart.save')}
+            </Button>
+            <Button size="sm" variant="primary" onClick={launch} disabled={draft.length === 0}>
+              {t('quickStart.launch')}
+            </Button>
           </div>
         </div>
       </div>
 
       {draft.length === 0 ? (
-        <p className={css.empty}>暂无项目，点击下方按钮添加</p>
+        <p className={css.empty}>{t('quickStart.empty')}</p>
       ) : (
         <ul className={css.list}>
           {draft.map((item) => {
@@ -135,6 +136,7 @@ export function QuickStartPage({ useDevDockData, actions, promptAgent, t }: Quic
                   <button
                     type="button"
                     className={css.remove}
+                    aria-label={`${t('quickStart.removeItem')} ${project.name}`}
                     onClick={() => { removeItem(item.projectId) }}
                   >
                     ✕
@@ -174,43 +176,47 @@ export function QuickStartPage({ useDevDockData, actions, promptAgent, t }: Quic
       )}
 
       <button type="button" className={css.addButton} onClick={() => { setShowPicker(true) }}>
-        + 添加项目
+        {t('quickStart.addItem')}
       </button>
 
-      {showPicker && (
-        <div className={css.pickerOverlay} role="presentation" onClick={() => { setShowPicker(false) }}>
-          <div className={css.picker} role="dialog" aria-modal="true" onClick={(e) => { e.stopPropagation() }}>
-            <input
-              className={css.input}
-              placeholder="搜索项目..."
-              value={query}
-              onChange={(e) => { setQuery(e.target.value) }}
-              autoFocus
-            />
-            <ul className={css.pickerList}>
-              {availableProjects
-                .filter((p) => query.trim().length === 0 || p.name.toLowerCase().includes(query.trim().toLowerCase()))
-                .map((p) => (
-                  <li key={p.id}>
-                    <button
-                      type="button"
-                      className={css.pickerRow}
-                      onClick={() => { addItems([p.id]) }}
-                    >
-                      {p.name}
-                    </button>
-                  </li>
-                ))}
-              {availableProjects.length === 0 && <li className={css.pickerEmpty}>没有可添加的项目</li>}
-            </ul>
-            <button type="button" className={css.action} onClick={() => { setShowPicker(false) }}>
-              取消
-            </button>
-          </div>
+      <Modal
+        open={showPicker}
+        onClose={() => { setShowPicker(false) }}
+        title={t('quickStart.addProject')}
+        closeLabel={t('quickStart.cancel')}
+        footer={(
+          <Button variant="outline" onClick={() => { setShowPicker(false) }}>
+            {t('quickStart.cancel')}
+          </Button>
+        )}
+      >
+        <div className={css.picker}>
+          <Input
+            value={query}
+            placeholder={t('quickStart.searchPlaceholder')}
+            onChange={(e) => { setQuery(e.target.value) }}
+            autoFocus
+          />
+          <ul className={css.pickerList}>
+            {availableProjects
+              .filter((p) => query.trim().length === 0 || p.name.toLowerCase().includes(query.trim().toLowerCase()))
+              .map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    className={css.pickerRow}
+                    onClick={() => { addItems([p.id]) }}
+                  >
+                    {p.name}
+                  </button>
+                </li>
+              ))}
+            {availableProjects.length === 0 && <li className={css.pickerEmpty}>{t('quickStart.noAvailable')}</li>}
+          </ul>
         </div>
-      )}
+      </Modal>
       {plans.length > 0 && activePlan === undefined && planName !== '' && (
-        <p className={css.hint}>方案 "{planName}" 尚未保存，保存后生效</p>
+        <p className={css.hint}>{t('quickStart.unsaved', { name: planName })}</p>
       )}
     </div>
   )
