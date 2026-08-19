@@ -20,7 +20,7 @@ const TABS = [
  * @param props - overlay runtime, view store, data hook, actions, translator.
  * @returns the drawer panel, or null when closed.
  */
-export function DevDockDrawer({ useStore, actions: view, useDevDockData, actions, promptAgent, t }) {
+export function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, t }) {
     const { open, page } = useStore(state => state);
     const panelRef = useRef(null);
     // Close on Escape; focus lands on the panel on open.
@@ -40,7 +40,7 @@ export function DevDockDrawer({ useStore, actions: view, useDevDockData, actions
     const navigate = (page) => { view.setPage(page); };
     const pageProps = {
         useDevDockData,
-        actions,
+        actions: dataActions,
         promptAgent,
         t,
         onNavigate: navigate,

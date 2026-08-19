@@ -168,11 +168,11 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockEntry_module_css_default = {
-			"row": "_6B0Roq_row",
 			"title": "_6B0Roq_title",
+			"railIcon": "_6B0Roq_railIcon",
 			"railDot": "_6B0Roq_railDot",
-			"count": "_6B0Roq_count",
-			"railIcon": "_6B0Roq_railIcon"
+			"row": "_6B0Roq_row",
+			"count": "_6B0Roq_count"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockEntry.js
@@ -222,21 +222,21 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ProjectListPage_module_css_default = {
-			"card": "m4dz6G_card",
+			"name": "m4dz6G_name",
 			"header": "m4dz6G_header",
+			"page": "m4dz6G_page",
+			"card": "m4dz6G_card",
 			"empty": "m4dz6G_empty",
+			"action": "m4dz6G_action",
+			"title": "m4dz6G_title",
 			"list": "m4dz6G_list",
 			"badge": "m4dz6G_badge",
-			"cardActions": "m4dz6G_cardActions",
-			"action": "m4dz6G_action",
-			"name": "m4dz6G_name",
-			"count": "m4dz6G_count",
-			"importButton": "m4dz6G_importButton",
-			"page": "m4dz6G_page",
-			"actionDanger": "m4dz6G_actionDanger",
-			"title": "m4dz6G_title",
 			"meta": "m4dz6G_meta",
-			"cardHeader": "m4dz6G_cardHeader"
+			"count": "m4dz6G_count",
+			"cardActions": "m4dz6G_cardActions",
+			"importButton": "m4dz6G_importButton",
+			"cardHeader": "m4dz6G_cardHeader",
+			"actionDanger": "m4dz6G_actionDanger"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ProjectListPage.js
@@ -363,31 +363,31 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var QuickStartPage_module_css_default = {
-			"headerActions": "_2p8fxq_headerActions",
-			"chip": "_2p8fxq_chip",
-			"editorRow": "_2p8fxq_editorRow",
-			"field": "_2p8fxq_field",
-			"name": "_2p8fxq_name",
-			"label": "_2p8fxq_label",
-			"remove": "_2p8fxq_remove",
-			"pickerOverlay": "_2p8fxq_pickerOverlay",
-			"card": "_2p8fxq_card",
 			"actionPrimary": "_2p8fxq_actionPrimary",
-			"addButton": "_2p8fxq_addButton",
 			"picker": "_2p8fxq_picker",
-			"empty": "_2p8fxq_empty",
-			"pickerList": "_2p8fxq_pickerList",
-			"header": "_2p8fxq_header",
-			"action": "_2p8fxq_action",
-			"scriptRow": "_2p8fxq_scriptRow",
-			"chipActive": "_2p8fxq_chipActive",
 			"pickerRow": "_2p8fxq_pickerRow",
-			"cardHeader": "_2p8fxq_cardHeader",
 			"hint": "_2p8fxq_hint",
-			"page": "_2p8fxq_page",
+			"editorRow": "_2p8fxq_editorRow",
+			"cardHeader": "_2p8fxq_cardHeader",
+			"action": "_2p8fxq_action",
+			"label": "_2p8fxq_label",
+			"name": "_2p8fxq_name",
 			"input": "_2p8fxq_input",
+			"card": "_2p8fxq_card",
+			"chip": "_2p8fxq_chip",
+			"remove": "_2p8fxq_remove",
+			"chipActive": "_2p8fxq_chipActive",
+			"empty": "_2p8fxq_empty",
+			"field": "_2p8fxq_field",
+			"pickerOverlay": "_2p8fxq_pickerOverlay",
+			"header": "_2p8fxq_header",
+			"page": "_2p8fxq_page",
+			"pickerList": "_2p8fxq_pickerList",
+			"headerActions": "_2p8fxq_headerActions",
 			"pickerEmpty": "_2p8fxq_pickerEmpty",
-			"list": "_2p8fxq_list"
+			"list": "_2p8fxq_list",
+			"addButton": "_2p8fxq_addButton",
+			"scriptRow": "_2p8fxq_scriptRow"
 		};
 		//#endregion
 		//#region lib/types/client/pages/QuickStartPage.js
@@ -634,14 +634,14 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ImportPage_module_css_default = {
+			"input": "Csy4Lq_input",
 			"title": "Csy4Lq_title",
 			"actionPrimary": "Csy4Lq_actionPrimary",
-			"input": "Csy4Lq_input",
-			"field": "Csy4Lq_field",
-			"page": "Csy4Lq_page",
+			"desc": "Csy4Lq_desc",
 			"hint": "Csy4Lq_hint",
+			"page": "Csy4Lq_page",
 			"label": "Csy4Lq_label",
-			"desc": "Csy4Lq_desc"
+			"field": "Csy4Lq_field"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ImportPage.js
@@ -716,14 +716,14 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockDrawer_module_css_default = {
+			"content": "_63vEIa_content",
 			"mask": "_63vEIa_mask",
-			"panel": "_63vEIa_panel",
+			"tabs": "_63vEIa_tabs",
+			"tab": "_63vEIa_tab",
 			"root": "_63vEIa_root",
 			"tabActive": "_63vEIa_tabActive",
-			"tab": "_63vEIa_tab",
 			"close": "_63vEIa_close",
-			"content": "_63vEIa_content",
-			"tabs": "_63vEIa_tabs"
+			"panel": "_63vEIa_panel"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockDrawer.js
@@ -752,7 +752,7 @@ window.__ModuleLoader__.load({
 		* @param props - overlay runtime, view store, data hook, actions, translator.
 		* @returns the drawer panel, or null when closed.
 		*/
-		function DevDockDrawer({ useStore, actions: view, useDevDockData, actions, promptAgent, t }) {
+		function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, t }) {
 			const { open, page } = useStore((state) => state);
 			const panelRef = (0, react.useRef)(null);
 			(0, react.useEffect)(() => {
@@ -772,7 +772,7 @@ window.__ModuleLoader__.load({
 			};
 			const pageProps = {
 				useDevDockData,
-				actions,
+				actions: dataActions,
 				promptAgent,
 				t,
 				onNavigate: navigate
@@ -902,7 +902,7 @@ window.__ModuleLoader__.load({
 			const entryInjected = () => ({ hooks: { devDockData: dataStore } });
 			const drawerInjected = () => ({
 				hooks: { devDockData: dataStore },
-				actions: dataActions,
+				dataActions,
 				promptAgent: (text) => dataActions.promptAgent(text)
 			});
 			ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({

@@ -11,8 +11,8 @@ export interface DevDockDrawerInjected {
             subscribe(fn: () => void): () => void;
         };
     };
-    /** Data mutation actions. */
-    actions: DevDockActions;
+    /** Data mutation actions (named distinctly from the store actions prop). */
+    dataActions: DevDockActions;
     /** Prompt the current session to run a dev-dock action tool. */
     promptAgent: (text: string) => Promise<boolean>;
 }
@@ -23,5 +23,5 @@ export type DevDockDrawerProps = PropsRuntime<'shell.overlay'> & PropsStore<Retu
  * @param props - overlay runtime, view store, data hook, actions, translator.
  * @returns the drawer panel, or null when closed.
  */
-export declare function DevDockDrawer({ useStore, actions: view, useDevDockData, actions, promptAgent, t }: DevDockDrawerProps): import("react").JSX.Element | null;
+export declare function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, t }: DevDockDrawerProps): import("react").JSX.Element | null;
 //# sourceMappingURL=DevDockDrawer.d.ts.map

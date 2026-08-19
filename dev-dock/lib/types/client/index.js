@@ -18,7 +18,7 @@ export function apply(ctx) {
     });
     const drawerInjected = () => ({
         hooks: { devDockData: dataStore },
-        actions: dataActions,
+        dataActions,
         promptAgent: (text) => dataActions.promptAgent(text),
     });
     ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({

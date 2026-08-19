@@ -42,7 +42,7 @@ export function apply(ctx: ClientContext): void {
   })
   const drawerInjected = (): DevDockDrawerInjected => ({
     hooks: { devDockData: dataStore },
-    actions: dataActions,
+    dataActions,
     promptAgent: (text) => dataActions.promptAgent(text),
   })
 

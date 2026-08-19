@@ -20,8 +20,8 @@ export interface DevDockDrawerInjected {
     /** Settings snapshot bound by the renderer as useDevDockData. */
     devDockData: { getSnapshot(): DevDockData; subscribe(fn: () => void): () => void }
   }
-  /** Data mutation actions. */
-  actions: DevDockActions
+  /** Data mutation actions (named distinctly from the store actions prop). */
+  dataActions: DevDockActions
   /** Prompt the current session to run a dev-dock action tool. */
   promptAgent: (text: string) => Promise<boolean>
 }
@@ -45,7 +45,7 @@ const TABS: Array<{ page: 'projects' | 'quickStart' | 'import'; key: DevDockKey 
  * @param props - overlay runtime, view store, data hook, actions, translator.
  * @returns the drawer panel, or null when closed.
  */
-export function DevDockDrawer({ useStore, actions: view, useDevDockData, actions, promptAgent, t }: DevDockDrawerProps) {
+export function DevDockDrawer({ useStore, actions: view, useDevDockData, dataActions, promptAgent, t }: DevDockDrawerProps) {
   const { open, page } = useStore(state => state)
   const panelRef = useRef<HTMLDivElement | null>(null)
 
@@ -65,7 +65,7 @@ export function DevDockDrawer({ useStore, actions: view, useDevDockData, actions
   const navigate = (page: 'projects' | 'quickStart' | 'import'): void => { view.setPage(page) }
   const pageProps = {
     useDevDockData,
-    actions,
+    actions: dataActions,
     promptAgent,
     t,
     onNavigate: navigate,
