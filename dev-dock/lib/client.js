@@ -116,7 +116,7 @@ window.__ModuleLoader__.load({
 			if (current === void 0) return false;
 			const scoped = sessions.scope(current);
 			if (scoped === void 0) return false;
-			const conversation = scoped.conversation;
+			const conversation = scoped.get("conversation");
 			if (conversation === void 0) return false;
 			try {
 				await conversation.send(text);
@@ -169,9 +169,9 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockEntry_module_css_default = {
-			"count": "_6B0Roq_count",
-			"railDot": "_6B0Roq_railDot",
 			"title": "_6B0Roq_title",
+			"railDot": "_6B0Roq_railDot",
+			"count": "_6B0Roq_count",
 			"row": "_6B0Roq_row",
 			"railIcon": "_6B0Roq_railIcon"
 		};
@@ -223,21 +223,21 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ProjectListPage_module_css_default = {
-			"empty": "m4dz6G_empty",
-			"importButton": "m4dz6G_importButton",
 			"name": "m4dz6G_name",
-			"page": "m4dz6G_page",
-			"count": "m4dz6G_count",
+			"title": "m4dz6G_title",
+			"badge": "m4dz6G_badge",
+			"actionDanger": "m4dz6G_actionDanger",
+			"header": "m4dz6G_header",
+			"action": "m4dz6G_action",
+			"meta": "m4dz6G_meta",
+			"importButton": "m4dz6G_importButton",
 			"cardActions": "m4dz6G_cardActions",
 			"list": "m4dz6G_list",
 			"card": "m4dz6G_card",
-			"actionDanger": "m4dz6G_actionDanger",
+			"page": "m4dz6G_page",
 			"cardHeader": "m4dz6G_cardHeader",
-			"action": "m4dz6G_action",
-			"badge": "m4dz6G_badge",
-			"header": "m4dz6G_header",
-			"meta": "m4dz6G_meta",
-			"title": "m4dz6G_title"
+			"empty": "m4dz6G_empty",
+			"count": "m4dz6G_count"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ProjectListPage.js
@@ -364,28 +364,28 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var QuickStartPage_module_css_default = {
-			"header": "_2p8fxq_header",
-			"addButton": "_2p8fxq_addButton",
-			"headerActions": "_2p8fxq_headerActions",
-			"pickerRow": "_2p8fxq_pickerRow",
-			"picker": "_2p8fxq_picker",
-			"chip": "_2p8fxq_chip",
-			"pickerEmpty": "_2p8fxq_pickerEmpty",
-			"remove": "_2p8fxq_remove",
-			"list": "_2p8fxq_list",
-			"chipActive": "_2p8fxq_chipActive",
-			"name": "_2p8fxq_name",
-			"empty": "_2p8fxq_empty",
-			"pickerList": "_2p8fxq_pickerList",
-			"controlRow": "_2p8fxq_controlRow",
-			"editorRow": "_2p8fxq_editorRow",
-			"scriptRow": "_2p8fxq_scriptRow",
-			"input": "_2p8fxq_input",
-			"cardHeader": "_2p8fxq_cardHeader",
-			"hint": "_2p8fxq_hint",
-			"page": "_2p8fxq_page",
 			"card": "_2p8fxq_card",
-			"label": "_2p8fxq_label"
+			"chipActive": "_2p8fxq_chipActive",
+			"editorRow": "_2p8fxq_editorRow",
+			"pickerEmpty": "_2p8fxq_pickerEmpty",
+			"empty": "_2p8fxq_empty",
+			"header": "_2p8fxq_header",
+			"hint": "_2p8fxq_hint",
+			"pickerRow": "_2p8fxq_pickerRow",
+			"list": "_2p8fxq_list",
+			"input": "_2p8fxq_input",
+			"label": "_2p8fxq_label",
+			"remove": "_2p8fxq_remove",
+			"page": "_2p8fxq_page",
+			"controlRow": "_2p8fxq_controlRow",
+			"pickerList": "_2p8fxq_pickerList",
+			"cardHeader": "_2p8fxq_cardHeader",
+			"chip": "_2p8fxq_chip",
+			"name": "_2p8fxq_name",
+			"addButton": "_2p8fxq_addButton",
+			"picker": "_2p8fxq_picker",
+			"scriptRow": "_2p8fxq_scriptRow",
+			"headerActions": "_2p8fxq_headerActions"
 		};
 		//#endregion
 		//#region lib/types/client/pages/QuickStartPage.js
@@ -619,19 +619,19 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ImportPage_module_css_default = {
-			"page": "Csy4Lq_page",
-			"title": "Csy4Lq_title",
-			"startButton": "Csy4Lq_startButton",
-			"waiting": "Csy4Lq_waiting",
+			"error": "Csy4Lq_error",
+			"skeletonRow": "Csy4Lq_skeletonRow",
+			"hint": "Csy4Lq_hint",
+			"desc": "Csy4Lq_desc",
 			"label": "Csy4Lq_label",
 			"input": "Csy4Lq_input",
-			"desc": "Csy4Lq_desc",
-			"controlRow": "Csy4Lq_controlRow",
+			"title": "Csy4Lq_title",
 			"skeletonList": "Csy4Lq_skeletonList",
-			"skeletonRow": "Csy4Lq_skeletonRow",
-			"dsh-import-pulse": "Csy4Lq_dsh-import-pulse",
-			"error": "Csy4Lq_error",
-			"hint": "Csy4Lq_hint"
+			"controlRow": "Csy4Lq_controlRow",
+			"page": "Csy4Lq_page",
+			"startButton": "Csy4Lq_startButton",
+			"waiting": "Csy4Lq_waiting",
+			"dsh-import-pulse": "Csy4Lq_dsh-import-pulse"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ImportPage.js
@@ -767,13 +767,13 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockDrawer_module_css_default = {
-			"tab": "_63vEIa_tab",
 			"root": "_63vEIa_root",
-			"tabs": "_63vEIa_tabs",
-			"tabActive": "_63vEIa_tabActive",
 			"mask": "_63vEIa_mask",
+			"tab": "_63vEIa_tab",
 			"panel": "_63vEIa_panel",
+			"tabs": "_63vEIa_tabs",
 			"close": "_63vEIa_close",
+			"tabActive": "_63vEIa_tabActive",
 			"content": "_63vEIa_content"
 		};
 		//#endregion

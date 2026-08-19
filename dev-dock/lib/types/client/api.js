@@ -119,7 +119,10 @@ async function promptCurrentSession(ctx, text) {
     const scoped = sessions.scope(current);
     if (scoped === undefined)
         return false;
-    const conversation = scoped.conversation;
+    // The conversation service is not in this plugin's inject declaration, so
+    // the cordis property proxy refuses `scoped.conversation`; read it through
+    // the explicit get path instead.
+    const conversation = scoped.get('conversation');
     if (conversation === undefined)
         return false;
     try {

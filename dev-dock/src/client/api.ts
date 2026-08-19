@@ -22,7 +22,7 @@ import type { DevDockSettings, EditorRecord, ProjectRecord, QuickStartPlan } fro
 // aggregates).
 interface ClientSessions {
   list: { getSnapshot(): { current: string | undefined } }
-  scope(id: string): { conversation?: { send(text: string): Promise<void> } } | undefined
+  scope(id: string): { get(name: string): unknown } | undefined
 }
 type ClientSessionsCtx = ClientContext & { sessions: ClientSessions }
 
@@ -182,7 +182,12 @@ async function promptCurrentSession(ctx: ClientContext, text: string): Promise<b
   if (current === undefined) return false
   const scoped = sessions.scope(current)
   if (scoped === undefined) return false
-  const conversation = scoped.conversation
+  // The conversation service is not in this plugin's inject declaration, so
+  // the cordis property proxy refuses `scoped.conversation`; read it through
+  // the explicit get path instead.
+  const conversation = scoped.get('conversation') as
+    | { send(text: string): Promise<void> }
+    | undefined
   if (conversation === undefined) return false
   try {
     await conversation.send(text)
