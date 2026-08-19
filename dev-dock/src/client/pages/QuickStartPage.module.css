@@ -16,39 +16,51 @@
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  min-width: 0;
 }
 
 .label {
   font-size: 11px;
+  line-height: 16px;
   color: var(--dsw-alias-label-tertiary);
 }
 
 .input {
-  padding: 6px 10px;
-  border: 1px solid var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.1));
-  border-radius: 6px;
-  background: var(--dsw-alias-bg-input, rgba(255, 255, 255, 0.04));
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-1);
   color: var(--dsw-alias-label-primary);
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 20px;
   outline: none;
+  transition: border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);
+}
+
+.input::placeholder {
+  color: var(--dsw-alias-label-dimmed);
 }
 
 .input:focus {
-  border-color: var(--dsw-alias-accent, #6094ff);
+  border-color: var(--dsw-alias-brand-primary);
 }
 
 .headerActions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .action,
 .actionPrimary {
-  padding: 6px 12px;
-  border: 1px solid var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.08));
-  border-radius: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 14px;
   font-size: 12px;
+  line-height: 18px;
   cursor: pointer;
+  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out);
 }
 
 .action {
@@ -56,11 +68,19 @@
   color: var(--dsw-alias-label-secondary);
 }
 
+.action:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
 .actionPrimary {
-  border-color: transparent;
-  background: var(--dsw-alias-accent, #6094ff);
-  color: #fff;
+  background: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground);
   font-weight: 600;
+}
+
+.actionPrimary:hover:not(:disabled) {
+  background: var(--dsw-alias-button-primary-hover);
 }
 
 .action:disabled,
@@ -72,17 +92,17 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .card {
-  padding: 10px 12px;
-  border: 1px solid var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.06));
+  padding: 9px 10px;
+  border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-1, rgba(255, 255, 255, 0.02));
+  background: transparent;
 }
 
 .cardHeader {
@@ -98,19 +118,25 @@
   white-space: nowrap;
   font-size: 13px;
   font-weight: 600;
+  line-height: 20px;
 }
 
 .remove {
   margin-left: auto;
+  padding: 0 6px;
   border: none;
+  border-radius: 6px;
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   font-size: 13px;
+  line-height: 20px;
   cursor: pointer;
+  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out);
 }
 
 .remove:hover {
-  color: var(--dsw-alias-state-danger-primary, #f87171);
+  color: var(--dsw-alias-state-error-primary);
+  background: var(--dsw-alias-interactive-bg-hover-danger);
 }
 
 .editorRow,
@@ -123,43 +149,55 @@
 
 .chip,
 .chipActive {
-  padding: 3px 9px;
-  border: 1px solid var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.08));
-  border-radius: 999px;
+  padding: 3px 10px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
   background: transparent;
-  font-family: var(--dsw-font-mono, ui-monospace, monospace);
-  font-size: 10px;
-  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+  line-height: 17px;
+  color: var(--dsw-alias-label-secondary);
   cursor: pointer;
+  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out),
+    border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);
+}
+
+.chip:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
 }
 
 .chipActive {
-  border-color: var(--dsw-alias-accent, #6094ff);
-  background: var(--dsw-alias-accent-muted, rgba(96, 148, 255, 0.12));
-  color: var(--dsw-alias-accent, #6094ff);
+  border-color: var(--dsw-alias-brand-primary);
+  background: var(--dsw-alias-bg-multi-select);
+  color: var(--dsw-alias-label-primary);
+  font-weight: 600;
 }
 
 .empty {
   margin: 24px 0;
   text-align: center;
   font-size: 12px;
+  line-height: 18px;
   color: var(--dsw-alias-label-tertiary);
 }
 
 .addButton {
   margin-top: auto;
   width: 100%;
-  padding: 7px 10px;
-  border: 1px dashed var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.2));
-  border-radius: 6px;
+  padding: 6px 10px;
+  border: 1px dashed var(--dsw-alias-border-l3);
+  border-radius: 8px;
   background: transparent;
   font-size: 12px;
+  line-height: 18px;
   color: var(--dsw-alias-label-secondary);
   cursor: pointer;
+  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out);
 }
 
 .addButton:hover {
   color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
 }
 
 .pickerOverlay {
@@ -169,7 +207,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--dsw-alias-bg-mask-3);
 }
 
 .picker {
@@ -179,10 +217,10 @@
   width: 320px;
   max-height: 70vh;
   padding: 14px;
-  border: 1px solid var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.1));
-  border-radius: 10px;
-  background: var(--dsw-alias-bg-overlay, #16181d);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  background: var(--dsw-specific-sidebar-fill);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
 .pickerList {
@@ -190,32 +228,38 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 }
 
 .pickerRow {
   width: 100%;
   padding: 7px 10px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   text-align: left;
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
+  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out);
 }
 
 .pickerRow:hover {
-  background: var(--dsw-alias-bg-layer-2, rgba(255, 255, 255, 0.05));
+  background: var(--dsw-alias-interactive-bg-hover);
 }
 
 .pickerEmpty {
   padding: 10px;
   text-align: center;
   font-size: 11px;
+  line-height: 16px;
   color: var(--dsw-alias-label-tertiary);
 }
 
 .hint {
   font-size: 11px;
+  line-height: 16px;
   color: var(--dsw-alias-label-tertiary);
 }
