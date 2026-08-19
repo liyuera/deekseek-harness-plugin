@@ -1,0 +1,4 @@
+# dsh bundle layer: mount the dev-dock plugin (host tools + browser UI).
+- insert:
+    - id: dev-dock
+      name: '@liyuera/dsh-dev-dock'

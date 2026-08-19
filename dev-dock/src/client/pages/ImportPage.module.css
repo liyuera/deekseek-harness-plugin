@@ -1,0 +1,64 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.desc {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.input {
+  padding: 7px 10px;
+  border: 1px solid var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.1));
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-input, rgba(255, 255, 255, 0.04));
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--dsw-font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--dsw-alias-accent, #6094ff);
+}
+
+.actionPrimary {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--dsw-alias-accent, #6094ff);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.actionPrimary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--dsw-alias-state-success-primary, #34d399);
+}

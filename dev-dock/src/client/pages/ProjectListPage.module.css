@@ -1,0 +1,118 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.count {
+  font-size: 11px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.empty {
+  margin: 24px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  padding: 10px 12px;
+  border: 1px solid var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.06));
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-1, rgba(255, 255, 255, 0.02));
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.badge {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  background: var(--dsw-alias-state-success-muted, rgba(52, 211, 153, 0.12));
+  color: var(--dsw-alias-state-success-primary, #34d399);
+}
+
+.meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  font-family: var(--dsw-font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.cardActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.action,
+.actionDanger,
+.importButton {
+  padding: 4px 10px;
+  border: 1px solid var(--dsw-alias-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 6px;
+  background: transparent;
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+
+.action:hover,
+.importButton:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-bg-layer-2, rgba(255, 255, 255, 0.04));
+}
+
+.actionDanger {
+  margin-left: auto;
+  color: var(--dsw-alias-state-danger-primary, #f87171);
+}
+
+.actionDanger:hover {
+  background: var(--dsw-alias-state-danger-muted, rgba(248, 113, 113, 0.12));
+}
+
+.importButton {
+  margin-top: auto;
+  width: 100%;
+  padding: 7px 10px;
+}
