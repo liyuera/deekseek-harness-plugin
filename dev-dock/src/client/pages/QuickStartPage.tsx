@@ -102,22 +102,22 @@ export function QuickStartPage({ useDevDockData, actions, promptAgent, t }: Quic
   return (
     <div className={css.page}>
       <div className={css.header}>
-        <label className={css.field}>
-          <span className={css.label}>{t('drawer.tab.quickStart')}</span>
+        <span className={css.label}>{t('drawer.tab.quickStart')}</span>
+        <div className={css.controlRow}>
           <input
             className={css.input}
             value={planName}
             placeholder="plan name"
             onChange={(e) => { setPlanName(e.target.value) }}
           />
-        </label>
-        <div className={css.headerActions}>
-          <button type="button" className={css.action} onClick={savePlan} disabled={planName.trim().length === 0}>
-            保存
-          </button>
-          <button type="button" className={css.actionPrimary} onClick={launch} disabled={draft.length === 0}>
-            启动
-          </button>
+          <div className={css.headerActions}>
+            <button type="button" className={css.action} onClick={savePlan} disabled={planName.trim().length === 0}>
+              保存
+            </button>
+            <button type="button" className={css.actionPrimary} onClick={launch} disabled={draft.length === 0}>
+              启动
+            </button>
+          </div>
         </div>
       </div>
 
