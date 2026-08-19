@@ -192,7 +192,6 @@ export function QuickStartPage({ useDevDockData, actions, promptAgent, t }: Quic
       >
         <div className={css.picker}>
           <Input
-            className={css.input as string}
             value={query}
             placeholder={t('quickStart.searchPlaceholder')}
             onChange={(e) => { setQuery(e.target.value) }}
