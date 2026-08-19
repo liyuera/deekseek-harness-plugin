@@ -106,7 +106,7 @@ export function QuickStartPage({ useDevDockData, actions, promptAgent, t }: Quic
         <span className={css.label}>{t('quickStart.planName')}</span>
         <div className={css.controlRow}>
           <Input
-            className={css.input}
+            className={css.input as string}
             value={planName}
             placeholder={t('quickStart.planNamePlaceholder')}
             onChange={(e) => { setPlanName(e.target.value) }}
@@ -192,6 +192,7 @@ export function QuickStartPage({ useDevDockData, actions, promptAgent, t }: Quic
       >
         <div className={css.picker}>
           <Input
+            className={css.input as string}
             value={query}
             placeholder={t('quickStart.searchPlaceholder')}
             onChange={(e) => { setQuery(e.target.value) }}

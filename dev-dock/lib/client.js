@@ -170,8 +170,8 @@ window.__ModuleLoader__.load({
 		}
 		var DevDockEntry_module_css_default = {
 			"count": "_6B0Roq_count",
-			"row": "_6B0Roq_row",
 			"title": "_6B0Roq_title",
+			"row": "_6B0Roq_row",
 			"railIcon": "_6B0Roq_railIcon",
 			"railDot": "_6B0Roq_railDot"
 		};
@@ -223,21 +223,21 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var ProjectListPage_module_css_default = {
-			"cardActions": "m4dz6G_cardActions",
-			"card": "m4dz6G_card",
+			"title": "m4dz6G_title",
 			"cardHeader": "m4dz6G_cardHeader",
-			"actionDanger": "m4dz6G_actionDanger",
-			"name": "m4dz6G_name",
-			"meta": "m4dz6G_meta",
-			"header": "m4dz6G_header",
-			"importButton": "m4dz6G_importButton",
-			"empty": "m4dz6G_empty",
-			"action": "m4dz6G_action",
-			"page": "m4dz6G_page",
 			"list": "m4dz6G_list",
+			"card": "m4dz6G_card",
+			"action": "m4dz6G_action",
+			"actionDanger": "m4dz6G_actionDanger",
+			"header": "m4dz6G_header",
+			"cardActions": "m4dz6G_cardActions",
+			"meta": "m4dz6G_meta",
 			"badge": "m4dz6G_badge",
+			"page": "m4dz6G_page",
 			"count": "m4dz6G_count",
-			"title": "m4dz6G_title"
+			"importButton": "m4dz6G_importButton",
+			"name": "m4dz6G_name",
+			"empty": "m4dz6G_empty"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ProjectListPage.js
@@ -364,28 +364,28 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var QuickStartPage_module_css_default = {
-			"headerActions": "_2p8fxq_headerActions",
-			"list": "_2p8fxq_list",
-			"picker": "_2p8fxq_picker",
-			"label": "_2p8fxq_label",
-			"remove": "_2p8fxq_remove",
-			"editorRow": "_2p8fxq_editorRow",
-			"scriptRow": "_2p8fxq_scriptRow",
-			"chip": "_2p8fxq_chip",
-			"controlRow": "_2p8fxq_controlRow",
-			"name": "_2p8fxq_name",
-			"input": "_2p8fxq_input",
-			"addButton": "_2p8fxq_addButton",
 			"pickerList": "_2p8fxq_pickerList",
-			"page": "_2p8fxq_page",
-			"chipActive": "_2p8fxq_chipActive",
-			"empty": "_2p8fxq_empty",
-			"pickerRow": "_2p8fxq_pickerRow",
-			"pickerEmpty": "_2p8fxq_pickerEmpty",
-			"header": "_2p8fxq_header",
-			"hint": "_2p8fxq_hint",
+			"controlRow": "_2p8fxq_controlRow",
+			"input": "_2p8fxq_input",
+			"picker": "_2p8fxq_picker",
 			"card": "_2p8fxq_card",
-			"cardHeader": "_2p8fxq_cardHeader"
+			"editorRow": "_2p8fxq_editorRow",
+			"remove": "_2p8fxq_remove",
+			"label": "_2p8fxq_label",
+			"empty": "_2p8fxq_empty",
+			"addButton": "_2p8fxq_addButton",
+			"page": "_2p8fxq_page",
+			"headerActions": "_2p8fxq_headerActions",
+			"scriptRow": "_2p8fxq_scriptRow",
+			"header": "_2p8fxq_header",
+			"chipActive": "_2p8fxq_chipActive",
+			"pickerEmpty": "_2p8fxq_pickerEmpty",
+			"hint": "_2p8fxq_hint",
+			"chip": "_2p8fxq_chip",
+			"cardHeader": "_2p8fxq_cardHeader",
+			"pickerRow": "_2p8fxq_pickerRow",
+			"name": "_2p8fxq_name",
+			"list": "_2p8fxq_list"
 		};
 		//#endregion
 		//#region lib/types/client/pages/QuickStartPage.js
@@ -578,6 +578,7 @@ window.__ModuleLoader__.load({
 						children: (0, react_jsx_runtime.jsxs)("div", {
 							className: QuickStartPage_module_css_default.picker,
 							children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Input, {
+								className: QuickStartPage_module_css_default.input,
 								value: query,
 								placeholder: t("quickStart.searchPlaceholder"),
 								onChange: (e) => {
@@ -620,13 +621,13 @@ window.__ModuleLoader__.load({
 		}
 		var ImportPage_module_css_default = {
 			"field": "Csy4Lq_field",
-			"title": "Csy4Lq_title",
-			"label": "Csy4Lq_label",
-			"actionPrimary": "Csy4Lq_actionPrimary",
-			"desc": "Csy4Lq_desc",
 			"input": "Csy4Lq_input",
 			"hint": "Csy4Lq_hint",
-			"page": "Csy4Lq_page"
+			"label": "Csy4Lq_label",
+			"title": "Csy4Lq_title",
+			"actionPrimary": "Csy4Lq_actionPrimary",
+			"page": "Csy4Lq_page",
+			"desc": "Csy4Lq_desc"
 		};
 		//#endregion
 		//#region lib/types/client/pages/ImportPage.js
@@ -702,13 +703,13 @@ window.__ModuleLoader__.load({
 		}
 		var DevDockDrawer_module_css_default = {
 			"tabActive": "_63vEIa_tabActive",
-			"mask": "_63vEIa_mask",
 			"root": "_63vEIa_root",
-			"panel": "_63vEIa_panel",
+			"content": "_63vEIa_content",
+			"mask": "_63vEIa_mask",
 			"tabs": "_63vEIa_tabs",
 			"tab": "_63vEIa_tab",
 			"close": "_63vEIa_close",
-			"content": "_63vEIa_content"
+			"panel": "_63vEIa_panel"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockDrawer.js
