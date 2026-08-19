@@ -8,9 +8,9 @@ export const name = 'dev-dock-invariant';
 /** Service required before the companion can reserve package ownership. */
 export const inject = ['invariants'];
 /**
- * No runtime invariant yet: the plugin owns no cross-plugin event stream at
- * skeleton stage. The HMR-safety specs prove tool/slot registration disposal,
- * and the settings namespace relation is asserted by the schema specs.
+ * No runtime invariant: the plugin owns no cross-plugin event stream. The
+ * HMR-safety specs prove tool/slot registration disposal, and the settings
+ * namespace relation is asserted by the schema specs.
  */
 const install = () => { };
 /**
