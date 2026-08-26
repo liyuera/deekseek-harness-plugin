@@ -3,6 +3,7 @@ import { createDevDockStore } from "./stores.js";
 import { StartWorkButton } from "./StartWorkButton.js";
 import { StartWorkModal } from "./StartWorkModal.js";
 import { SessionActionButton } from "./SessionActionButton.js";
+import { ComposerActions } from "./ComposerActions.js";
 import { DevDockSettingsPage } from "./DevDockSettingsPage.js";
 import { en, NS, zh } from "./locales.js";
 /** Required services for data binding and slot contributions. */
@@ -61,6 +62,20 @@ export function apply(ctx) {
         locale: NS,
         inject: headerInjected('start'),
     }, SessionActionButton));
+    // Composer tool row, right seat: the three actions before the send button
+    // (works for brand-new sessions with no history, the pain point the header
+    // buttons cannot cover).
+    const composerInjected = () => ({
+        dataActions,
+        hooks: { devDockData: dataHandle },
+    });
+    ctx.slots.inject('conversation.input.right', () => ctx.slots.register({
+        name: 'conversation.input.right',
+        id: 'dev-dock-actions',
+        order: 10,
+        locale: NS,
+        inject: composerInjected,
+    }, ComposerActions));
     // Start-work dialog on the frame-wide overlay.
     ctx.slots.inject('shell.overlay', () => ctx.slots.register({
         name: 'shell.overlay',

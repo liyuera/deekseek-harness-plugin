@@ -15,6 +15,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 export type { StartWorkButtonProps, StartWorkButtonInjected } from './StartWorkButton.tsx';
 export type { StartWorkModalProps, StartWorkModalInjected } from './StartWorkModal.tsx';
 export type { SessionActionButtonProps, SessionActionInjected } from './SessionActionButton.tsx';
+export type { ComposerActionsProps, ComposerActionsInjected } from './ComposerActions.tsx';
 export type { DevDockSettingsPageProps, DevDockSettingsInjected } from './DevDockSettingsPage.tsx';
 export type { DevDockData, DevDockActions } from './data.ts';
 /** Required services for data binding and slot contributions. */

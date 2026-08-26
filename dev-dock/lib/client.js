@@ -573,7 +573,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/SessionActions.module.css.mjs
-		const css$1 = "._R6sKG_button{min-width:28px;min-height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:6px;justify-content:center;align-items:center;padding:4px;display:inline-flex}._R6sKG_appIcon{border-radius:4px;width:16px;height:16px}._R6sKG_button:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}._R6sKG_button:disabled,._R6sKG_button[aria-disabled=true]{opacity:.5;cursor:default}._R6sKG_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error))}";
+		const css$1 = "._R6sKG_button{min-width:28px;min-height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:6px;justify-content:center;align-items:center;padding:4px;display:inline-flex}._R6sKG_appIcon{border-radius:4px;width:16px;height:16px}._R6sKG_group{align-items:center;gap:2px;display:inline-flex}._R6sKG_group ._R6sKG_button{min-width:24px;min-height:24px;padding:3px}._R6sKG_button:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}._R6sKG_button:disabled,._R6sKG_button[aria-disabled=true]{opacity:.5;cursor:default}._R6sKG_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error))}";
 		const tagId$1 = "@liyuera/dsh-dev-dock/SessionActions.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -585,7 +585,8 @@ window.__ModuleLoader__.load({
 		var SessionActions_module_css_default = {
 			"appIcon": "_R6sKG_appIcon",
 			"button": "_R6sKG_button",
-			"error": "_R6sKG_error"
+			"error": "_R6sKG_error",
+			"group": "_R6sKG_group"
 		};
 		//#endregion
 		//#region lib/types/client/SessionActionButton.js
@@ -596,7 +597,7 @@ window.__ModuleLoader__.load({
 		* while an action is in flight.
 		*/
 		/** Locale key per action kind. */
-		const KIND_KEY = {
+		const KIND_KEY$1 = {
 			ide: "header.ide",
 			terminal: "header.terminal",
 			start: "header.start"
@@ -624,7 +625,7 @@ window.__ModuleLoader__.load({
 				setIconFailed({});
 			}, [editorIconUrl, terminalIconUrl]);
 			if (workspace === void 0) return null;
-			const label = t(KIND_KEY[action]);
+			const label = t(KIND_KEY$1[action]);
 			const failSlot = (slot) => {
 				setIconFailed((current) => ({
 					...current,
@@ -690,6 +691,122 @@ window.__ModuleLoader__.load({
 					run();
 				},
 				children: state === "ok" ? (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCheckOutline16, { size: 16 }) : glyph()
+			});
+		}
+		//#endregion
+		//#region lib/types/client/ComposerActions.js
+		/**
+		* Composer actions: the three devDock buttons (IDE / terminal / start) in
+		* the input tool row's left seat, bound to the current session's workspace.
+		* Same resolution and feedback as the session-header actions, in a compact
+		* group beside the resident chrome.
+		*/
+		/** Locale key per action kind. */
+		const KIND_KEY = {
+			ide: "header.ide",
+			terminal: "header.terminal",
+			start: "header.start"
+		};
+		/**
+		* The composer tool-row action group.
+		* @param props - input-zone runtime, settings mirror, actions, translator.
+		* @returns the three buttons, or null when the session has no workspace.
+		*/
+		function ComposerActions({ sessionId, useWorkspaces, useDevDockData, dataActions, t }) {
+			const workspace = useWorkspaces((state) => state.items.find((w) => w.sessionIds.includes(sessionId)));
+			const settings = useDevDockData((data) => data.settings);
+			const [states, setStates] = (0, react.useState)({
+				ide: "idle",
+				terminal: "idle",
+				start: "idle"
+			});
+			const [errors, setErrors] = (0, react.useState)({});
+			const [iconFailed, setIconFailed] = (0, react.useState)({});
+			const timer = (0, react.useRef)(null);
+			(0, react.useEffect)(() => () => {
+				if (timer.current !== null) clearTimeout(timer.current);
+			}, []);
+			const editorPref = settings?.workspacePrefs.find((p) => p.workspaceId === workspace?.workspaceId)?.editor ?? "";
+			const terminalApp = settings?.terminalApp ?? "default";
+			const editorIconUrl = workspace === void 0 ? "" : `/dev-dock/workspace-editor-icon?workspaceId=${encodeURIComponent(workspace.workspaceId)}&v=${encodeURIComponent(editorPref)}`;
+			const terminalIconUrl = `/dev-dock/terminal-icon?app=${encodeURIComponent(terminalApp)}`;
+			(0, react.useEffect)(() => {
+				setIconFailed({});
+			}, [editorIconUrl, terminalIconUrl]);
+			if (workspace === void 0) return null;
+			const run = async (kind) => {
+				if (states[kind] === "busy") return;
+				setStates((current) => ({
+					...current,
+					[kind]: "busy"
+				}));
+				const answer = kind === "ide" ? await dataActions.openIde(workspace.workspaceId) : kind === "terminal" ? await dataActions.openTerminal(workspace.workspaceId) : await dataActions.start(workspace.workspaceId);
+				setStates((current) => ({
+					...current,
+					[kind]: answer.ok ? "ok" : "error"
+				}));
+				if (!answer.ok) setErrors((current) => ({
+					...current,
+					[kind]: answer.error ?? "unknown error"
+				}));
+				if (timer.current !== null) clearTimeout(timer.current);
+				timer.current = setTimeout(() => {
+					setStates({
+						ide: "idle",
+						terminal: "idle",
+						start: "idle"
+					});
+				}, answer.ok ? 1500 : 4e3);
+			};
+			const kindIcon = (kind) => {
+				if (kind === "ide") return iconFailed.ide === true ? (0, react_jsx_runtime.jsx)(DevIdeAppIcon, { size: 16 }) : (0, react_jsx_runtime.jsx)("img", {
+					className: SessionActions_module_css_default.appIcon,
+					src: editorIconUrl,
+					alt: "",
+					onError: () => {
+						setIconFailed((c) => ({
+							...c,
+							ide: true
+						}));
+					}
+				});
+				if (kind === "terminal") return iconFailed.terminal === true ? (0, react_jsx_runtime.jsx)(DevTerminalAppIcon, { size: 16 }) : (0, react_jsx_runtime.jsx)("img", {
+					className: SessionActions_module_css_default.appIcon,
+					src: terminalIconUrl,
+					alt: "",
+					onError: () => {
+						setIconFailed((c) => ({
+							...c,
+							terminal: true
+						}));
+					}
+				});
+				return (0, react_jsx_runtime.jsx)(StartTile, {
+					ideSrc: editorIconUrl,
+					termSrc: terminalIconUrl
+				});
+			};
+			return (0, react_jsx_runtime.jsx)("span", {
+				className: SessionActions_module_css_default.group,
+				children: [
+					"ide",
+					"terminal",
+					"start"
+				].map((kind) => {
+					const state = states[kind];
+					const title = state === "error" ? t("header.error", { error: errors[kind] ?? "" }) : t(KIND_KEY[kind]);
+					return (0, react_jsx_runtime.jsx)("button", {
+						type: "button",
+						className: `${SessionActions_module_css_default.button} ${state === "error" ? SessionActions_module_css_default.error : ""}`,
+						title,
+						"aria-label": title,
+						"aria-disabled": state === "busy",
+						onClick: () => {
+							run(kind);
+						},
+						children: state === "ok" ? (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCheckOutline16, { size: 16 }) : kindIcon(kind)
+					}, kind);
+				})
 			});
 		}
 		//#endregion
@@ -1079,6 +1196,17 @@ window.__ModuleLoader__.load({
 				locale: NS,
 				inject: headerInjected("start")
 			}, SessionActionButton));
+			const composerInjected = () => ({
+				dataActions,
+				hooks: { devDockData: dataHandle }
+			});
+			ctx.slots.inject("conversation.input.right", () => ctx.slots.register({
+				name: "conversation.input.right",
+				id: "dev-dock-actions",
+				order: 10,
+				locale: NS,
+				inject: composerInjected
+			}, ComposerActions));
 			ctx.slots.inject("shell.overlay", () => ctx.slots.register({
 				name: "shell.overlay",
 				id: "dev-dock-start-modal",

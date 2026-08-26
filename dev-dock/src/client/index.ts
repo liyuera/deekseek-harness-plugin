@@ -15,6 +15,7 @@ import { createDevDockStore } from './stores.ts'
 import { StartWorkButton, type StartWorkButtonInjected } from './StartWorkButton.tsx'
 import { StartWorkModal, type StartWorkModalInjected } from './StartWorkModal.tsx'
 import { SessionActionButton, type SessionActionKind, type SessionActionInjected } from './SessionActionButton.tsx'
+import { ComposerActions, type ComposerActionsInjected } from './ComposerActions.tsx'
 import { DevDockSettingsPage, type DevDockSettingsInjected } from './DevDockSettingsPage.tsx'
 import { en, NS, zh, type DevDockKey } from './locales.ts'
 
@@ -28,6 +29,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 export type { StartWorkButtonProps, StartWorkButtonInjected } from './StartWorkButton.tsx'
 export type { StartWorkModalProps, StartWorkModalInjected } from './StartWorkModal.tsx'
 export type { SessionActionButtonProps, SessionActionInjected } from './SessionActionButton.tsx'
+export type { ComposerActionsProps, ComposerActionsInjected } from './ComposerActions.tsx'
 export type { DevDockSettingsPageProps, DevDockSettingsInjected } from './DevDockSettingsPage.tsx'
 export type { DevDockData, DevDockActions } from './data.ts'
 
@@ -94,6 +96,21 @@ export function apply(ctx: ClientContext): void {
     locale: NS,
     inject: headerInjected('start'),
   }, SessionActionButton))
+
+  // Composer tool row, right seat: the three actions before the send button
+  // (works for brand-new sessions with no history, the pain point the header
+  // buttons cannot cover).
+  const composerInjected = (): ComposerActionsInjected => ({
+    dataActions,
+    hooks: { devDockData: dataHandle },
+  })
+  ctx.slots.inject('conversation.input.right', () => ctx.slots.register({
+    name: 'conversation.input.right',
+    id: 'dev-dock-actions',
+    order: 10,
+    locale: NS,
+    inject: composerInjected,
+  }, ComposerActions))
 
   // Start-work dialog on the frame-wide overlay.
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
