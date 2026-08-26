@@ -1,3 +1,15 @@
+/* Dialog: default width (380px) widened by half; the list carries the
+   third-more height. */
+.dialog {
+  width: min(570px, 100%);
+}
+
+/* Wide dialog buttons per the figma capsule geometry. */
+.actionBtn {
+  min-width: 96px;
+  padding: 0 20px;
+}
+
 .list {
   display: flex;
   flex-direction: column;
@@ -5,7 +17,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  max-height: 320px;
+  max-height: 426px;
   overflow-y: auto;
 }
 
@@ -44,12 +56,6 @@
   margin: 0;
   color: var(--dsw-alias-label-secondary);
   font-size: 13px;
-}
-
-.done {
-  margin: 10px 0 0;
-  color: var(--dsw-alias-state-success, var(--dsw-alias-label-secondary));
-  font-size: 12.5px;
 }
 
 .error {

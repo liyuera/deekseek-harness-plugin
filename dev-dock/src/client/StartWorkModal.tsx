@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
-import type { DevDockActions, DevDockData, StartWorkResult } from './data.ts'
+import type { DevDockActions, DevDockData } from './data.ts'
 import { StartTile } from './StartTile.tsx'
 import { NS } from './locales.ts'
 import type { createDevDockStore } from './stores.ts'
@@ -29,8 +29,8 @@ export type StartWorkModalProps =
   & PropsLocale<typeof NS>
   & InjectFace<StartWorkModalInjected>
 
-/** Dialog phase: idle selection, running, settled (done or error). */
-type Phase = 'idle' | 'running' | 'done' | 'error'
+/** Dialog phase: idle selection, running, or a failed settle. */
+type Phase = 'idle' | 'running' | 'error'
 
 /**
  * The start-work dialog.
@@ -43,7 +43,6 @@ export function StartWorkModal({ useStore, actions, useWorkspaces, useDevDockDat
   const settings = useDevDockData(data => data.settings)
   const [selection, setSelection] = useState<ReadonlySet<string>>(new Set())
   const [phase, setPhase] = useState<Phase>('idle')
-  const [result, setResult] = useState<StartWorkResult | null>(null)
   const [error, setError] = useState('')
 
   // Prefill from the remembered selection whenever the dialog opens.
@@ -53,7 +52,6 @@ export function StartWorkModal({ useStore, actions, useWorkspaces, useDevDockDat
     const available = new Set<string>(workspaces.map(w => w.workspaceId))
     setSelection(new Set(remembered.filter(id => available.has(id))))
     setPhase('idle')
-    setResult(null)
     setError('')
   }, [open, settings, workspaces])
 
@@ -75,14 +73,15 @@ export function StartWorkModal({ useStore, actions, useWorkspaces, useDevDockDat
     const answer = await dataActions.startWork(ids)
     // Remember the selection regardless of the outcome.
     await dataActions.setStartWork(ids)
-    if ('fetchError' in answer) {
-      setError(answer.error ?? String(answer.fetchError))
-      setPhase('error')
+    if (answer.ok) {
+      // Successful start closes the dialog (the workspaces are launched).
+      actions.setOpen(false)
       return
     }
-    setResult(answer)
-    setPhase(answer.ok ? 'done' : 'error')
-    if (!answer.ok) setError(answer.error ?? 'start failed')
+    setError('fetchError' in answer
+      ? answer.error ?? String(answer.fetchError)
+      : answer.error ?? 'start failed')
+    setPhase('error')
   }
 
   const close = (): void => { actions.setOpen(false) }
@@ -94,14 +93,16 @@ export function StartWorkModal({ useStore, actions, useWorkspaces, useDevDockDat
       title={t('start.button')}
       closeLabel={t('start.cancel')}
       description={t('start.notice')}
+      className={css.dialog as string}
       footer={(
         <>
-          <Button size="sm" variant="outline" onClick={close} disabled={phase === 'running'}>
+          <Button size="md" variant="outline" className={css.actionBtn} onClick={close} disabled={phase === 'running'}>
             {t('start.cancel')}
           </Button>
           <Button
-            size="sm"
+            size="md"
             variant="primary"
+            className={css.actionBtn}
             onClick={() => { void confirm() }}
             disabled={selection.size === 0 || phase === 'running'}
           >
@@ -136,9 +137,6 @@ export function StartWorkModal({ useStore, actions, useWorkspaces, useDevDockDat
             )
           })}
         </ul>
-      )}
-      {phase === 'done' && result !== null && (
-        <p className={css.done} role="status">{t('start.done', { opened: String(result.opened), started: String(result.started) })}</p>
       )}
       {phase === 'error' && <p className={css.error} role="alert">{error}</p>}
     </Modal>

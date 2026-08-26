@@ -430,7 +430,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/StartWork.module.css.mjs
-		const css$2 = ".owaCVq_list{flex-direction:column;gap:4px;max-height:320px;margin:0;padding:0;list-style:none;display:flex;overflow-y:auto}.owaCVq_row{cursor:pointer;border-radius:8px;align-items:center;gap:8px;padding:8px 10px;display:flex}.owaCVq_row:hover{background:var(--dsw-alias-interactive-bg-hover)}.owaCVq_row input{flex:none}.owaCVq_rowIcon{flex:none;display:block}.owaCVq_name{min-width:0;color:var(--dsw-alias-label-primary);overflow-wrap:anywhere;flex:auto;font-size:13px;font-weight:600}.owaCVq_empty{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px}.owaCVq_done{color:var(--dsw-alias-state-success,var(--dsw-alias-label-secondary));margin:10px 0 0;font-size:12.5px}.owaCVq_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error));margin:10px 0 0;font-size:12.5px}";
+		const css$2 = ".owaCVq_dialog{width:min(570px,100%)}.owaCVq_actionBtn{min-width:96px;padding:0 20px}.owaCVq_list{flex-direction:column;gap:4px;max-height:426px;margin:0;padding:0;list-style:none;display:flex;overflow-y:auto}.owaCVq_row{cursor:pointer;border-radius:8px;align-items:center;gap:8px;padding:8px 10px;display:flex}.owaCVq_row:hover{background:var(--dsw-alias-interactive-bg-hover)}.owaCVq_row input{flex:none}.owaCVq_rowIcon{flex:none;display:block}.owaCVq_name{min-width:0;color:var(--dsw-alias-label-primary);overflow-wrap:anywhere;flex:auto;font-size:13px;font-weight:600}.owaCVq_empty{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px}.owaCVq_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error));margin:10px 0 0;font-size:12.5px}";
 		const tagId$2 = "@liyuera/dsh-dev-dock/StartWork.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
 			const tag = document.createElement("style");
@@ -440,7 +440,8 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var StartWork_module_css_default = {
-			"done": "owaCVq_done",
+			"actionBtn": "owaCVq_actionBtn",
+			"dialog": "owaCVq_dialog",
 			"empty": "owaCVq_empty",
 			"error": "owaCVq_error",
 			"list": "owaCVq_list",
@@ -466,7 +467,6 @@ window.__ModuleLoader__.load({
 			const settings = useDevDockData((data) => data.settings);
 			const [selection, setSelection] = (0, react.useState)(/* @__PURE__ */ new Set());
 			const [phase, setPhase] = (0, react.useState)("idle");
-			const [result, setResult] = (0, react.useState)(null);
 			const [error, setError] = (0, react.useState)("");
 			(0, react.useEffect)(() => {
 				if (!open) return;
@@ -474,7 +474,6 @@ window.__ModuleLoader__.load({
 				const available = new Set(workspaces.map((w) => w.workspaceId));
 				setSelection(new Set(remembered.filter((id) => available.has(id))));
 				setPhase("idle");
-				setResult(null);
 				setError("");
 			}, [
 				open,
@@ -496,14 +495,12 @@ window.__ModuleLoader__.load({
 				setPhase("running");
 				const answer = await dataActions.startWork(ids);
 				await dataActions.setStartWork(ids);
-				if ("fetchError" in answer) {
-					setError(answer.error ?? String(answer.fetchError));
-					setPhase("error");
+				if (answer.ok) {
+					actions.setOpen(false);
 					return;
 				}
-				setResult(answer);
-				setPhase(answer.ok ? "done" : "error");
-				if (!answer.ok) setError(answer.error ?? "start failed");
+				setError("fetchError" in answer ? answer.error ?? String(answer.fetchError) : answer.error ?? "start failed");
+				setPhase("error");
 			};
 			const close = () => {
 				actions.setOpen(false);
@@ -514,72 +511,64 @@ window.__ModuleLoader__.load({
 				title: t("start.button"),
 				closeLabel: t("start.cancel"),
 				description: t("start.notice"),
+				className: StartWork_module_css_default.dialog,
 				footer: (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-					size: "sm",
+					size: "md",
 					variant: "outline",
+					className: StartWork_module_css_default.actionBtn,
 					onClick: close,
 					disabled: phase === "running",
 					children: t("start.cancel")
 				}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-					size: "sm",
+					size: "md",
 					variant: "primary",
+					className: StartWork_module_css_default.actionBtn,
 					onClick: () => {
 						confirm();
 					},
 					disabled: selection.size === 0 || phase === "running",
 					children: phase === "running" ? t("start.running") : t("start.confirm")
 				})] }),
-				children: [
-					workspaces.length === 0 ? (0, react_jsx_runtime.jsx)("p", {
-						className: StartWork_module_css_default.empty,
-						children: t("start.empty")
-					}) : (0, react_jsx_runtime.jsx)("ul", {
-						className: StartWork_module_css_default.list,
-						"aria-label": t("start.button"),
-						children: workspaces.map((workspace) => {
-							const pref = settings?.workspacePrefs.find((p) => p.workspaceId === workspace.workspaceId)?.editor ?? "";
-							const ideSrc = `/dev-dock/workspace-editor-icon?workspaceId=${encodeURIComponent(workspace.workspaceId)}&v=${encodeURIComponent(pref)}`;
-							const termSrc = `/dev-dock/terminal-icon?app=${encodeURIComponent(settings?.terminalApp ?? "default")}`;
-							return (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsxs)("label", {
-								className: StartWork_module_css_default.row,
-								children: [
-									(0, react_jsx_runtime.jsx)("input", {
-										type: "checkbox",
-										checked: selection.has(workspace.workspaceId),
-										onChange: () => {
-											toggle(workspace.workspaceId);
-										},
-										disabled: phase === "running"
-									}),
-									(0, react_jsx_runtime.jsx)("span", {
-										className: StartWork_module_css_default.rowIcon,
-										children: (0, react_jsx_runtime.jsx)(StartTile, {
-											ideSrc,
-											termSrc
-										})
-									}),
-									(0, react_jsx_runtime.jsx)("span", {
-										className: StartWork_module_css_default.name,
-										children: workspace.title || workspace.path
+				children: [workspaces.length === 0 ? (0, react_jsx_runtime.jsx)("p", {
+					className: StartWork_module_css_default.empty,
+					children: t("start.empty")
+				}) : (0, react_jsx_runtime.jsx)("ul", {
+					className: StartWork_module_css_default.list,
+					"aria-label": t("start.button"),
+					children: workspaces.map((workspace) => {
+						const pref = settings?.workspacePrefs.find((p) => p.workspaceId === workspace.workspaceId)?.editor ?? "";
+						const ideSrc = `/dev-dock/workspace-editor-icon?workspaceId=${encodeURIComponent(workspace.workspaceId)}&v=${encodeURIComponent(pref)}`;
+						const termSrc = `/dev-dock/terminal-icon?app=${encodeURIComponent(settings?.terminalApp ?? "default")}`;
+						return (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsxs)("label", {
+							className: StartWork_module_css_default.row,
+							children: [
+								(0, react_jsx_runtime.jsx)("input", {
+									type: "checkbox",
+									checked: selection.has(workspace.workspaceId),
+									onChange: () => {
+										toggle(workspace.workspaceId);
+									},
+									disabled: phase === "running"
+								}),
+								(0, react_jsx_runtime.jsx)("span", {
+									className: StartWork_module_css_default.rowIcon,
+									children: (0, react_jsx_runtime.jsx)(StartTile, {
+										ideSrc,
+										termSrc
 									})
-								]
-							}) }, workspace.workspaceId);
-						})
-					}),
-					phase === "done" && result !== null && (0, react_jsx_runtime.jsx)("p", {
-						className: StartWork_module_css_default.done,
-						role: "status",
-						children: t("start.done", {
-							opened: String(result.opened),
-							started: String(result.started)
-						})
-					}),
-					phase === "error" && (0, react_jsx_runtime.jsx)("p", {
-						className: StartWork_module_css_default.error,
-						role: "alert",
-						children: error
+								}),
+								(0, react_jsx_runtime.jsx)("span", {
+									className: StartWork_module_css_default.name,
+									children: workspace.title || workspace.path
+								})
+							]
+						}) }, workspace.workspaceId);
 					})
-				]
+				}), phase === "error" && (0, react_jsx_runtime.jsx)("p", {
+					className: StartWork_module_css_default.error,
+					role: "alert",
+					children: error
+				})]
 			});
 		}
 		//#endregion

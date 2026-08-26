@@ -19,7 +19,6 @@ export function StartWorkModal({ useStore, actions, useWorkspaces, useDevDockDat
     const settings = useDevDockData(data => data.settings);
     const [selection, setSelection] = useState(new Set());
     const [phase, setPhase] = useState('idle');
-    const [result, setResult] = useState(null);
     const [error, setError] = useState('');
     // Prefill from the remembered selection whenever the dialog opens.
     useEffect(() => {
@@ -29,7 +28,6 @@ export function StartWorkModal({ useStore, actions, useWorkspaces, useDevDockDat
         const available = new Set(workspaces.map(w => w.workspaceId));
         setSelection(new Set(remembered.filter(id => available.has(id))));
         setPhase('idle');
-        setResult(null);
         setError('');
     }, [open, settings, workspaces]);
     if (!open)
@@ -52,24 +50,24 @@ export function StartWorkModal({ useStore, actions, useWorkspaces, useDevDockDat
         const answer = await dataActions.startWork(ids);
         // Remember the selection regardless of the outcome.
         await dataActions.setStartWork(ids);
-        if ('fetchError' in answer) {
-            setError(answer.error ?? String(answer.fetchError));
-            setPhase('error');
+        if (answer.ok) {
+            // Successful start closes the dialog (the workspaces are launched).
+            actions.setOpen(false);
             return;
         }
-        setResult(answer);
-        setPhase(answer.ok ? 'done' : 'error');
-        if (!answer.ok)
-            setError(answer.error ?? 'start failed');
+        setError('fetchError' in answer
+            ? answer.error ?? String(answer.fetchError)
+            : answer.error ?? 'start failed');
+        setPhase('error');
     };
     const close = () => { actions.setOpen(false); };
-    return (_jsxs(Modal, { open: true, onClose: close, title: t('start.button'), closeLabel: t('start.cancel'), description: t('start.notice'), footer: (_jsxs(_Fragment, { children: [_jsx(Button, { size: "sm", variant: "outline", onClick: close, disabled: phase === 'running', children: t('start.cancel') }), _jsx(Button, { size: "sm", variant: "primary", onClick: () => { void confirm(); }, disabled: selection.size === 0 || phase === 'running', children: phase === 'running' ? t('start.running') : t('start.confirm') })] })), children: [workspaces.length === 0 ? (_jsx("p", { className: css.empty, children: t('start.empty') })) : (_jsx("ul", { className: css.list, "aria-label": t('start.button'), children: workspaces.map((workspace) => {
+    return (_jsxs(Modal, { open: true, onClose: close, title: t('start.button'), closeLabel: t('start.cancel'), description: t('start.notice'), className: css.dialog, footer: (_jsxs(_Fragment, { children: [_jsx(Button, { size: "md", variant: "outline", className: css.actionBtn, onClick: close, disabled: phase === 'running', children: t('start.cancel') }), _jsx(Button, { size: "md", variant: "primary", className: css.actionBtn, onClick: () => { void confirm(); }, disabled: selection.size === 0 || phase === 'running', children: phase === 'running' ? t('start.running') : t('start.confirm') })] })), children: [workspaces.length === 0 ? (_jsx("p", { className: css.empty, children: t('start.empty') })) : (_jsx("ul", { className: css.list, "aria-label": t('start.button'), children: workspaces.map((workspace) => {
                     // Per-workspace tile: the project's configured editor icon and
                     // the terminal preference icon, in the fused start-work style.
                     const pref = settings?.workspacePrefs.find(p => p.workspaceId === workspace.workspaceId)?.editor ?? '';
                     const ideSrc = `/dev-dock/workspace-editor-icon?workspaceId=${encodeURIComponent(workspace.workspaceId)}&v=${encodeURIComponent(pref)}`;
                     const termSrc = `/dev-dock/terminal-icon?app=${encodeURIComponent(settings?.terminalApp ?? 'default')}`;
                     return (_jsx("li", { children: _jsxs("label", { className: css.row, children: [_jsx("input", { type: "checkbox", checked: selection.has(workspace.workspaceId), onChange: () => { toggle(workspace.workspaceId); }, disabled: phase === 'running' }), _jsx("span", { className: css.rowIcon, children: _jsx(StartTile, { ideSrc: ideSrc, termSrc: termSrc }) }), _jsx("span", { className: css.name, children: workspace.title || workspace.path })] }) }, workspace.workspaceId));
-                }) })), phase === 'done' && result !== null && (_jsx("p", { className: css.done, role: "status", children: t('start.done', { opened: String(result.opened), started: String(result.started) }) })), phase === 'error' && _jsx("p", { className: css.error, role: "alert", children: error })] }));
+                }) })), phase === 'error' && _jsx("p", { className: css.error, role: "alert", children: error })] }));
 }
 //# sourceMappingURL=StartWorkModal.js.map
