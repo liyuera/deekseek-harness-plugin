@@ -1,17 +1,21 @@
 /**
- * devDock plugin, browser half: registers the locale dictionary and the two
- * surface entries — the sidebar footer action row (opens the drawer) and the
- * shell.overlay drawer panel. Both entries share one viewing store and the
- * settings data mirror.
+ * devDock plugin v2, browser half: registers the locale dictionary, the
+ * sidebar footer start-work button, the three session-header action buttons
+ * (IDE / terminal / start), the start-work dialog, and the devDock settings
+ * page. All entries share one viewing store and the settings data mirror.
  */
 import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
-import { createDevDockData } from './api.ts'
+import { createDevDockData, type DevDockActions } from './data.ts'
 import { createDevDockStore } from './stores.ts'
-import { DevDockEntry, type DevDockEntryInjected } from './DevDockEntry.tsx'
-import { DevDockDrawer, type DevDockDrawerInjected } from './DevDockDrawer.tsx'
+import { StartWorkButton, type StartWorkButtonInjected } from './StartWorkButton.tsx'
+import { StartWorkModal, type StartWorkModalInjected } from './StartWorkModal.tsx'
+import { SessionActionButton, type SessionActionKind, type SessionActionInjected } from './SessionActionButton.tsx'
+import { DevDockSettingsPage, type DevDockSettingsInjected } from './DevDockSettingsPage.tsx'
 import { en, NS, zh, type DevDockKey } from './locales.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -21,47 +25,97 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   }
 }
 
-export type { DevDockEntryProps, DevDockEntryInjected } from './DevDockEntry.tsx'
-export type { DevDockDrawerProps, DevDockDrawerInjected } from './DevDockDrawer.tsx'
-export type { DevDockData, DevDockActions } from './api.ts'
+export type { StartWorkButtonProps, StartWorkButtonInjected } from './StartWorkButton.tsx'
+export type { StartWorkModalProps, StartWorkModalInjected } from './StartWorkModal.tsx'
+export type { SessionActionButtonProps, SessionActionInjected } from './SessionActionButton.tsx'
+export type { DevDockSettingsPageProps, DevDockSettingsInjected } from './DevDockSettingsPage.tsx'
+export type { DevDockData, DevDockActions } from './data.ts'
+
+/** Shared overlay data face. */
+interface ModalInjected extends StartWorkModalInjected {}
 
 /** Required services for data binding and slot contributions. */
-export const inject = ['slots', 'locale', 'settingsScope', 'sessions', 'workspaces']
+export const inject = ['slots', 'locale', 'settingsScope']
 
 /**
- * Client plugin body: register dictionaries and both surface entries.
+ * Client plugin body: register dictionaries and every surface entry.
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dev-dock: dictionaries')
+  const t = ctx.locale.bind(NS)
   const view = createDevDockStore()
-  const { store: dataStore, actions: dataActions } = createDevDockData(ctx)
+  const data = createDevDockData(ctx)
+  const dataHandle = data.store
+  const dataActions: DevDockActions = data.actions
 
-  const entryInjected = (): DevDockEntryInjected => ({
-    hooks: { devDockData: dataStore },
-  })
-  const drawerInjected = (): DevDockDrawerInjected => ({
-    hooks: { devDockData: dataStore },
+  const modalInjected = (): ModalInjected => ({
+    hooks: { devDockData: dataHandle },
     dataActions,
-    promptAgent: (text) => dataActions.promptAgent(text),
-    pickDirectory: () => ctx.workspaces.pickDirectory(),
   })
 
+  // Sidebar foot: the start-work button above Settings.
+  const footerInjected = (): StartWorkButtonInjected => ({
+    hooks: { devDockData: dataHandle },
+  })
   ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
     name: 'sidebar.footer.action',
-    id: 'dev-dock',
-    order: 10,
+    id: 'dev-dock-start',
+    order: 5,
     locale: NS,
     store: view,
-    inject: entryInjected,
-  }, DevDockEntry))
+    inject: footerInjected,
+  }, StartWorkButton))
 
+  // Session header: IDE / terminal / start for the current session's workspace.
+  const headerInjected = (action: SessionActionKind) => (): SessionActionInjected => ({
+    action,
+    dataActions,
+    hooks: { devDockData: dataHandle },
+  })
+  ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
+    name: 'conversation.session.header.actions',
+    id: 'dev-dock-ide',
+    order: 30,
+    locale: NS,
+    inject: headerInjected('ide'),
+  }, SessionActionButton))
+  ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
+    name: 'conversation.session.header.actions',
+    id: 'dev-dock-terminal',
+    order: 31,
+    locale: NS,
+    inject: headerInjected('terminal'),
+  }, SessionActionButton))
+  ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
+    name: 'conversation.session.header.actions',
+    id: 'dev-dock-start',
+    order: 32,
+    locale: NS,
+    inject: headerInjected('start'),
+  }, SessionActionButton))
+
+  // Start-work dialog on the frame-wide overlay.
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay',
-    id: 'dev-dock-drawer',
-    order: 100,
+    id: 'dev-dock-start-modal',
+    order: 300,
     locale: NS,
     store: view,
-    inject: drawerInjected,
-  }, DevDockDrawer))
+    inject: modalInjected,
+  }, StartWorkModal))
+
+  // Settings page: devDock preferences.
+  const settingsInjected = (): DevDockSettingsInjected => ({
+    hooks: { devDockData: dataHandle },
+    dataActions,
+  })
+  ctx.slots.inject('settings.section', () => ctx.slots.register({
+    name: 'settings.section',
+    id: 'dev-dock',
+    order: 12,
+    label: () => t('settings.title'),
+    locale: NS,
+    inject: settingsInjected,
+  }, DevDockSettingsPage))
 }

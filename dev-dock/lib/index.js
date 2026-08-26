@@ -1,528 +1,41 @@
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, join } from "node:path";
 import z from "@deepseek-ai/schemastery";
 import { settingsNamespace } from "@deepseek-ai/dsh-settings";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { basename, join } from "node:path";
-import { defineTool } from "@deepseek-ai/dsh-tools";
-import { effectiveApprovalPolicy } from "@deepseek-ai/dsh-user-approval";
 import { runNativeCommand } from "@deepseek-ai/dsh-native-command";
 //#region lib/types/schema.js
 /**
-* devDock settings namespace: project registry, editor configuration, and
-* quick-start plans. Persisted through the settings capability
-* (`$DSH_HOME/settings.yaml`, namespace `dev-dock`).
+* devDock settings namespace v2: per-workspace IDE preferences, editor
+* manual paths, terminal preference, and the start-work selection memory.
+* Projects are dsh workspaces, so no separate project registry exists.
+* Persisted through the settings capability (`$DSH_HOME/settings.yaml`,
+* namespace `dev-dock`).
 * @module @liyuera/dsh-dev-dock/schema
 */
 /** Branded settings namespace of this plugin. */
 const DEV_DOCK_NAMESPACE = settingsNamespace("dev-dock");
 /** Schemastery schema for the whole document (registered by the host half). */
 const DevDockSettingsSchema = z.object({
-	projects: z.array(z.object({
-		id: z.string().required(),
-		name: z.string().required(),
-		path: z.string().required(),
-		alias: z.string(),
-		type: z.union([
-			z.const("node"),
-			z.const("uniapp"),
-			z.const("miniapp")
-		]).required(),
-		packageManager: z.union([
-			z.const("npm"),
-			z.const("pnpm"),
-			z.const("yarn")
-		]).required(),
-		nodeVersion: z.string(),
-		scripts: z.dict(z.string()).required(),
-		buildCommand: z.string(),
-		createdAt: z.string().required()
+	workspacePrefs: z.array(z.object({
+		workspaceId: z.string().required(),
+		editor: z.string().required()
 	})).default([]),
 	editors: z.array(z.object({
 		name: z.string().required(),
 		detectedPath: z.string(),
 		manualPath: z.string()
 	})).default([]),
-	quickStarts: z.array(z.object({
-		name: z.string().required(),
-		items: z.array(z.object({
-			projectId: z.string().required(),
-			ides: z.array(z.string()).required(),
-			script: z.string()
-		})).required()
-	})).default([]),
-	terminalApp: z.union([z.const("default"), z.const("iterm")]).default("default")
+	terminalApp: z.union([z.const("default"), z.const("iterm")]).default("default"),
+	startWork: z.array(z.string()).default([])
 });
 /** Empty settings document used as the schema base. */
 const EMPTY_DEV_DOCK_SETTINGS = {
-	projects: [],
+	workspacePrefs: [],
 	editors: [],
-	quickStarts: [],
-	terminalApp: "default"
+	terminalApp: "default",
+	startWork: []
 };
-//#endregion
-//#region lib/types/tools/scan.js
-/**
-* Deterministic directory scan for frontend project candidates. The tool
-* returns raw signals only — the AI decides which candidates are frontend
-* projects and what their environment is.
-* @module @liyuera/dsh-dev-dock/tools/scan
-*/
-/** Lock-file names mapped to package managers. */
-const LOCK_TO_MANAGER = [
-	["pnpm-lock.yaml", "pnpm"],
-	["yarn.lock", "yarn"],
-	["package-lock.json", "npm"],
-	["bun.lockb", "bun"]
-];
-/** Directory names never treated as project candidates. */
-const SKIP_NAMES = new Set([
-	"node_modules",
-	".git",
-	"dist",
-	"build",
-	"out",
-	"coverage",
-	".idea",
-	".vscode",
-	".DS_Store",
-	"unpackage",
-	"uni_modules",
-	"miniprogram_npm",
-	"assets",
-	"static"
-]);
-/**
-* Read package.json of one candidate; tolerant of missing or malformed files.
-* @param dir - candidate directory.
-* @returns parsed package.json or null.
-*/
-function readPackageJson(dir) {
-	const pkgPath = join(dir, "package.json");
-	if (!existsSync(pkgPath)) return null;
-	try {
-		const parsed = JSON.parse(readFileSync(pkgPath, "utf-8"));
-		return parsed && typeof parsed === "object" ? parsed : null;
-	} catch {
-		return null;
-	}
-}
-/**
-* Collect signals for one candidate directory.
-* @param dir - absolute candidate directory.
-* @returns candidate signals.
-*/
-function collectSignals(dir) {
-	const pkg = readPackageJson(dir);
-	const hasPackageJson = existsSync(join(dir, "package.json"));
-	const scripts = pkg?.scripts !== null && typeof pkg?.scripts === "object" ? pkg.scripts : {};
-	const deps = {
-		...pkg?.dependencies !== null && typeof pkg?.dependencies === "object" ? pkg.dependencies : {},
-		...pkg?.devDependencies !== null && typeof pkg?.devDependencies === "object" ? pkg.devDependencies : {}
-	};
-	const hasManifest = existsSync(join(dir, "manifest.json")) || existsSync(join(dir, "src", "manifest.json"));
-	const hasMiniappConfig = existsSync(join(dir, "project.config.json")) || existsSync(join(dir, "miniprogramRoot"));
-	const lock = LOCK_TO_MANAGER.find(([file]) => existsSync(join(dir, file)))?.[0];
-	const nodeVersionFile = existsSync(join(dir, ".nvmrc")) || existsSync(join(dir, ".node-version"));
-	const signals = {
-		path: dir,
-		name: basename(dir),
-		hasPackageJson,
-		hasManifest,
-		hasMiniappConfig,
-		hasNodeVersionFile: nodeVersionFile,
-		dependencies: Object.keys(deps),
-		scriptNames: Object.keys(scripts)
-	};
-	if (lock !== void 0) signals.lockFile = lock;
-	if (typeof pkg?.description === "string") signals.description = pkg.description;
-	return signals;
-}
-/**
-* Scan one directory: the directory itself plus its direct children.
-* @param root - absolute directory to scan.
-* @returns candidate signals for the root and each direct subdirectory.
-*/
-function scanCandidates(root) {
-	const results = [];
-	const push = (dir) => {
-		try {
-			if (statSync(dir).isDirectory()) results.push(collectSignals(dir));
-		} catch {}
-	};
-	push(root);
-	let entries = [];
-	try {
-		entries = readdirSync(root);
-	} catch {
-		return results;
-	}
-	for (const entry of entries) {
-		if (entry.startsWith(".") || SKIP_NAMES.has(entry)) continue;
-		push(join(root, entry));
-	}
-	return results;
-}
-/** Model-facing tool: scan one directory for frontend project candidates. */
-const scanCandidatesTool = defineTool({
-	name: "dev-dock_scan-candidates",
-	description: "Scan a directory for frontend project candidates. Returns the directory itself and its direct subdirectories with raw signals: presence of package.json / manifest.json / miniapp config, lock file, node version file, key dependencies, and script names. Use the signals to judge which candidates are frontend projects and analyze their environment, then save them with dev-dock_save-project.",
-	parameters: { dir: {
-		type: "string",
-		required: true,
-		description: "Absolute directory path to scan"
-	} },
-	output: {
-		schema: {
-			type: "object",
-			additionalProperties: false,
-			properties: {
-				root: {
-					type: "string",
-					required: true
-				},
-				candidates: {
-					type: "array",
-					required: true,
-					items: {
-						type: "object",
-						additionalProperties: false,
-						properties: {
-							path: {
-								type: "string",
-								required: true
-							},
-							name: {
-								type: "string",
-								required: true
-							},
-							hasPackageJson: {
-								type: "boolean",
-								required: true
-							},
-							hasManifest: {
-								type: "boolean",
-								required: true
-							},
-							hasMiniappConfig: {
-								type: "boolean",
-								required: true
-							},
-							lockFile: { type: "string" },
-							hasNodeVersionFile: {
-								type: "boolean",
-								required: true
-							},
-							dependencies: {
-								type: "array",
-								required: true,
-								items: { type: "string" }
-							},
-							scriptNames: {
-								type: "array",
-								required: true,
-								items: { type: "string" }
-							},
-							description: { type: "string" }
-						}
-					}
-				}
-			}
-		},
-		render: (_args, value) => [{
-			type: "text",
-			text: formatCandidates(value)
-		}]
-	},
-	async execute(args) {
-		if (args.dir.trim().length === 0) throw new Error("invalid dir: expected a non-empty string");
-		const candidates = scanCandidates(args.dir);
-		return {
-			root: args.dir,
-			candidates
-		};
-	}
-});
-/** Human-readable candidate listing for the model result. */
-function formatCandidates(value) {
-	const lines = value.candidates.map((c) => {
-		const markers = [];
-		if (c.hasPackageJson) markers.push("package.json");
-		if (c.hasManifest) markers.push("manifest.json");
-		if (c.hasMiniappConfig) markers.push("miniapp");
-		if (c.lockFile) markers.push(c.lockFile);
-		if (c.hasNodeVersionFile) markers.push("node-version");
-		const deps = c.dependencies.length > 0 ? ` deps: ${c.dependencies.slice(0, 12).join(",")}` : "";
-		const scripts = c.scriptNames.length > 0 ? ` scripts: ${c.scriptNames.slice(0, 10).join(",")}` : "";
-		return `${c.path} [${markers.join(",") || "no project markers"}${deps}${scripts}]`;
-	});
-	return [`Scanned ${value.candidates.length} candidate(s) under ${value.root}:`, ...lines].join("\n");
-}
-//#endregion
-//#region lib/types/tools/project.js
-/**
-* Project registry tools: save (upsert), list, remove. All mutations go
-* through the plugin's settings namespace scope.
-* @module @liyuera/dsh-dev-dock/tools/project
-*/
-/** Wrap a live settings scope behind the tool facade. */
-function scopeOf(scope) {
-	return {
-		get: () => scope.get(),
-		update: (patch) => scope.update(patch)
-	};
-}
-/**
-* Mint the next project id (max numeric id + 1, or "1").
-* @param projects - current project list.
-* @returns the next id.
-*/
-function nextProjectId(projects) {
-	let max = 0;
-	for (const p of projects) {
-		const n = Number(p.id);
-		if (Number.isInteger(n) && n > max) max = n;
-	}
-	return String(max + 1);
-}
-/**
-* Upsert one project: same path keeps its id and createdAt (update overwrite).
-* @param current - current document.
-* @param project - candidate project record (id may be empty on insert).
-* @returns the new document and the stored record.
-*/
-function upsertProject(current, project) {
-	const existing = current.projects.find((p) => p.path === project.path);
-	const stored = {
-		...project,
-		id: existing?.id ?? project.id ?? nextProjectId(current.projects),
-		createdAt: existing?.createdAt ?? (/* @__PURE__ */ new Date()).toISOString()
-	};
-	const projects = existing ? current.projects.map((p) => p.path === project.path ? stored : p) : [...current.projects, stored];
-	return {
-		next: {
-			...current,
-			projects
-		},
-		stored
-	};
-}
-/**
-* Remove one project and cascade-clean its quick-start references.
-* @param current - current document.
-* @param projectId - project id to remove.
-* @returns the new document; false when the id did not exist.
-*/
-function removeProject(current, projectId) {
-	const projects = current.projects.filter((p) => p.id !== projectId);
-	if (projects.length === current.projects.length) return null;
-	const quickStarts = current.quickStarts.map((plan) => ({
-		...plan,
-		items: plan.items.filter((item) => item.projectId !== projectId)
-	})).filter((plan) => plan.items.length > 0);
-	return { next: {
-		...current,
-		projects,
-		quickStarts
-	} };
-}
-/** Tool: save one analyzed project (insert or update overwrite). */
-function saveProjectTool(scope) {
-	return defineTool({
-		name: "dev-dock_save-project",
-		description: "Save one analyzed frontend project into the devDock registry. Insert when the path is new; update overwrite when it already exists (keeps its id and createdAt). Call once per candidate after the AI analysis judged it a frontend project.",
-		parameters: {
-			path: {
-				type: "string",
-				required: true,
-				description: "Absolute project path"
-			},
-			name: {
-				type: "string",
-				required: true,
-				description: "Project directory name"
-			},
-			type: {
-				type: "string",
-				required: true,
-				description: "Project kind: node, uniapp, or miniapp"
-			},
-			packageManager: {
-				type: "string",
-				required: true,
-				description: "Package manager: npm, pnpm, or yarn"
-			},
-			scripts: {
-				type: "object",
-				additionalProperties: true,
-				description: "package.json scripts (name to command)"
-			},
-			nodeVersion: {
-				type: "string",
-				description: "Node version requirement (e.g. \"18\")"
-			},
-			buildCommand: {
-				type: "string",
-				description: "Build script name, e.g. \"build\""
-			},
-			alias: {
-				type: "string",
-				description: "Optional display alias"
-			}
-		},
-		output: {
-			schema: {
-				type: "object",
-				additionalProperties: false,
-				properties: {
-					id: {
-						type: "string",
-						required: true
-					},
-					path: {
-						type: "string",
-						required: true
-					}
-				}
-			},
-			render: (_args, value) => [{
-				type: "text",
-				text: `saved project ${value.id} at ${value.path}`
-			}]
-		},
-		async execute(args) {
-			const current = scope.get();
-			const record = {
-				path: args.path,
-				name: args.name,
-				type: args.type,
-				packageManager: args.packageManager,
-				scripts: args.scripts ?? {}
-			};
-			if (args.nodeVersion !== void 0) record.nodeVersion = args.nodeVersion;
-			if (args.buildCommand !== void 0) record.buildCommand = args.buildCommand;
-			if (args.alias !== void 0) record.alias = args.alias;
-			const result = upsertProject(current, record);
-			scope.update({ projects: result.next.projects });
-			return {
-				id: result.stored.id,
-				path: result.stored.path
-			};
-		}
-	});
-}
-/** Tool: list all registered projects. */
-function listProjectsTool(scope) {
-	return defineTool({
-		name: "dev-dock_list-projects",
-		description: "List all projects registered in the devDock registry: id, name, path, type, package manager, node version, scripts, build command, alias.",
-		parameters: {},
-		output: {
-			schema: {
-				type: "array",
-				items: {
-					type: "object",
-					additionalProperties: false,
-					properties: {
-						id: {
-							type: "string",
-							required: true
-						},
-						name: {
-							type: "string",
-							required: true
-						},
-						path: {
-							type: "string",
-							required: true
-						},
-						alias: { type: "string" },
-						type: {
-							type: "string",
-							required: true
-						},
-						packageManager: {
-							type: "string",
-							required: true
-						},
-						nodeVersion: { type: "string" },
-						scripts: {
-							type: "object",
-							additionalProperties: true,
-							required: true
-						},
-						buildCommand: { type: "string" },
-						createdAt: {
-							type: "string",
-							required: true
-						}
-					}
-				}
-			},
-			render: (_args, value) => [{
-				type: "text",
-				text: formatProjectList(value)
-			}]
-		},
-		async execute() {
-			return scope.get().projects;
-		}
-	});
-}
-/** Tool: remove one project from the registry (cascades quick-start references). */
-function removeProjectTool(scope) {
-	return defineTool({
-		name: "dev-dock_remove-project",
-		description: "Remove one project from the devDock registry. Only removes the plugin-managed configuration; never touches files on disk. Also removes the project from every quick-start plan.",
-		parameters: { projectId: {
-			type: "string",
-			required: true,
-			description: "Project id from dev-dock_list-projects"
-		} },
-		output: {
-			schema: {
-				type: "object",
-				additionalProperties: false,
-				properties: {
-					removed: {
-						type: "boolean",
-						required: true
-					},
-					id: {
-						type: "string",
-						required: true
-					}
-				}
-			},
-			render: (_args, value) => [{
-				type: "text",
-				text: value.removed ? `removed project ${value.id}` : `project ${value.id} not found`
-			}]
-		},
-		async execute(args) {
-			const result = removeProject(scope.get(), args.projectId);
-			if (result === null) return {
-				removed: false,
-				id: args.projectId
-			};
-			scope.update({
-				projects: result.next.projects,
-				quickStarts: result.next.quickStarts
-			});
-			return {
-				removed: true,
-				id: args.projectId
-			};
-		}
-	});
-}
-/** Human-readable project listing for the model result. */
-function formatProjectList(projects) {
-	if (projects.length === 0) return "No projects registered.";
-	return projects.map((p) => {
-		const record = p;
-		const scripts = Object.keys(record.scripts ?? {});
-		return `${record.id}\t${record.name}\t${record.type}\t${record.packageManager}\t${record.path}\tscripts: ${scripts.join(",") || "-"}`;
-	}).join("\n");
-}
 //#endregion
 //#region lib/types/platform/editors-darwin.js
 /**
@@ -674,11 +187,12 @@ async function detectWin32Editors(facts) {
 	return result;
 }
 //#endregion
-//#region lib/types/tools/editors.js
+//#region lib/types/editors.js
 /**
-* Editor detection tool: merges live auto-detection with user-configured
-* paths from settings, and persists detected paths back for the UI.
-* @module @liyuera/dsh-dev-dock/tools/editors
+* Editor detection service: merges live auto-detection with user-configured
+* paths from settings. The detection routines themselves live in the
+* platform directory.
+* @module @liyuera/dsh-dev-dock/editors
 */
 /** Known editor names across platforms (union for stable UI display). */
 const KNOWN_EDITORS = [
@@ -688,6 +202,14 @@ const KNOWN_EDITORS = [
 	"Cursor",
 	"Sublime Text",
 	"HBuilderX"
+];
+/** Preferable non-uni-app editors, in preference order. */
+const PREFERRED_EDITORS = [
+	"WebStorm",
+	"VS Code",
+	"Cursor",
+	"IntelliJ IDEA",
+	"Sublime Text"
 ];
 /**
 * Run platform editor detection.
@@ -699,11 +221,11 @@ async function detectEditors(facts) {
 	return detectDarwinEditors(facts);
 }
 /**
-* Merge detected paths with manual configuration: detected wins unless a
-* manual path exists (manual overrides detection for the same editor).
+* Merge detected paths with manual configuration: manual overrides detection
+* for the same editor; detected paths refresh the cache.
 * @param detected - live detection result.
 * @param stored - editors from settings.
-* @returns merged editor records, persisted order kept, new names appended.
+* @returns merged editor records; empty entries are dropped.
 */
 function mergeEditors(detected, stored) {
 	const byName = new Map(stored.map((e) => [e.name, { ...e }]));
@@ -726,51 +248,6 @@ function mergeEditors(detected, stored) {
 		if (entry.detectedPath === void 0 && entry.manualPath === void 0) byName.delete(name);
 	}
 	return [...byName.values()];
-}
-/** Tool: detect installed editors and merge user configuration. */
-function listEditorsTool(scope, facts) {
-	return defineTool({
-		name: "dev-dock_list-editors",
-		description: "Detect code editors installed on this machine (WebStorm, VS Code, IntelliJ IDEA, Cursor, Sublime Text, HBuilderX) and merge user-configured paths. Returns each editor with its detected path and/or manual path.",
-		parameters: {},
-		output: {
-			schema: {
-				type: "array",
-				items: {
-					type: "object",
-					additionalProperties: false,
-					properties: {
-						name: {
-							type: "string",
-							required: true
-						},
-						detectedPath: { type: "string" },
-						manualPath: { type: "string" }
-					}
-				}
-			},
-			render: (_args, value) => [{
-				type: "text",
-				text: formatEditors(value)
-			}]
-		},
-		async execute() {
-			const merged = mergeEditors(await detectEditors(facts), scope.get().editors);
-			scope.update({ editors: merged });
-			return merged;
-		}
-	});
-}
-/** Human-readable editor listing for the model result. */
-function formatEditors(editors) {
-	if (editors.length === 0) return "No editors detected or configured.";
-	return editors.map((e) => {
-		const parts = [e.name];
-		if (e.detectedPath) parts.push(`detected: ${e.detectedPath}`);
-		if (e.manualPath) parts.push(`manual: ${e.manualPath}`);
-		if (!e.detectedPath && !e.manualPath) parts.push("(not installed)");
-		return parts.join("	");
-	}).join("\n");
 }
 //#endregion
 //#region lib/types/platform/open-ide.js
@@ -934,55 +411,50 @@ async function openProjectTerminal(facts, projectPath, command, preferIterm = fa
 	return openMacTerminal(facts, projectPath, command, preferIterm);
 }
 //#endregion
-//#region lib/types/tools/actions.js
+//#region lib/types/actions.js
 /**
-* Desktop action tools: open a project in an IDE, open a system terminal at
-* a project (optionally running one script), and run a quick-start plan.
-* All three are user-visible desktop side effects and follow the approval
-* pipeline: `never` policy executes directly, `ask` goes through
-* `ctx.approval.request` with one consolidated question per tool call.
-* @module @liyuera/dsh-dev-dock/tools/actions
+* Host desktop actions: resolve the workspace IDE, open it, open a system
+* terminal at the workspace directory, and run the batch start-work flow.
+* All actions are deterministic (no agent, no approval prompt — the button
+* click is the user's authorization); the only guard is the sandbox mode:
+* `read-only` denies desktop side effects.
+* @module @liyuera/dsh-dev-dock/actions
 */
-/** Delay between consecutive IDE launches in a quick-start run. */
+/** Gap between consecutive IDE launches in a start-work batch. */
 const IDE_LAUNCH_GAP_MS = 300;
 /**
-* Decide whether one desktop action may run: the session's effective
-* approval policy, asking through the approval service when the policy is
-* `ask`. The `never` policy never asks — full access executes directly.
-* @param approval - the approval service.
-* @param exec - the live tool execution carrying the agent.
-* @param toolName - tool identity for the audit pair.
-* @param reason - user-facing explanation of the action.
-* @returns true when the action is allowed.
+* Whether a directory shows uni-app/miniapp traits (manifest.json markers).
+* @param workspacePath - canonical workspace directory.
+* @returns true when the traits are present.
 */
-async function requireApproval(approval, exec, toolName, reason) {
-	const agent = exec.agent;
-	if (agent === void 0) return {
-		allowed: false,
-		error: "no agent context for approval"
-	};
-	if (effectiveApprovalPolicy(agent.session.events) === "never") return { allowed: true };
-	const outcome = await approval.request({
-		agent,
-		toolName,
-		reason,
-		signal: exec.signal
-	});
-	if (outcome === "allowed-once") return { allowed: true };
-	return {
-		allowed: false,
-		error: `approval rejected (${outcome})`
-	};
+function hasUniAppTraits(workspacePath) {
+	return existsSync(join(workspacePath, "manifest.json")) || existsSync(join(workspacePath, "src", "manifest.json")) || existsSync(join(workspacePath, "project.config.json"));
 }
 /**
-* Resolve the executable path for one editor: manual path wins, then
-* detected path, then a live detection pass.
+* Default editor for one workspace: uni-app traits prefer HBuilderX, other
+* projects prefer WebStorm, then the remaining installed editors in order.
+* @param workspacePath - canonical workspace directory.
+* @param installed - detected editor names.
+* @returns the default editor name, or undefined when nothing is installed.
+*/
+function defaultEditorFor(workspacePath, installed) {
+	if (installed.length === 0) return void 0;
+	if (hasUniAppTraits(workspacePath)) {
+		if (installed.includes("HBuilderX")) return "HBuilderX";
+		return installed[0];
+	}
+	for (const name of PREFERRED_EDITORS) if (installed.includes(name)) return name;
+	return installed[0];
+}
+/**
+* Resolve the executable path for one editor: manual path wins, then the
+* cached detected path, then a live detection pass.
 * @param scope - settings scope.
 * @param facts - platform facts.
 * @param editorName - canonical editor name.
 * @returns the resolved path or an error message.
 */
-async function resolveEditorPath(scope, facts, editorName) {
+async function editorExecutablePath(scope, facts, editorName) {
 	const stored = scope.get().editors.find((e) => e.name === editorName);
 	if (stored?.manualPath) return {
 		ok: true,
@@ -995,217 +467,119 @@ async function resolveEditorPath(scope, facts, editorName) {
 	const path = (await detectEditors(facts))[editorName];
 	if (path === void 0) return {
 		ok: false,
-		error: `editor ${editorName} not found${editorName === "HBuilderX" ? " (configure its path in the devDock panel settings)" : ""}`
+		error: `editor ${editorName} not found${editorName === "HBuilderX" ? " (configure its path in the devDock settings page)" : ""}`
 	};
 	return {
 		ok: true,
 		path
 	};
 }
-/** Default editor per project kind. */
-function defaultEditorFor(type) {
-	return type === "uniapp" || type === "miniapp" ? "HBuilderX" : "WebStorm";
+/**
+* Resolve which editor opens one workspace: the stored preference wins;
+* otherwise a default is derived from the content traits and installed
+* editors. The executable path is resolved from the same entry.
+* @param scope - settings scope.
+* @param facts - platform facts.
+* @param workspace - target workspace.
+* @returns editor name and executable path, or an error message.
+*/
+async function resolveWorkspaceEditor(scope, facts, workspace) {
+	const preferred = scope.get().workspacePrefs.find((p) => p.workspaceId === workspace.id)?.editor;
+	if (preferred !== void 0) {
+		const resolved = await editorExecutablePath(scope, facts, preferred);
+		return resolved.ok ? {
+			ok: true,
+			editor: preferred,
+			path: resolved.path
+		} : resolved;
+	}
+	const detected = await detectEditors(facts);
+	const installed = Object.keys(detected);
+	const editor = defaultEditorFor(workspace.path, installed);
+	if (editor === void 0) return {
+		ok: false,
+		error: "no code editor detected; configure one in the devDock settings page"
+	};
+	const path = detected[editor];
+	if (path === void 0) return {
+		ok: false,
+		error: `editor ${editor} detection returned no path`
+	};
+	return {
+		ok: true,
+		editor,
+		path
+	};
 }
-/** Tool: open one project in an IDE. */
-function openIdeTool(scope, facts, approval) {
-	return defineTool({
-		name: "dev-dock_open-ide",
-		description: "Open one registered project in a code editor on the user's desktop (WebStorm, VS Code, IntelliJ IDEA, Cursor, Sublime Text, or HBuilderX). Defaults to the project-kind editor (HBuilderX for uni-app/miniapp, WebStorm otherwise). This opens a visible application window — the user may be asked to approve.",
-		parameters: {
-			projectId: {
-				type: "string",
-				required: true,
-				description: "Project id from dev-dock_list-projects"
-			},
-			editor: {
-				type: "string",
-				description: "Editor name to use; defaults to the project-kind editor"
-			}
-		},
-		output: {
-			schema: {
-				type: "object",
-				additionalProperties: false,
-				properties: {
-					ok: {
-						type: "boolean",
-						required: true
-					},
-					error: { type: "string" }
-				}
-			},
-			render: (_args, value) => [{
-				type: "text",
-				text: value.ok ? "IDE opened" : `failed: ${value.error ?? "unknown error"}`
-			}]
-		},
-		async execute(args, exec) {
-			const project = scope.get().projects.find((p) => p.id === args.projectId);
-			if (project === void 0) return {
-				ok: false,
-				error: `project ${args.projectId} not found`
-			};
-			const editor = args.editor ?? defaultEditorFor(project.type);
-			const allowed = await requireApproval(approval, exec, "dev-dock_open-ide", `Open ${project.name} in ${editor}`);
-			if (!allowed.allowed) return {
-				ok: false,
-				error: allowed.error
-			};
-			const resolved = await resolveEditorPath(scope, facts, editor);
-			if (!resolved.ok) return {
-				ok: false,
-				error: resolved.error
-			};
-			const result = await openProjectInIde(facts, project.path, editor, resolved.path);
-			return result.ok ? { ok: true } : {
-				ok: false,
-				error: result.error
-			};
-		}
-	});
+/**
+* Open one workspace in its default editor.
+* @param scope - settings scope.
+* @param facts - platform facts.
+* @param workspace - target workspace.
+* @returns ok, or an error message.
+*/
+async function openIdeFor(scope, facts, workspace) {
+	const resolved = await resolveWorkspaceEditor(scope, facts, workspace);
+	if (!resolved.ok) return resolved;
+	return openProjectInIde(facts, workspace.path, resolved.editor, resolved.path);
 }
-/** Tool: open a system terminal at a project, optionally running one script. */
-function openTerminalTool(scope, facts, approval) {
-	return defineTool({
-		name: "dev-dock_open-terminal",
-		description: "Open a system terminal window (Terminal.app/iTerm on macOS, Windows Terminal/cmd on Windows) at a registered project directory, optionally running one of its scripts with the project's package manager (e.g. `pnpm run dev`). The command runs in a user-visible terminal window — the user may be asked to approve.",
-		parameters: {
-			projectId: {
-				type: "string",
-				required: true,
-				description: "Project id from dev-dock_list-projects"
-			},
-			command: {
-				type: "string",
-				description: "Optional script name from the project scripts to run"
-			}
-		},
-		output: {
-			schema: {
-				type: "object",
-				additionalProperties: false,
-				properties: {
-					ok: {
-						type: "boolean",
-						required: true
-					},
-					error: { type: "string" }
-				}
-			},
-			render: (_args, value) => [{
-				type: "text",
-				text: value.ok ? "terminal opened" : `failed: ${value.error ?? "unknown error"}`
-			}]
-		},
-		async execute(args, exec) {
-			const project = scope.get().projects.find((p) => p.id === args.projectId);
-			if (project === void 0) return {
-				ok: false,
-				error: `project ${args.projectId} not found`
-			};
-			let command;
-			if (args.command !== void 0) {
-				if (!(args.command in project.scripts)) return {
-					ok: false,
-					error: `script ${args.command} not found in project scripts`
-				};
-				command = `${project.packageManager} run ${args.command}`;
-			}
-			const allowed = await requireApproval(approval, exec, "dev-dock_open-terminal", `Open terminal at ${project.name}${command === void 0 ? "" : ` and run ${command}`}`);
-			if (!allowed.allowed) return {
-				ok: false,
-				error: allowed.error
-			};
-			const preferIterm = scope.get().terminalApp === "iterm";
-			const result = await openProjectTerminal(facts, project.path, command, preferIterm);
-			return result.ok ? { ok: true } : {
-				ok: false,
-				error: result.error
-			};
-		}
-	});
+/**
+* Open one workspace directory in a system terminal window.
+* @param scope - settings scope.
+* @param facts - platform facts.
+* @param workspace - target workspace.
+* @returns ok, or an error message.
+*/
+async function openTerminalFor(scope, facts, workspace) {
+	const preferIterm = scope.get().terminalApp === "iterm";
+	return openProjectTerminal(facts, workspace.path, void 0, preferIterm);
 }
-/** Tool: run one quick-start plan (batch open IDEs + start scripts). */
-function quickStartTool(scope, facts, approval) {
-	return defineTool({
-		name: "dev-dock_quick-start",
-		description: "Run a quick-start plan: for each item, open the project in its chosen editors and start its script in a system terminal. One approval covers the whole plan. Plan defaults to the first saved plan when none is named.",
-		parameters: { plan: {
-			type: "string",
-			description: "Quick-start plan name; defaults to the first plan"
-		} },
-		output: {
-			schema: {
-				type: "object",
-				additionalProperties: false,
-				properties: {
-					ok: {
-						type: "boolean",
-						required: true
-					},
-					opened: {
-						type: "number",
-						required: true
-					},
-					started: {
-						type: "number",
-						required: true
-					},
-					error: { type: "string" }
-				}
-			},
-			render: (_args, value) => [{
-				type: "text",
-				text: value.ok ? `quick-start done: ${value.opened} IDE open(s), ${value.started} script(s) started` : `quick-start failed: ${value.error ?? "unknown error"}`
-			}]
-		},
-		async execute(args, exec) {
-			const plans = scope.get().quickStarts;
-			const plan = plans.find((p) => p.name === args.plan) ?? plans[0];
-			if (plan === void 0) return {
-				ok: false,
-				error: "no quick-start plan saved",
-				opened: 0,
-				started: 0
-			};
-			const projects = new Map(scope.get().projects.map((p) => [p.id, p]));
-			const summary = plan.items.map((item) => {
-				const project = projects.get(item.projectId);
-				return `${project === void 0 ? item.projectId : project.name}${item.ides.length > 0 ? ` IDE:${item.ides.join("+")}` : ""}${item.script !== void 0 ? ` script:${item.script}` : ""}`;
-			}).join("; ");
-			const allowed = await requireApproval(approval, exec, "dev-dock_quick-start", `Quick-start "${plan.name}": ${plan.items.length} item(s) — ${summary}`);
-			if (!allowed.allowed) return {
-				ok: false,
-				error: allowed.error,
-				opened: 0,
-				started: 0
-			};
-			const preferIterm = scope.get().terminalApp === "iterm";
-			let opened = 0;
-			let started = 0;
-			const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-			for (const item of plan.items) {
-				const project = projects.get(item.projectId);
-				if (project === void 0) continue;
-				for (const editor of item.ides) {
-					const resolved = await resolveEditorPath(scope, facts, editor);
-					if (resolved.ok) {
-						if ((await openProjectInIde(facts, project.path, editor, resolved.path)).ok) opened++;
-					}
-					await sleep(IDE_LAUNCH_GAP_MS);
-				}
-				if (item.script !== void 0 && item.script in project.scripts) {
-					const command = `${project.packageManager} run ${item.script}`;
-					if ((await openProjectTerminal(facts, project.path, command, preferIterm)).ok) started++;
-				}
-			}
-			return {
-				ok: true,
-				opened,
-				started
-			};
-		}
-	});
+/**
+* Run the full start action for one workspace: editor first, then terminal.
+* @param scope - settings scope.
+* @param facts - platform facts.
+* @param workspace - target workspace.
+* @returns ok, or the first error (the other half is still attempted).
+*/
+async function startFor(scope, facts, workspace) {
+	const ide = await openIdeFor(scope, facts, workspace);
+	const terminal = await openTerminalFor(scope, facts, workspace);
+	if (!ide.ok) return ide;
+	if (!terminal.ok) return terminal;
+	return { ok: true };
+}
+/**
+* Run the start-work batch: for each selected workspace, open its editor and
+* a system terminal, with a gap between consecutive editor launches.
+* @param scope - settings scope.
+* @param facts - platform facts.
+* @param workspaces - selected workspaces in selection order.
+* @returns per-workspace results plus totals.
+*/
+async function startWorkFor(scope, facts, workspaces) {
+	const items = [];
+	let opened = 0;
+	let started = 0;
+	for (const workspace of workspaces) {
+		const ide = await openIdeFor(scope, facts, workspace);
+		const terminal = await openTerminalFor(scope, facts, workspace);
+		if (ide.ok) opened++;
+		if (terminal.ok) started++;
+		const item = {
+			workspaceId: workspace.id,
+			ok: ide.ok && terminal.ok
+		};
+		if (!ide.ok) item.error = ide.error;
+		else if (!terminal.ok) item.error = terminal.error;
+		items.push(item);
+		await new Promise((resolve) => setTimeout(resolve, IDE_LAUNCH_GAP_MS));
+	}
+	return {
+		ok: items.every((item) => item.ok),
+		opened,
+		started,
+		items
+	};
 }
 //#endregion
 //#region lib/types/platform/runner.js
@@ -1227,35 +601,408 @@ function liveFacts() {
 //#endregion
 //#region lib/types/index.js
 /**
-* devDock plugin, node half. Registers the `dev-dock` settings namespace and
-* the tool set: candidate scanning, project save/list/remove, editor
-* detection, and the desktop actions (open IDE / system terminal /
-* quick-start) behind the approval pipeline.
+* devDock plugin v2, node half. Projects are dsh workspaces; this half
+* registers the `dev-dock` settings namespace and the desktop-action HTTP
+* route (`POST /dev-dock/action`) that the browser half calls for editor
+* detection and the desktop actions (open editor / system terminal /
+* start-work). Deterministic execution: no agent, no tools, no approval
+* prompt — the button click is the user's authorization. The only guard is
+* the sandbox mode: `read-only` denies desktop side effects.
+*
+* Transport note: static client bundles have no package-private RPC channel
+* (host.call is a dynamic-plugin builtin), so the browser half reaches the
+* host through a same-origin route on the loopback web server.
 * @module @liyuera/dsh-dev-dock
 */
 /** Plugin identity. */
 const name = "dev-dock";
 /** Services required by the host half. */
-const inject = [
-	"tools",
-	"settings",
-	"approval"
-];
+const inject = ["settings", "workspaceRegistry"];
+/** Guard against reading an argument that is not a JSON object. */
+function asObject(value) {
+	return typeof value === "object" && value !== null ? value : {};
+}
+/** Shared preflight for the unary actions: sandbox guard, id, path. */
+function guardWorkspace(readOnly, registry, args) {
+	if (readOnly) return { block: {
+		ok: false,
+		error: "read-only sandbox denies desktop actions"
+	} };
+	const workspaceId = typeof args.workspaceId === "string" ? args.workspaceId : "";
+	if (registry === void 0) return { block: {
+		ok: false,
+		error: "workspace registry service unavailable"
+	} };
+	const workspace = registry.get(workspaceId);
+	if (workspace === void 0) return { block: {
+		ok: false,
+		error: `workspace ${workspaceId || "(missing)"} not found`
+	} };
+	if (!existsSync(workspace.path)) return { block: {
+		ok: false,
+		error: `workspace directory ${workspace.path} does not exist`
+	} };
+	return { workspace };
+}
+/** Dispatch one action body; returns the JSON-serializable answer. */
+async function dispatchAction(readOnly, getRegistry, devDock, facts, body) {
+	const action = typeof body.action === "string" ? body.action : "";
+	switch (action) {
+		case "list-editors": try {
+			const merged = mergeEditors(await detectEditors(facts), devDock.get().editors);
+			devDock.update({ editors: merged });
+			return {
+				ok: true,
+				editors: merged
+			};
+		} catch (error) {
+			return {
+				ok: false,
+				error: error instanceof Error ? error.message : String(error)
+			};
+		}
+		case "open-ide": {
+			const guard = guardWorkspace(readOnly(), getRegistry(), asObject(body));
+			if ("block" in guard) return guard.block;
+			return openIdeFor(devDock, facts, guard.workspace);
+		}
+		case "open-terminal": {
+			const guard = guardWorkspace(readOnly(), getRegistry(), asObject(body));
+			if ("block" in guard) return guard.block;
+			return openTerminalFor(devDock, facts, guard.workspace);
+		}
+		case "start": {
+			const guard = guardWorkspace(readOnly(), getRegistry(), asObject(body));
+			if ("block" in guard) return guard.block;
+			return startFor(devDock, facts, guard.workspace);
+		}
+		case "start-work": {
+			if (readOnly()) return {
+				ok: false,
+				opened: 0,
+				started: 0,
+				items: [],
+				error: "read-only sandbox denies desktop actions"
+			};
+			const registry = getRegistry();
+			const workspaces = (Array.isArray(body.workspaceIds) ? body.workspaceIds.filter((id) => typeof id === "string") : []).map((id) => registry?.get(id)).filter((w) => w !== void 0);
+			if (workspaces.length === 0) return {
+				ok: false,
+				opened: 0,
+				started: 0,
+				items: [],
+				error: "no workspaces selected"
+			};
+			return startWorkFor(devDock, facts, workspaces);
+		}
+		default: return {
+			ok: false,
+			error: `unknown dev-dock action ${JSON.stringify(action || "(empty)")}`
+		};
+	}
+}
+/** Write one JSON answer. */
+function writeJson(res, status, value) {
+	res.writeHead(status, { "content-type": "application/json; charset=utf-8" });
+	res.end(JSON.stringify(value));
+}
 /**
-* Register the settings namespace and all tools.
-* @param ctx - Cordis context carrying tools, settings, and approval.
+* Register the settings namespace and the action route.
+* @param ctx - Cordis context carrying settings, sandboxPolicy, the
+* workspace registry, and the web server.
 */
 function apply(ctx) {
-	const devDock = scopeOf(ctx.settings.register(DEV_DOCK_NAMESPACE, DevDockSettingsSchema, { base: EMPTY_DEV_DOCK_SETTINGS }));
+	const scope = ctx.settings.register(DEV_DOCK_NAMESPACE, DevDockSettingsSchema, { base: EMPTY_DEV_DOCK_SETTINGS });
+	const devDock = {
+		get: () => scope.get(),
+		update: (patch) => scope.update(patch)
+	};
 	const facts = liveFacts();
-	ctx.tools.register(scanCandidatesTool);
-	ctx.tools.register(saveProjectTool(devDock));
-	ctx.tools.register(listProjectsTool(devDock));
-	ctx.tools.register(removeProjectTool(devDock));
-	ctx.tools.register(listEditorsTool(devDock, facts));
-	ctx.tools.register(openIdeTool(devDock, facts, ctx.approval));
-	ctx.tools.register(openTerminalTool(devDock, facts, ctx.approval));
-	ctx.tools.register(quickStartTool(devDock, facts, ctx.approval));
+	const readOnly = () => {
+		return ctx.get("sandboxPolicy")?.resolve().mode === "read-only";
+	};
+	const getRegistry = () => ctx.get("workspaceRegistry");
+	const webServer = ctx.get("webServer");
+	if (webServer === void 0) return;
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: "/dev-dock/action",
+		handler: async (req, res) => {
+			if (req.method !== "POST") {
+				writeJson(res, 405, {
+					ok: false,
+					error: "method not allowed"
+				});
+				return;
+			}
+			const chunks = [];
+			for await (const chunk of req) chunks.push(chunk);
+			let body;
+			try {
+				body = JSON.parse(Buffer.concat(chunks).toString("utf-8"));
+			} catch {
+				writeJson(res, 400, {
+					ok: false,
+					error: "invalid JSON body"
+				});
+				return;
+			}
+			try {
+				writeJson(res, 200, await dispatchAction(readOnly, getRegistry, devDock, facts, body));
+			} catch (error) {
+				writeJson(res, 200, {
+					ok: false,
+					error: error instanceof Error ? error.message : String(error)
+				});
+			}
+		}
+	}), "dev-dock: action route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: "/dev-dock/editor-icon",
+		handler: async (req, res) => {
+			if (req.method !== "GET") {
+				writeJson(res, 405, {
+					ok: false,
+					error: "method not allowed"
+				});
+				return;
+			}
+			const editor = new URL(req.url ?? "/", "http://dsh.internal").searchParams.get("editor") ?? "";
+			const entry = devDock.get().editors.find((e) => e.name === editor);
+			const appPath = entry?.manualPath || entry?.detectedPath;
+			if (entry === void 0 || appPath === void 0 || !existsSync(appPath)) {
+				writeJson(res, 404, {
+					ok: false,
+					error: `editor ${editor} has no resolvable app path`
+				});
+				return;
+			}
+			try {
+				const png = await renderAppIconPng(facts, appPath);
+				res.writeHead(200, {
+					"content-type": "image/png",
+					"cache-control": "no-store"
+				});
+				res.end(png);
+			} catch (error) {
+				writeJson(res, 404, {
+					ok: false,
+					error: error instanceof Error ? error.message : String(error)
+				});
+			}
+		}
+	}), "dev-dock: editor-icon route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: "/dev-dock/workspace-editor-icon",
+		handler: async (req, res) => {
+			if (req.method !== "GET") {
+				writeJson(res, 405, {
+					ok: false,
+					error: "method not allowed"
+				});
+				return;
+			}
+			const workspaceId = new URL(req.url ?? "/", "http://dsh.internal").searchParams.get("workspaceId") ?? "";
+			const workspace = getRegistry()?.get(workspaceId);
+			if (workspace === void 0 || !existsSync(workspace.path)) {
+				writeJson(res, 404, {
+					ok: false,
+					error: `workspace ${workspaceId || "(missing)"} not found`
+				});
+				return;
+			}
+			const resolved = await resolveWorkspaceEditor(devDock, facts, workspace);
+			if (!resolved.ok) {
+				writeJson(res, 404, {
+					ok: false,
+					error: resolved.error
+				});
+				return;
+			}
+			try {
+				const png = await renderAppIconPng(facts, resolved.path);
+				res.writeHead(200, {
+					"content-type": "image/png",
+					"cache-control": "no-store"
+				});
+				res.end(png);
+			} catch (error) {
+				writeJson(res, 404, {
+					ok: false,
+					error: error instanceof Error ? error.message : String(error)
+				});
+			}
+		}
+	}), "dev-dock: workspace-editor-icon route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: "/dev-dock/terminal-icon",
+		handler: async (req, res) => {
+			if (req.method !== "GET") {
+				writeJson(res, 405, {
+					ok: false,
+					error: "method not allowed"
+				});
+				return;
+			}
+			const app = new URL(req.url ?? "/", "http://dsh.internal").searchParams.get("app") === "iterm" ? "iterm" : "default";
+			const appPath = await resolveTerminalAppPath(facts, app);
+			if (appPath === void 0) {
+				writeJson(res, 404, {
+					ok: false,
+					error: `terminal ${app} not found`
+				});
+				return;
+			}
+			try {
+				const png = await renderAppIconPng(facts, appPath);
+				res.writeHead(200, {
+					"content-type": "image/png",
+					"cache-control": "no-store"
+				});
+				res.end(png);
+			} catch (error) {
+				writeJson(res, 404, {
+					ok: false,
+					error: error instanceof Error ? error.message : String(error)
+				});
+			}
+		}
+	}), "dev-dock: terminal-icon route");
+}
+/** Terminal app bundle path preference: 'iterm' or the macOS default. */
+async function resolveTerminalAppPath(facts, app) {
+	if (app === "default") return existsSync("/System/Applications/Utilities/Terminal.app") ? "/System/Applications/Utilities/Terminal.app" : void 0;
+	for (const candidate of ["/Applications/iTerm.app", "/Applications/iTerm2.app"]) if (existsSync(candidate)) return candidate;
+	return detectDarwinApp(facts, "iTerm.app");
+}
+/** Icon cache: one rendered PNG per editor app path. */
+const ICON_CACHE = /* @__PURE__ */ new Map();
+/**
+* Render one macOS editor bundle path to a 128px PNG. Resolution order:
+* `CFBundleIconFile` from Info.plist (via plutil) → .icns → sips convert →
+* AppIcon.iconset PNG fallback. Only macOS is supported; other platforms and
+* unresolvable bundles throw a describing error.
+* @param facts - platform facts with the injectable runner.
+* @param appPath - editor .app directory.
+* @returns the PNG bytes.
+*/
+async function renderAppIconPng(facts, appPath) {
+	const cached = ICON_CACHE.get(appPath);
+	if (cached !== void 0) return cached;
+	if (facts.platform !== "darwin") throw new Error("editor icons are macOS-only");
+	const resources = join(appPath, "Contents", "Resources");
+	const signal = new AbortController().signal;
+	let iconBase = "";
+	try {
+		const { stdout } = await facts.run("plutil", [
+			"-extract",
+			"CFBundleIconFile",
+			"raw",
+			"-o",
+			"-",
+			join(appPath, "Contents", "Info.plist")
+		], signal);
+		const name = stdout.trim();
+		if (name !== "") iconBase = name.toLowerCase().endsWith(".icns") ? name.slice(0, -5) : name;
+	} catch {}
+	const icnsCandidates = [];
+	if (iconBase !== "") icnsCandidates.push(join(resources, `${iconBase}.icns`));
+	const appBase = basename(appPath, ".app");
+	const conventional = [
+		"icon.icns",
+		`${appBase}.icns`,
+		"AppIcon.icns"
+	];
+	for (const name of conventional) icnsCandidates.push(join(resources, name));
+	for (const icnsPath of icnsCandidates) {
+		if (!existsSync(icnsPath)) continue;
+		const dir = mkdtempSync(join(tmpdir(), "devdock-icon-"));
+		try {
+			const outPath = join(dir, "icon.png");
+			await facts.run("sips", [
+				"-s",
+				"format",
+				"png",
+				"-z",
+				"128",
+				"128",
+				icnsPath,
+				"--out",
+				outPath
+			], signal);
+			if (!existsSync(outPath)) continue;
+			const bytes = readFileSync(outPath);
+			ICON_CACHE.set(appPath, bytes);
+			return bytes;
+		} finally {
+			rmSync(dir, {
+				recursive: true,
+				force: true
+			});
+		}
+	}
+	const iconset = join(resources, `${iconBase === "" ? appBase : iconBase}.iconset`);
+	for (const name of [
+		"icon_512x512@2x.png",
+		"icon_256x256@2x.png",
+		"icon_512x512.png",
+		"icon_128x128@2x.png",
+		"icon_256x256.png",
+		"icon_128x128.png"
+	]) {
+		const pngPath = join(iconset, name);
+		if (existsSync(pngPath)) {
+			const bytes = readFileSync(pngPath);
+			ICON_CACHE.set(appPath, bytes);
+			return bytes;
+		}
+	}
+	const quicklook = await tryQuickLookPng(facts, appPath);
+	if (quicklook !== void 0) {
+		ICON_CACHE.set(appPath, quicklook);
+		return quicklook;
+	}
+	throw new Error(`no icon resource found in ${appPath}`);
+}
+/**
+* Best-effort QuickLook thumbnail of one app bundle (8s bound). Covers
+* bundles whose icon lives in Assets.car and has no .icns/.iconset; returns
+* undefined when QuickLook is unavailable or times out.
+* @param facts - platform facts with the injectable runner.
+* @param appPath - app bundle directory.
+* @returns the PNG bytes, or undefined.
+*/
+async function tryQuickLookPng(facts, appPath) {
+	const dir = mkdtempSync(join(tmpdir(), "devdock-ql-"));
+	try {
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort(), 8e3);
+		try {
+			await facts.run("qlmanage", [
+				"-t",
+				"-s",
+				"128",
+				"-o",
+				dir,
+				appPath
+			], controller.signal);
+		} finally {
+			clearTimeout(timer);
+		}
+		const pngPath = join(dir, `${basename(appPath)}.png`);
+		if (!existsSync(pngPath)) return void 0;
+		return readFileSync(pngPath);
+	} catch {
+		return;
+	} finally {
+		rmSync(dir, {
+			recursive: true,
+			force: true
+		});
+	}
 }
 //#endregion
 export { apply, inject, name };

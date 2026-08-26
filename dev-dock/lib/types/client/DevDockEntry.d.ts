@@ -1,10 +1,10 @@
 /**
  * Sidebar footer entry: a full-width row above Settings showing the devDock
- * title and the registered project count; clicking opens the drawer. Renders
- * a compact icon on the 56px rail.
+ * title and the workspace-project count; clicking opens the start-work
+ * dialog. Renders a compact icon on the 56px rail.
  */
 import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots';
-import type { DevDockData } from './api.ts';
+import type { DevDockData } from './data.ts';
 import { NS } from './locales.ts';
 import type { createDevDockStore } from './stores.ts';
 /** Registration-side inject face: the settings mirror bound as useDevDockData. */
@@ -21,8 +21,8 @@ export interface DevDockEntryInjected {
 export type DevDockEntryProps = PropsRuntime<'sidebar.footer.action'> & PropsStore<ReturnType<typeof createDevDockStore>> & PropsLocale<typeof NS> & InjectFace<DevDockEntryInjected>;
 /**
  * The sidebar footer entry row.
- * @param props - footer owner state, view store, data hook, translator.
+ * @param props - footer owner state, view store, workspace list, translator.
  * @returns the entry button.
  */
-export declare function DevDockEntry({ wide, actions, useDevDockData, t }: DevDockEntryProps): import("react").JSX.Element;
+export declare function DevDockEntry({ wide, useWorkspaces, actions, t }: DevDockEntryProps): import("react").JSX.Element;
 //# sourceMappingURL=DevDockEntry.d.ts.map

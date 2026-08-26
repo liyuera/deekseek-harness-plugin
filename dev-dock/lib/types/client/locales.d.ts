@@ -1,54 +1,65 @@
-/** `devDock` dictionary namespace. */
-/** Dictionary namespace owned by this plugin. */
-export declare const NS = "devDock";
-/** Simplified Chinese dictionary (the key-set source of truth). */
+/**
+ * devDock v2 browser copy: entry row, start-work dialog, per-session header
+ * actions (IDE / terminal / start), and the settings page. Simplified from
+ * v1: projects are dsh workspaces; desktop actions are deterministic.
+ * @module @liyuera/dsh-dev-dock/client/locales
+ */
+/** devDock dictionary keys. */
+export declare const NS: "devDock";
+/** zh dict. */
 export declare const zh: {
-    readonly 'entry.title': "devDock";
-    readonly 'entry.projects': "{count} 个项目";
-    readonly 'entry.open': "打开 devDock";
-    readonly 'drawer.aria': "devDock 面板";
-    readonly 'drawer.title': "devDock";
-    readonly 'drawer.close': "关闭";
-    readonly 'drawer.tab.projects': "项目";
-    readonly 'drawer.tab.quickStart': "一键启动";
-    readonly 'drawer.tab.import': "导入";
-    readonly 'drawer.loading': "加载中...";
-    readonly 'drawer.unavailable': "数据不可用";
-    readonly 'projects.empty': "暂无项目，点击\"导入\"添加";
-    readonly 'projects.import': "导入";
-    readonly 'project.type.node': "Node";
-    readonly 'project.type.uniapp': "UniApp";
-    readonly 'project.type.miniapp': "小程序";
-    readonly 'project.scripts': "{count} 个脚本";
-    readonly 'project.openTerminal': "终端";
-    readonly 'project.openIde': "打开";
-    readonly 'project.remove': "删除";
-    readonly 'project.remove.confirm': "确认删除项目「{name}」？仅移除插件配置，不删除磁盘文件。";
-    readonly 'project.notFound': "项目不存在";
-    readonly 'quickStart.save': "保存";
-    readonly 'quickStart.launch': "启动";
-    readonly 'quickStart.planName': "方案名称";
-    readonly 'quickStart.planNamePlaceholder': "plan name";
-    readonly 'quickStart.empty': "暂无项目，点击下方按钮添加";
-    readonly 'quickStart.addItem': "添加项目";
-    readonly 'quickStart.addProject': "添加项目到方案";
-    readonly 'quickStart.searchPlaceholder': "搜索项目...";
-    readonly 'quickStart.noAvailable': "没有可添加的项目";
-    readonly 'quickStart.cancel': "取消";
-    readonly 'quickStart.unsaved': "方案「{name}」尚未保存，保存后生效";
-    readonly 'quickStart.removeItem': "移除项目";
-    readonly 'import.pickDir': "选择目录";
-    readonly 'import.noDir': "未选择目录";
-    readonly 'import.dirLabel': "目录路径";
-    readonly 'import.start': "开始分析";
-    readonly 'import.sent': "已发送，请查看对话";
-    readonly 'import.sentHint': "分析请求已发送给当前会话的 AI，请在对话中确认保存清单。";
-    readonly 'import.waiting': "AI 正在分析目录，保存清单将出现在对话中...";
-    readonly 'import.noSession': "未找到活跃会话，请先在左侧打开一个会话，再重新分析";
-    readonly 'import.done': "已保存 {count} 个新项目，可在项目页查看";
+    readonly 'start.button': "开始上班";
+    readonly 'start.notice': "选择要启动的工作区项目（记住上次选择）";
+    readonly 'start.confirm': "启动";
+    readonly 'start.cancel': "取消";
+    readonly 'start.running': "正在启动…";
+    readonly 'start.done': "已打开 {opened} 个编辑器、{started} 个终端窗口";
+    readonly 'start.empty': "没有可用的工作区项目";
+    readonly 'start.noWorkspace': "请先在工作区添加项目";
+    readonly 'header.ide': "用 IDE 打开";
+    readonly 'header.terminal': "打开系统终端";
+    readonly 'header.start': "启动（IDE + 终端）";
+    readonly 'header.noWorkspace': "当前会话没有关联工作区";
+    readonly 'header.error': "操作失败：{error}";
+    readonly 'settings.title': "devDock";
+    readonly 'settings.workspacePref.title': "工作区编辑器偏好";
+    readonly 'settings.workspacePref.hint': "给每个工作区选择打开用的 IDE；不选则按内容自动检测（uni-app → HBuilderX，其它 → WebStorm）。";
+    readonly 'settings.editors.title': "编辑器";
+    readonly 'settings.editors.refresh': "重新检测";
+    readonly 'settings.editors.manual': "手动路径";
+    readonly 'settings.editors.save': "保存";
+    readonly 'settings.editors.hint': "检测不到或需要指定时，可手动填写（如 HBuilderX）。";
+    readonly 'settings.terminal.title': "终端";
+    readonly 'settings.terminal.default': "Terminal.app（默认）";
+    readonly 'settings.terminal.iterm': "iTerm2";
 };
-/** English dictionary. */
-export declare const en: Record<keyof typeof zh, string>;
-/** Dictionary key type for typed translation. */
+/** en dict. */
+export declare const en: {
+    readonly 'start.button': "Start Work";
+    readonly 'start.notice': "Select workspace projects to start (last selection remembered)";
+    readonly 'start.confirm': "Start";
+    readonly 'start.cancel': "Cancel";
+    readonly 'start.running': "Starting…";
+    readonly 'start.done': "Opened {opened} editor(s) and {started} terminal(s)";
+    readonly 'start.empty': "No workspace projects available";
+    readonly 'start.noWorkspace': "Add projects in the workspace area first";
+    readonly 'header.ide': "Open in IDE";
+    readonly 'header.terminal': "Open system terminal";
+    readonly 'header.start': "Start (IDE + terminal)";
+    readonly 'header.noWorkspace': "This session has no associated workspace";
+    readonly 'header.error': "Action failed: {error}";
+    readonly 'settings.title': "devDock";
+    readonly 'settings.workspacePref.title': "Workspace editor preference";
+    readonly 'settings.workspacePref.hint': "Pick the IDE each workspace opens with; auto-detected when unset (uni-app → HBuilderX, other → WebStorm).";
+    readonly 'settings.editors.title': "Editors";
+    readonly 'settings.editors.refresh': "Re-detect";
+    readonly 'settings.editors.manual': "Manual path";
+    readonly 'settings.editors.save': "Save";
+    readonly 'settings.editors.hint': "Set a manual path when detection misses (e.g. HBuilderX).";
+    readonly 'settings.terminal.title': "Terminal";
+    readonly 'settings.terminal.default': "Terminal.app (default)";
+    readonly 'settings.terminal.iterm': "iTerm2";
+};
+/** Full key type of the devDock dictionary. */
 export type DevDockKey = keyof typeof zh;
 //# sourceMappingURL=locales.d.ts.map

@@ -1,6 +1,6 @@
 # @liyuera/dsh-dev-dock
 
-Frontend project engineering management for DeepSeek Harness: a project registry (scanned and analyzed by the agent), code editor detection, quick-start plans, and desktop actions that open projects in an IDE or a system terminal window. The desktop actions run in **user-visible** windows — never in dsh's internal terminal — and follow the approval pipeline.
+Frontend project engineering management for DeepSeek Harness, v2: projects are dsh workspaces (no separate registry), one-click start-work, and deterministic desktop actions that open projects in an IDE or a system terminal window. No agent in the loop, no approval prompt — the button click is the user's authorization. The only guard is the sandbox mode: `read-only` denies desktop side effects.
 
 ## Install
 
@@ -8,66 +8,36 @@ Frontend project engineering management for DeepSeek Harness: a project registry
 dsh plugin --profile web add link:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock
 ```
 
-Restart `dsh web`. A `devDock` entry appears above Settings in the sidebar; it opens the panel drawer (projects / quick-start / import).
+Restart `dsh web`. The sidebar foot shows **开始上班** (start-work dialog) above a `devDock - N项目` row (N = workspace count); every session header gets **IDE / 终端 / 启动** actions for its workspace; the devDock settings page opens from **设置 → devDock**.
 
-## Host half: tools
+## UI surfaces
 
-The node half registers the `dev-dock` settings namespace and eight tools:
+| Surface | Slot | Purpose |
+|---|---|---|
+| 开始上班 button + devDock entry row | `sidebar.footer.action` | start-work dialog (remembered selection) + project count |
+| IDE / 终端 / 启动 | `conversation.session.header.actions` | open editor / open system terminal / both, for the current session's workspace |
+| start-work dialog | `shell.overlay` | checkbox list of workspaces, prefill from last selection |
+| devDock settings page | `settings.section` | per-workspace editor preference, editor manual paths + detection refresh, terminal preference |
 
-| Tool | Purpose |
-|---|---|
-| `dev-dock_scan-candidates` | Deterministic directory scan returning raw candidate signals (package.json / manifest.json / lock file / deps / scripts). The AI judges which candidates are frontend projects. |
-| `dev-dock_save-project` | Upsert one analyzed project (path is the unique key; update overwrite keeps id and createdAt). |
-| `dev-dock_list-projects` | List the registry. |
-| `dev-dock_remove-project` | Remove one project; cascades quick-start references. Never touches disk. |
-| `dev-dock_list-editors` | Detect installed editors (WebStorm / VS Code / IntelliJ IDEA / Cursor / Sublime Text / HBuilderX) and merge user-configured paths. |
-| `dev-dock_open-ide` | Open one project in an editor on the desktop. Approval-gated. |
-| `dev-dock_open-terminal` | Open a system terminal window at the project, optionally running one script with the project's package manager. Approval-gated. |
-| `dev-dock_quick-start` | Run a named quick-start plan: open each item's editors and start its script in system terminals. One approval covers the whole plan. |
+## How it works
 
-The three action tools ask through `ctx.approval` when the session's effective policy is `ask`; the `never` policy (full access) executes directly.
+- **Projects are dsh workspaces** (the workspace registry is the fact source; deleted workspaces simply drop out).
+- **Settings namespace `dev-dock`** holds only preferences: `workspacePrefs` (per-workspace IDE), `editors` (detected + manual paths), `terminalApp` (Terminal.app / iTerm), `startWork` (selection memory).
+- **Default editor**: per-workspace preference first; otherwise auto-detected — uni-app traits (manifest.json / project.config.json) prefer HBuilderX, other projects prefer WebStorm, then any installed editor.
+- **Actions are deterministic**: the browser half POSTs a JSON action to the host route `/dev-dock/action` (registered through `webServer`); the host runs the open directly. Static client bundles have no package-private RPC channel (`host.call` is a dynamic-plugin builtin), so the loopback route is the sanctioned channel. The route is registered only when a web server is present; headless profiles just keep the settings namespace.
+- **read-only guard**: `sandboxPolicy.resolve().mode === 'read-only'` rejects every action with an error.
 
-## Browser half: UI
+## Build
 
-The browser half contributes two entries:
+```sh
+tsc -b && tsdown --env.DSH_BUILD_FACE=client   # bins resolve from the harness root node_modules
+```
 
-- `sidebar.footer.action` — the full-width `devDock` row above Settings, showing the registered project count; opens the drawer.
-- `shell.overlay` — the right-docked drawer with three pages: **Projects** (list with terminal/IDE/remove actions), **Quick Start** (edit named plans: multi-select editors + one script per project, save and launch), and **Import** (enter a directory; the agent scans, analyzes, lists candidates for confirmation, and saves them).
+The harness client-bundle preset only recognizes packages under `packages/*/*` (boundary gate since the harness `build(client): enforce client package boundaries` commit), so an out-of-tree build needs a transient manifest copy at `packages/litepack/dev-dock/package.json` during the tsdown step; remove it afterwards. `lib/` artifacts (including `lib/client.js`) are committed, install-and-go.
 
-Data flows through the plugin's settings namespace (`dev-dock`) via `ctx.settingsScope.bind`; UI mutations use the scope's field writes and the `settings/document-updated` forwarded event. Agent-facing actions are queued through the current session's prompt so the approval pipeline and tool cards apply.
+## Known limitations (v1)
 
-## Configuration
-
-- `scanDirs` — not used; the agent passes directories to `dev-dock_scan-candidates` explicitly.
-- `terminalApp: 'default' | 'iterm'` — macOS terminal preference (Terminal.app vs iTerm).
-- `editors[].manualPath` — user-configured editor path (HBuilderX relies on this).
-- `quickStarts[]` — named plans with `items: [{ projectId, ides[], script? }]`.
-
-## Model Experience
-
-### Request context and condition
-
-#### What the model sees
-
-Eight tool schemas (names, descriptions, parameters) plus the tools' rendered results. The tool descriptions are the verbatim contract shown above; they pin the workflow: scan candidates → judge frontend projects → save → confirm the save list with the user.
-
-##### Verbatim text for this field
-
-The descriptions in the [tool table](#host-half-tools) are copied verbatim from source; they are the model-facing contract.
-
-#### Token effect
-
-Fixed: eight tool schemas join the system-prompt assembly while the plugin is mounted; each call contributes its arguments and a rendered result line. No conditional context.
-
-#### KV Cache effect
-
-Prefix-stable: tool schemas do not change at runtime; result lines append after the cached prefix. The `dev-dock_list-editors` result can change with the machine's installed editors, but only as ordinary result text.
-
-## Known Limitations and Deferred Work
-
-- **Single-package host+browser compile** — the plugin compiles both halves in one TypeScript program; the host half's `dsh-user-approval` → `dsh-session` chain shadows the browser `Context.sessions` ISessions face, so `src/client/api.ts` carries minimal local faces (`ClientSessions`, `settingsScope`). If the harness ever splits out-of-tree aggregates this can move to the main-repo "one program must not hold both sides" pattern.
-- **Windows editor detection** — registry App Paths plus `where`; untested on real Windows hardware.
-- **Windows Terminal fallback** — `wt` first, plain `cmd` window fallback; iTerm preference is macOS-only.
-- **No Node version management** — commands run under the system default Node; package manager is honored for script invocation (`pnpm run X`).
-- **No Git status UI** — the registry stores no Git fields; agents use their own git capabilities.
-- **Import scans one level** — the directory itself plus direct children; deeper trees need repeated imports.
+- The devDock entry row opens the start-work dialog (the settings shell exposes no cross-plugin API to open the panel on a chosen section); the settings page is reached through 设置 → devDock.
+- Tests for v1 were removed with the v1 surface; host unit tests (editor merge, action command building) and client component specs are the next iteration item.
+- Windows detection and terminal fallback remain untested on real Windows hardware.
+- The HTTP action route is loopback-bound like the rest of the web server; the browser page is the only same-origin caller.

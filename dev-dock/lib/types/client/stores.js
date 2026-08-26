@@ -1,25 +1,19 @@
 /**
- * devDock panel viewing store: drawer open state, active page, and the
- * selected project must survive entry/drawer remounts, so they live in one
- * store handle shared by the sidebar entry and the overlay drawer.
+ * devDock panel viewing store: the start-work dialog open state. Shared by
+ * the sidebar footer button and entry row so the dialog opens from either
+ * and survives entry/overlay remounts.
  * @module @liyuera/dsh-dev-dock/client/stores
  */
 import { defineStore } from '@deepseek-ai/dsh-client-runtime/client';
 /**
- * Create the devDock panel viewing store.
+ * Create the devDock viewing store.
  * @returns the store handle (spec + type + identity + factory in one).
  */
 export function createDevDockStore() {
     return defineStore({
-        init: () => ({
-            open: false,
-            page: 'projects',
-            selectedProjectId: undefined,
-        }),
+        init: () => ({ open: false }),
         actions: {
             setOpen: (draft, open) => { draft.open = open; },
-            setPage: (draft, page) => { draft.page = page; },
-            setSelectedProject: (draft, projectId) => { draft.selectedProjectId = projectId; },
         },
     });
 }

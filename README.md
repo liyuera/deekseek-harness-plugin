@@ -10,7 +10,7 @@
 | 目录 | npm 包名 | 说明 |
 | --- | --- | --- |
 | [`ui-subagent-sidebar/`](ui-subagent-sidebar/) | `@liuyera/dsh-client-ui-subagent-sidebar` | 右下角 subagent 运行计数胶囊 + 右侧根分组概览面板 |
-| [`dev-dock/`](dev-dock/) | `@liyuera/dsh-dev-dock` | 前端工程管理：项目注册表 + AI 导入分析、编辑器检测、一键启动、IDE/系统终端打开 |
+| [`dev-dock/`](dev-dock/) | `@liyuera/dsh-dev-dock` | devDock v1.0.0：项目 = dsh 工作区；开始上班弹窗、会话头部 IDE/终端/启动（确定性桌面动作）、每工作区 IDE 偏好与编辑器检测（真实应用图标） |
 
 ## 安装
 

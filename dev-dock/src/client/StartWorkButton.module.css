@@ -1,0 +1,56 @@
+/* Wide footer row: mirrors the settings trigger geometry (42px, radius 12). */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% + 4px);
+  height: 42px;
+  margin: 4px -2px;
+  padding: 0 10px 0 8px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out);
+}
+
+.row:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.row:active {
+  background: var(--dsw-alias-interactive-bg-active);
+}
+
+.label {
+  font-size: 14px;
+  line-height: 22px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Rail trigger: the same 36x36 circle box as the other rail controls. */
+.railButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 8px 0 10px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  transition: background var(--ds-transition-duration-fast) var(--ds-ease-in-out);
+}
+
+.railButton:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-primary);
+}

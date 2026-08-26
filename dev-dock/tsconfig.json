@@ -438,6 +438,9 @@
       ],
       "@deepseek-ai/dsh-client-ui-sidebar/client": [
         "./../../packages/client/ui-sidebar/src/client/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-ui-settings/client": [
+        "./../../packages/client/ui-settings/src/client/index.ts"
       ]
     }
   },
