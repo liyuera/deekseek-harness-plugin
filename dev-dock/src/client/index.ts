@@ -14,7 +14,6 @@ import { createDevDockData, type DevDockActions } from './data.ts'
 import { createDevDockStore } from './stores.ts'
 import { StartWorkButton, type StartWorkButtonInjected } from './StartWorkButton.tsx'
 import { StartWorkModal, type StartWorkModalInjected } from './StartWorkModal.tsx'
-import { SessionActionButton, type SessionActionKind, type SessionActionInjected } from './SessionActionButton.tsx'
 import { ComposerActions, type ComposerActionsInjected } from './ComposerActions.tsx'
 import { DevDockSettingsPage, type DevDockSettingsInjected } from './DevDockSettingsPage.tsx'
 import { en, NS, zh, type DevDockKey } from './locales.ts'
@@ -28,7 +27,6 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 export type { StartWorkButtonProps, StartWorkButtonInjected } from './StartWorkButton.tsx'
 export type { StartWorkModalProps, StartWorkModalInjected } from './StartWorkModal.tsx'
-export type { SessionActionButtonProps, SessionActionInjected } from './SessionActionButton.tsx'
 export type { ComposerActionsProps, ComposerActionsInjected } from './ComposerActions.tsx'
 export type { DevDockSettingsPageProps, DevDockSettingsInjected } from './DevDockSettingsPage.tsx'
 export type { DevDockData, DevDockActions } from './data.ts'
@@ -68,34 +66,6 @@ export function apply(ctx: ClientContext): void {
     store: view,
     inject: footerInjected,
   }, StartWorkButton))
-
-  // Session header: IDE / terminal / start for the current session's workspace.
-  const headerInjected = (action: SessionActionKind) => (): SessionActionInjected => ({
-    action,
-    dataActions,
-    hooks: { devDockData: dataHandle },
-  })
-  ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
-    name: 'conversation.session.header.actions',
-    id: 'dev-dock-ide',
-    order: 30,
-    locale: NS,
-    inject: headerInjected('ide'),
-  }, SessionActionButton))
-  ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
-    name: 'conversation.session.header.actions',
-    id: 'dev-dock-terminal',
-    order: 31,
-    locale: NS,
-    inject: headerInjected('terminal'),
-  }, SessionActionButton))
-  ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
-    name: 'conversation.session.header.actions',
-    id: 'dev-dock-start',
-    order: 32,
-    locale: NS,
-    inject: headerInjected('start'),
-  }, SessionActionButton))
 
   // Composer tool row, right seat: the three actions before the send button
   // (works for brand-new sessions with no history, the pain point the header

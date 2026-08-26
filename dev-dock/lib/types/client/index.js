@@ -2,7 +2,6 @@ import { createDevDockData } from "./data.js";
 import { createDevDockStore } from "./stores.js";
 import { StartWorkButton } from "./StartWorkButton.js";
 import { StartWorkModal } from "./StartWorkModal.js";
-import { SessionActionButton } from "./SessionActionButton.js";
 import { ComposerActions } from "./ComposerActions.js";
 import { DevDockSettingsPage } from "./DevDockSettingsPage.js";
 import { en, NS, zh } from "./locales.js";
@@ -35,33 +34,6 @@ export function apply(ctx) {
         store: view,
         inject: footerInjected,
     }, StartWorkButton));
-    // Session header: IDE / terminal / start for the current session's workspace.
-    const headerInjected = (action) => () => ({
-        action,
-        dataActions,
-        hooks: { devDockData: dataHandle },
-    });
-    ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
-        name: 'conversation.session.header.actions',
-        id: 'dev-dock-ide',
-        order: 30,
-        locale: NS,
-        inject: headerInjected('ide'),
-    }, SessionActionButton));
-    ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
-        name: 'conversation.session.header.actions',
-        id: 'dev-dock-terminal',
-        order: 31,
-        locale: NS,
-        inject: headerInjected('terminal'),
-    }, SessionActionButton));
-    ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({
-        name: 'conversation.session.header.actions',
-        id: 'dev-dock-start',
-        order: 32,
-        locale: NS,
-        inject: headerInjected('start'),
-    }, SessionActionButton));
     // Composer tool row, right seat: the three actions before the send button
     // (works for brand-new sessions with no history, the pain point the header
     // buttons cannot cover).
