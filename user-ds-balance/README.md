@@ -30,7 +30,7 @@ Node 半边是宿主组合中的一行，浏览器半边通过 `dsh.client` 清�
 ## 安装
 
 ```sh
-dsh plugin --profile web add link:/绝对路径/deepseek-harness/deekseek-harness-plugin/user-ds-balance
+dsh plugin --profile web add link:/绝对路径/deepseek-harness/deepseek-harness-plugin/user-ds-balance
 ```
 
 重启 `dsh web` 后生效（client-modules 的插件集变更需要重启才扫描到）。
@@ -44,7 +44,7 @@ tsc -b && tsdown --env.DSH_BUILD_FACE=client   # 重新构建（bin 解析自 ha
 ```
 
 构建产物 `lib/` 提交进本仓库，安装即用。此包位于插件仓库
-`deekseek-harness-plugin/user-ds-balance/`（不在 harness 的 `packages/`
+`deepseek-harness-plugin/user-ds-balance/`（不在 harness 的 `packages/`
 glob 内），构建时从插件目录借用工作区根 `node_modules` 的 tsdown/tsc bin
 与客户端构建设施。
 

@@ -6,8 +6,8 @@ window.__ModuleLoader__.load({
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
-		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/user-ds-balance/src/client/BalanceFooter.module.css.mjs
-		const css = ".FVjPsW_cell{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-button-elevated-fill);height:28px;color:var(--dsw-alias-label-primary);white-space:nowrap;cursor:pointer;border-radius:8px;justify-content:center;align-items:center;gap:5px;margin:0 2px;padding:0 8px;font-size:12px;font-weight:500;line-height:1;display:inline-flex}.FVjPsW_cell:hover{background:var(--dsw-alias-button-floating-hover)}.FVjPsW_cell:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}.FVjPsW_cell[data-loading]{opacity:.7}.FVjPsW_money{align-items:center;display:inline-flex}.FVjPsW_spinner{border:1.5px solid;border-top-color:#0000;border-radius:50%;flex:none;width:10px;height:10px;animation:.8s linear infinite FVjPsW_ds-balance-spin}@keyframes FVjPsW_ds-balance-spin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.FVjPsW_spinner{animation:none}}";
+		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/user-ds-balance/src/client/BalanceFooter.module.css.mjs
+		const css = ".x_I3kq_cell{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-button-elevated-fill);height:28px;color:var(--dsw-alias-label-primary);white-space:nowrap;cursor:pointer;border-radius:8px;justify-content:center;align-items:center;gap:5px;margin:0 2px;padding:0 8px;font-size:12px;font-weight:500;line-height:1;display:inline-flex}.x_I3kq_cell:hover{background:var(--dsw-alias-button-floating-hover)}.x_I3kq_cell:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}.x_I3kq_cell[data-loading]{opacity:.7}.x_I3kq_money{align-items:center;display:inline-flex}.x_I3kq_spinner{border:1.5px solid;border-top-color:#0000;border-radius:50%;flex:none;width:10px;height:10px;animation:.8s linear infinite x_I3kq_ds-balance-spin}@keyframes x_I3kq_ds-balance-spin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.x_I3kq_spinner{animation:none}}";
 		const tagId = "@liyuera/dsh-user-ds-balance/BalanceFooter.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -17,10 +17,10 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var BalanceFooter_module_css_default = {
-			"cell": "FVjPsW_cell",
-			"ds-balance-spin": "FVjPsW_ds-balance-spin",
-			"money": "FVjPsW_money",
-			"spinner": "FVjPsW_spinner"
+			"cell": "x_I3kq_cell",
+			"ds-balance-spin": "x_I3kq_ds-balance-spin",
+			"money": "x_I3kq_money",
+			"spinner": "x_I3kq_spinner"
 		};
 		//#endregion
 		//#region lib/types/client/BalanceFooter.js

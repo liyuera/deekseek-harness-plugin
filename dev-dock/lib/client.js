@@ -285,8 +285,8 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/StartTile.module.css.mjs
-		const css$4 = ".QwuPeq_tile{border-radius:4px;width:16px;height:16px;display:block;position:relative;overflow:hidden}.QwuPeq_halfTerminal{clip-path:polygon(0 0,100% 0,0 100%);justify-content:flex-start;align-items:flex-start;display:flex;position:absolute;inset:0}.QwuPeq_halfIde{clip-path:polygon(100% 0,100% 100%,0 100%);justify-content:flex-end;align-items:flex-end;display:flex;position:absolute;inset:0}.QwuPeq_img{object-fit:cover;width:100%;height:100%;display:block}.QwuPeq_tile:after{content:\"\";pointer-events:none;background:linear-gradient(to bottom right, transparent 40%, color-mix(in srgb, var(--dsw-alias-bg-layer-1) 55%, transparent) 50%, transparent 60%);position:absolute;inset:0}";
+		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/dev-dock/src/client/StartTile.module.css.mjs
+		const css$4 = ".Im9i9a_tile{border-radius:4px;width:16px;height:16px;display:block;position:relative;overflow:hidden}.Im9i9a_halfTerminal{clip-path:polygon(0 0,100% 0,0 100%);justify-content:flex-start;align-items:flex-start;display:flex;position:absolute;inset:0}.Im9i9a_halfIde{clip-path:polygon(100% 0,100% 100%,0 100%);justify-content:flex-end;align-items:flex-end;display:flex;position:absolute;inset:0}.Im9i9a_img{object-fit:cover;width:100%;height:100%;display:block}.Im9i9a_tile:after{content:\"\";pointer-events:none;background:linear-gradient(to bottom right, transparent 40%, color-mix(in srgb, var(--dsw-alias-bg-layer-1) 55%, transparent) 50%, transparent 60%);position:absolute;inset:0}";
 		const tagId$4 = "@liyuera/dsh-dev-dock/StartTile.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$4) + "]") === null) {
 			const tag = document.createElement("style");
@@ -296,10 +296,10 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var StartTile_module_css_default = {
-			"halfIde": "QwuPeq_halfIde",
-			"halfTerminal": "QwuPeq_halfTerminal",
-			"img": "QwuPeq_img",
-			"tile": "QwuPeq_tile"
+			"halfIde": "Im9i9a_halfIde",
+			"halfTerminal": "Im9i9a_halfTerminal",
+			"img": "Im9i9a_img",
+			"tile": "Im9i9a_tile"
 		};
 		//#endregion
 		//#region lib/types/client/StartTile.js
@@ -371,8 +371,8 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/StartWorkButton.module.css.mjs
-		const css$3 = ".g9vv4q_row{box-sizing:border-box;width:calc(100% + 4px);height:42px;color:var(--dsw-alias-label-primary);cursor:pointer;text-align:left;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:none;border-radius:12px;align-items:center;gap:8px;margin:4px -2px;padding:0 10px 0 8px;display:flex;overflow:hidden}.g9vv4q_row:hover{background:var(--dsw-alias-interactive-bg-hover)}.g9vv4q_row:active{background:var(--dsw-alias-interactive-bg-active)}.g9vv4q_label{white-space:nowrap;font-size:14px;line-height:22px;overflow:hidden}.g9vv4q_railButton{width:36px;height:36px;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:none;border-radius:50%;justify-content:center;align-items:center;margin:8px 0 10px;padding:0;display:flex}.g9vv4q_railButton:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}";
+		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/dev-dock/src/client/StartWorkButton.module.css.mjs
+		const css$3 = "._6acG6G_row{box-sizing:border-box;width:calc(100% + 4px);height:42px;color:var(--dsw-alias-label-primary);cursor:pointer;text-align:left;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:none;border-radius:12px;align-items:center;gap:8px;margin:4px -2px;padding:0 10px 0 8px;display:flex;overflow:hidden}._6acG6G_row:hover{background:var(--dsw-alias-interactive-bg-hover)}._6acG6G_row:active{background:var(--dsw-alias-interactive-bg-active)}._6acG6G_label{white-space:nowrap;font-size:14px;line-height:22px;overflow:hidden}._6acG6G_railButton{width:36px;height:36px;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:none;border-radius:50%;justify-content:center;align-items:center;margin:8px 0 10px;padding:0;display:flex}._6acG6G_railButton:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}";
 		const tagId$3 = "@liyuera/dsh-dev-dock/StartWorkButton.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$3) + "]") === null) {
 			const tag = document.createElement("style");
@@ -382,9 +382,9 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var StartWorkButton_module_css_default = {
-			"label": "g9vv4q_label",
-			"railButton": "g9vv4q_railButton",
-			"row": "g9vv4q_row"
+			"label": "_6acG6G_label",
+			"railButton": "_6acG6G_railButton",
+			"row": "_6acG6G_row"
 		};
 		//#endregion
 		//#region lib/types/client/StartWorkButton.js
@@ -431,8 +431,8 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/StartWork.module.css.mjs
-		const css$2 = ".owaCVq_dialog{width:min(570px,100%)}.owaCVq_actionBtn{min-width:96px;padding:0 20px}.owaCVq_list{flex-direction:column;gap:4px;max-height:426px;margin:0;padding:0;list-style:none;display:flex;overflow-y:auto}.owaCVq_row{cursor:pointer;border-radius:8px;align-items:center;gap:8px;padding:8px 10px;display:flex}.owaCVq_row:hover{background:var(--dsw-alias-interactive-bg-hover)}.owaCVq_row input{flex:none}.owaCVq_rowIcon{flex:none;display:block}.owaCVq_name{min-width:0;color:var(--dsw-alias-label-primary);overflow-wrap:anywhere;flex:auto;font-size:13px;font-weight:600}.owaCVq_empty{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px}.owaCVq_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error));margin:10px 0 0;font-size:12.5px}";
+		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/dev-dock/src/client/StartWork.module.css.mjs
+		const css$2 = ".G6Ne1q_dialog{width:min(570px,100%)}.G6Ne1q_actionBtn{min-width:96px;padding:0 20px}.G6Ne1q_list{flex-direction:column;gap:4px;max-height:426px;margin:0;padding:0;list-style:none;display:flex;overflow-y:auto}.G6Ne1q_row{cursor:pointer;border-radius:8px;align-items:center;gap:8px;padding:8px 10px;display:flex}.G6Ne1q_row:hover{background:var(--dsw-alias-interactive-bg-hover)}.G6Ne1q_row input{flex:none}.G6Ne1q_rowIcon{flex:none;display:block}.G6Ne1q_name{min-width:0;color:var(--dsw-alias-label-primary);overflow-wrap:anywhere;flex:auto;font-size:13px;font-weight:600}.G6Ne1q_empty{color:var(--dsw-alias-label-secondary);margin:0;font-size:13px}.G6Ne1q_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error));margin:10px 0 0;font-size:12.5px}";
 		const tagId$2 = "@liyuera/dsh-dev-dock/StartWork.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
 			const tag = document.createElement("style");
@@ -442,14 +442,14 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var StartWork_module_css_default = {
-			"actionBtn": "owaCVq_actionBtn",
-			"dialog": "owaCVq_dialog",
-			"empty": "owaCVq_empty",
-			"error": "owaCVq_error",
-			"list": "owaCVq_list",
-			"name": "owaCVq_name",
-			"row": "owaCVq_row",
-			"rowIcon": "owaCVq_rowIcon"
+			"actionBtn": "G6Ne1q_actionBtn",
+			"dialog": "G6Ne1q_dialog",
+			"empty": "G6Ne1q_empty",
+			"error": "G6Ne1q_error",
+			"list": "G6Ne1q_list",
+			"name": "G6Ne1q_name",
+			"row": "G6Ne1q_row",
+			"rowIcon": "G6Ne1q_rowIcon"
 		};
 		//#endregion
 		//#region lib/types/client/StartWorkModal.js
@@ -574,8 +574,8 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/SessionActions.module.css.mjs
-		const css$1 = "._R6sKG_button{min-width:28px;min-height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:6px;justify-content:center;align-items:center;padding:4px;display:inline-flex}._R6sKG_appIcon{border-radius:4px;width:16px;height:16px}._R6sKG_group{align-items:center;gap:2px;display:inline-flex}._R6sKG_group ._R6sKG_button{min-width:24px;min-height:24px;padding:3px}._R6sKG_button:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}._R6sKG_button:disabled,._R6sKG_button[aria-disabled=true]{opacity:.5;cursor:default}._R6sKG_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error))}";
+		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/dev-dock/src/client/SessionActions.module.css.mjs
+		const css$1 = ".DLfkuW_button{min-width:28px;min-height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:6px;justify-content:center;align-items:center;padding:4px;display:inline-flex}.DLfkuW_appIcon{border-radius:4px;width:16px;height:16px}.DLfkuW_group{align-items:center;gap:2px;display:inline-flex}.DLfkuW_group .DLfkuW_button{min-width:24px;min-height:24px;padding:3px}.DLfkuW_button:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}.DLfkuW_button:disabled,.DLfkuW_button[aria-disabled=true]{opacity:.5;cursor:default}.DLfkuW_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error))}";
 		const tagId$1 = "@liyuera/dsh-dev-dock/SessionActions.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -585,10 +585,10 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var SessionActions_module_css_default = {
-			"appIcon": "_R6sKG_appIcon",
-			"button": "_R6sKG_button",
-			"error": "_R6sKG_error",
-			"group": "_R6sKG_group"
+			"appIcon": "DLfkuW_appIcon",
+			"button": "DLfkuW_button",
+			"error": "DLfkuW_error",
+			"group": "DLfkuW_group"
 		};
 		//#endregion
 		//#region lib/types/client/ComposerActions.js
@@ -707,8 +707,8 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock/src/client/DevDockSettingsPage.module.css.mjs
-		const css = ".jdoFgq_page{flex-direction:column;gap:8px;display:flex}.jdoFgq_heading{color:var(--dsw-alias-label-primary);margin:12px 0 0;font-size:14px;font-weight:600}.jdoFgq_hint{color:var(--dsw-alias-label-secondary);margin:0 0 8px;font-size:12px;line-height:18px}.jdoFgq_rows{flex-direction:column;gap:6px;margin:0 0 8px;padding:0;list-style:none;display:flex}.jdoFgq_row{justify-content:space-between;align-items:center;gap:12px;display:flex}.jdoFgq_name{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;min-width:0;font-size:12.5px;font-weight:600;overflow:hidden}.jdoFgq_selector{background:var(--dsw-alias-bg-module-platform);height:36px;font:inherit;color:var(--dsw-alias-label-primary);cursor:pointer;border:none;border-radius:18px;align-items:center;gap:4px;padding:0 14px;font-size:14px;line-height:22px;display:inline-flex}.jdoFgq_selector:hover{background:var(--dsw-alias-interactive-bg-hover)}.jdoFgq_chevron{color:var(--dsw-alias-label-secondary);transition:transform var(--ds-transition-duration-fast) var(--ds-ease-in-out);flex:none;display:inline-flex}.jdoFgq_chevronOpen{transform:rotate(180deg)}.jdoFgq_editorRow{align-items:center;gap:10px;margin:0 0 8px;display:flex}.jdoFgq_editorName{flex:none;align-items:center;gap:8px;width:150px;display:flex}.jdoFgq_editorIcon{border-radius:5px;flex:none;width:20px;height:20px}.jdoFgq_editorLabel{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.jdoFgq_editorInput{flex:auto;min-width:0}.jdoFgq_editorSave{flex:none}.jdoFgq_refreshRow{align-items:center;gap:10px;margin-bottom:8px;display:flex}.jdoFgq_radioRow{color:var(--dsw-alias-label-primary);cursor:pointer;align-items:center;gap:8px;margin-bottom:6px;font-size:12.5px;display:flex}.jdoFgq_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error));font-size:12px}";
+		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/dev-dock/src/client/DevDockSettingsPage.module.css.mjs
+		const css = "._5fyaeq_page{flex-direction:column;gap:8px;display:flex}._5fyaeq_heading{color:var(--dsw-alias-label-primary);margin:12px 0 0;font-size:14px;font-weight:600}._5fyaeq_hint{color:var(--dsw-alias-label-secondary);margin:0 0 8px;font-size:12px;line-height:18px}._5fyaeq_rows{flex-direction:column;gap:6px;margin:0 0 8px;padding:0;list-style:none;display:flex}._5fyaeq_row{justify-content:space-between;align-items:center;gap:12px;display:flex}._5fyaeq_name{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;min-width:0;font-size:12.5px;font-weight:600;overflow:hidden}._5fyaeq_selector{background:var(--dsw-alias-bg-module-platform);height:36px;font:inherit;color:var(--dsw-alias-label-primary);cursor:pointer;border:none;border-radius:18px;align-items:center;gap:4px;padding:0 14px;font-size:14px;line-height:22px;display:inline-flex}._5fyaeq_selector:hover{background:var(--dsw-alias-interactive-bg-hover)}._5fyaeq_chevron{color:var(--dsw-alias-label-secondary);transition:transform var(--ds-transition-duration-fast) var(--ds-ease-in-out);flex:none;display:inline-flex}._5fyaeq_chevronOpen{transform:rotate(180deg)}._5fyaeq_editorRow{align-items:center;gap:10px;margin:0 0 8px;display:flex}._5fyaeq_editorName{flex:none;align-items:center;gap:8px;width:150px;display:flex}._5fyaeq_editorIcon{border-radius:5px;flex:none;width:20px;height:20px}._5fyaeq_editorLabel{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}._5fyaeq_editorInput{flex:auto;min-width:0}._5fyaeq_editorSave{flex:none}._5fyaeq_refreshRow{align-items:center;gap:10px;margin-bottom:8px;display:flex}._5fyaeq_radioRow{color:var(--dsw-alias-label-primary);cursor:pointer;align-items:center;gap:8px;margin-bottom:6px;font-size:12.5px;display:flex}._5fyaeq_error{color:var(--dsw-alias-state-error,var(--dsw-alias-label-error));font-size:12px}";
 		const tagId = "@liyuera/dsh-dev-dock/DevDockSettingsPage.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -718,24 +718,24 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var DevDockSettingsPage_module_css_default = {
-			"chevron": "jdoFgq_chevron",
-			"chevronOpen": "jdoFgq_chevronOpen",
-			"editorIcon": "jdoFgq_editorIcon",
-			"editorInput": "jdoFgq_editorInput",
-			"editorLabel": "jdoFgq_editorLabel",
-			"editorName": "jdoFgq_editorName",
-			"editorRow": "jdoFgq_editorRow",
-			"editorSave": "jdoFgq_editorSave",
-			"error": "jdoFgq_error",
-			"heading": "jdoFgq_heading",
-			"hint": "jdoFgq_hint",
-			"name": "jdoFgq_name",
-			"page": "jdoFgq_page",
-			"radioRow": "jdoFgq_radioRow",
-			"refreshRow": "jdoFgq_refreshRow",
-			"row": "jdoFgq_row",
-			"rows": "jdoFgq_rows",
-			"selector": "jdoFgq_selector"
+			"chevron": "_5fyaeq_chevron",
+			"chevronOpen": "_5fyaeq_chevronOpen",
+			"editorIcon": "_5fyaeq_editorIcon",
+			"editorInput": "_5fyaeq_editorInput",
+			"editorLabel": "_5fyaeq_editorLabel",
+			"editorName": "_5fyaeq_editorName",
+			"editorRow": "_5fyaeq_editorRow",
+			"editorSave": "_5fyaeq_editorSave",
+			"error": "_5fyaeq_error",
+			"heading": "_5fyaeq_heading",
+			"hint": "_5fyaeq_hint",
+			"name": "_5fyaeq_name",
+			"page": "_5fyaeq_page",
+			"radioRow": "_5fyaeq_radioRow",
+			"refreshRow": "_5fyaeq_refreshRow",
+			"row": "_5fyaeq_row",
+			"rows": "_5fyaeq_rows",
+			"selector": "_5fyaeq_selector"
 		};
 		//#endregion
 		//#region lib/types/client/DevDockSettingsPage.js

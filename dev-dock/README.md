@@ -5,7 +5,7 @@ Frontend project engineering management for DeepSeek Harness, v2: projects are d
 ## Install
 
 ```sh
-dsh plugin --profile web add link:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock
+dsh plugin --profile web add link:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/dev-dock
 ```
 
 Restart `dsh web`. The sidebar foot shows **开始上班** (start-work dialog) above a `devDock - N项目` row (N = workspace count); every session header gets **IDE / 终端 / 启动** actions for its workspace; the devDock settings page opens from **设置 → devDock**.
