@@ -1,0 +1,4 @@
+# dsh bundle layer: mount the balance readout plugin (host route + composer cell).
+- insert:
+    - id: user-ds-balance
+      name: '@liyuera/dsh-user-ds-balance'

@@ -1,0 +1,63 @@
+/* Composer-row balance chip beside the access-mode control
+   (conversation.input.left). Follows the secondary-button convention:
+   elevated fill + l2 border, primary label ink, UI font. The spinner rides
+   alongside while a refresh is in flight. */
+
+.cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 8px;
+  margin: 0 2px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+  background: var(--dsw-alias-button-elevated-fill);
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cell:hover {
+  background: var(--dsw-alias-button-floating-hover);
+}
+
+.cell:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: -2px;
+}
+
+.cell[data-loading] {
+  opacity: 0.7;
+}
+
+.money {
+  display: inline-flex;
+  align-items: center;
+}
+
+.spinner {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: ds-balance-spin 0.8s linear infinite;
+}
+
+@keyframes ds-balance-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
