@@ -4,7 +4,7 @@
  * and survives entry/overlay remounts.
  * @module @liyuera/dsh-dev-dock/client/stores
  */
-import { defineStore } from '@deepseek-ai/dsh-client-runtime/client';
+import { defineStore } from '@deepseek-ai/dsh-client-store';
 /**
  * Create the devDock viewing store.
  * @returns the store handle (spec + type + identity + factory in one).

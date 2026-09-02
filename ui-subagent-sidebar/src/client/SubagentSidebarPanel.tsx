@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 import clsx from 'clsx'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type {
-  SessionId, SessionSummary, SessionListState, SubagentCatalogSnapshot,
-} from '@deepseek-ai/dsh-client-runtime/client'
-import { indexSubagentDescendants } from '@deepseek-ai/dsh-client-runtime/client'
+  SessionSummary, SessionListState, SubagentCatalogSnapshot,
+} from '@deepseek-ai/dsh-api-session-controller/client'
+import { indexSubagentDescendants } from './subagent-lineage.ts'
 import {
   IconChevronRightOutline14, StateDot, type StateDotState,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime, PropsStore, TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 import type {} from '@deepseek-ai/dsh-subagent/client'
 import type {} from '@deepseek-ai/dsh-token-meter/client'
 import { NS } from './locales.ts'

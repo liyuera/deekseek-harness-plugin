@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
-import { indexSubagentDescendants } from '@deepseek-ai/dsh-client-runtime/client';
+import { indexSubagentDescendants } from "./subagent-lineage.js";
 import { IconChevronRightOutline14, StateDot, } from '@deepseek-ai/dsh-client-ui-primitives';
 import css from './SubagentSidebarPanel.module.css';
 /* jscpd:ignore-start -- display-contract helpers, identical to ui-subagent's catalog row formatting (no cross-package imports) */

@@ -8,25 +8,10 @@
  * @module @liyuera/dsh-dev-dock/client/data
  */
 
-import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
-import type { ClientContext, SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
+import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { DevDockSettings, EditorRecord } from '../schema.ts'
-
-// The single-package plugin compiles host and browser halves in one program,
-// and the host half's settings package shadowing keeps the ui-settings
-// declaration out of this face; declare the minimal service surface locally
-// (mirror of the main repo's "one program must not hold both sides" rule).
-declare module '@deepseek-ai/cordis' {
-  interface Context {
-    /** The ui-settings settingsScope service. */
-    settingsScope: {
-      bind<T>(spec: {
-        namespace: string
-        decode?: (section: unknown) => T | undefined
-      }): SettingsScope<T>
-    }
-  }
-}
 
 /** Client-visible data snapshot: settings document plus readiness. */
 export interface DevDockData {

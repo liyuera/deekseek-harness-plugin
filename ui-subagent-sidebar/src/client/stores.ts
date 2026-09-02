@@ -7,7 +7,8 @@
  * Collapse sets are plain arrays: the immer-backed store engine has no
  * MapSet plugin, so mutable Set state is not draft-safe.
  */
-import { defineStore, type EngineStoreHandle, type SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-store'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 
 /** Panel viewing state. */
 export type SubagentSidebarState = {

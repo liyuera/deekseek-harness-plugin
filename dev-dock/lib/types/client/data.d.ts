@@ -7,20 +7,9 @@
  * half and runs deterministic desktop actions.
  * @module @liyuera/dsh-dev-dock/client/data
  */
-import { type SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client';
-import type { ClientContext, SettingsScope } from '@deepseek-ai/dsh-client-runtime/client';
+import { type SnapshotStore } from '@deepseek-ai/dsh-client-store';
+import type { Context as ClientContext } from '@deepseek-ai/cordis';
 import type { DevDockSettings } from '../schema.ts';
-declare module '@deepseek-ai/cordis' {
-    interface Context {
-        /** The ui-settings settingsScope service. */
-        settingsScope: {
-            bind<T>(spec: {
-                namespace: string;
-                decode?: (section: unknown) => T | undefined;
-            }): SettingsScope<T>;
-        };
-    }
-}
 /** Client-visible data snapshot: settings document plus readiness. */
 export interface DevDockData {
     /** Loading until the first accepted settings section. */

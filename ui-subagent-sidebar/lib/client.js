@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-	id: "@liuyera/dsh-client-ui-subagent-sidebar",
+	id: "@liyuera/dsh-client-ui-subagent-sidebar",
 	factory: (require) => {
 		var module = { exports: {} };
 		var exports = module.exports;
@@ -7,21 +7,21 @@ window.__ModuleLoader__.load({
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 		let react = require("react");
-		let _deepseek_ai_dsh_client_runtime_client = require("@deepseek-ai/dsh-client-runtime/client");
+		let _deepseek_ai_dsh_client_store = require("@deepseek-ai/dsh-client-store");
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/ui-subagent-sidebar/src/client/SubagentSidebarCapsule.module.css.mjs
 		const css$1 = ".xcC1pq_capsule{border:1px solid var(--dsw-alias-state-success-primary);background:var(--dsw-alias-bg-overlay);color:var(--dsw-alias-label-primary);cursor:pointer;border-radius:999px;align-items:center;gap:8px;padding:9px 14px;font-size:13px;font-weight:600;animation:.25s ease-out xcC1pq_dsh-sa-pop;display:inline-flex;position:fixed;bottom:20px;right:20px;box-shadow:0 6px 24px #0000002e}.xcC1pq_capsule:hover{background:var(--dsw-alias-bg-layer-2)}.xcC1pq_dot{flex:none}@keyframes xcC1pq_dsh-sa-pop{0%{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}";
-		const tagId$1 = "@liuyera/dsh-client-ui-subagent-sidebar/SubagentSidebarCapsule.module.css";
+		const tagId$1 = "@liyuera/dsh-client-ui-subagent-sidebar/SubagentSidebarCapsule.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
-			tag.dataset.plugin = "@liuyera/dsh-client-ui-subagent-sidebar";
+			tag.dataset.plugin = "@liyuera/dsh-client-ui-subagent-sidebar";
 			tag.dataset.pluginCss = tagId$1;
 			tag.textContent = css$1;
 			document.head.appendChild(tag);
 		}
 		var SubagentSidebarCapsule_module_css_default = {
 			"capsule": "xcC1pq_capsule",
-			"dsh-sa-pop": "xcC1pq_dsh-sa-pop",
-			"dot": "xcC1pq_dot"
+			"dot": "xcC1pq_dot",
+			"dsh-sa-pop": "xcC1pq_dsh-sa-pop"
 		};
 		//#endregion
 		//#region lib/types/client/SubagentSidebarCapsule.js
@@ -66,45 +66,80 @@ window.__ModuleLoader__.load({
 			return n;
 		}
 		//#endregion
+		//#region lib/types/client/subagent-lineage.js
+		/**
+		* UI Subagent Sidebar-owned projection of descendant counts from Session
+		* summaries. The same fold exists in the harness packages ui-subagent and
+		* ui-workspace (each feature projects its own view; feature plugins never
+		* runtime-import one another's values), so this plugin carries its copy.
+		*/
+		/**
+		* Index uninterrupted subagent descendants under each ancestor.
+		* @param summaries - Session summaries keyed by id.
+		* @returns descendant totals keyed by possible parent id.
+		*/
+		function indexSubagentDescendants(summaries) {
+			const indexed = /* @__PURE__ */ new Map();
+			for (const descendant of Object.values(summaries)) {
+				if (descendant.origin !== "subagent") continue;
+				const seen = /* @__PURE__ */ new Set();
+				let current = descendant;
+				while (current?.origin === "subagent" && current.parentId !== void 0 && !seen.has(current.id)) {
+					seen.add(current.id);
+					const aggregate = indexed.get(current.parentId);
+					if (aggregate === void 0) indexed.set(current.parentId, {
+						count: 1,
+						runningCount: descendant.running ? 1 : 0
+					});
+					else {
+						aggregate.count += 1;
+						if (descendant.running) aggregate.runningCount += 1;
+					}
+					current = summaries[current.parentId];
+				}
+			}
+			return indexed;
+		}
+		//#endregion
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/ui-subagent-sidebar/src/client/SubagentSidebarPanel.module.css.mjs
 		const css = ".A6Sknq_panel{z-index:999;background:var(--dsw-specific-sidebar-fill);border-left:1px solid var(--dsw-alias-border-l1);width:340px;max-width:92vw;color:var(--dsw-alias-label-primary);flex-direction:column;font-size:13px;display:flex;position:fixed;top:0;bottom:0;right:0;overflow:hidden;box-shadow:-8px 0 24px #00000024}.A6Sknq_head{border-bottom:1px solid var(--dsw-alias-border-l1);flex:none;align-items:center;gap:10px;padding:12px 14px;display:flex}.A6Sknq_title{font-weight:600}.A6Sknq_counts{color:var(--dsw-alias-label-secondary);gap:8px;font-size:11.5px;display:inline-flex}.A6Sknq_close{color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:4px;margin-left:auto;padding:2px 6px;font-size:14px}.A6Sknq_close:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-2)}.A6Sknq_filter{border-bottom:1px solid var(--dsw-alias-border-l1);color:var(--dsw-alias-label-secondary);cursor:pointer;flex:none;align-items:center;gap:5px;padding:8px 14px;font-size:12px;display:inline-flex}.A6Sknq_body{--dsh-scrollbar-thumb:var(--dsw-alias-scrollbar-bg-l2);--dsh-scrollbar-thumb-hover:var(--dsw-alias-scrollbar-hover-l2);flex:1;padding:6px 0;overflow:hidden auto}.A6Sknq_root{border-bottom:1px solid var(--dsw-alias-border-l1)}.A6Sknq_root:last-child{border-bottom:none}.A6Sknq_rootHead{box-sizing:border-box;cursor:pointer;width:100%;color:var(--dsw-alias-label-primary);text-align:left;background:0 0;border:none;align-items:center;gap:8px;padding:9px 12px;font-size:12.5px;font-weight:600;display:flex}.A6Sknq_rootHead:hover{background:var(--dsw-alias-bg-layer-1)}.A6Sknq_rootHead:focus-visible,.A6Sknq_row:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:-2px}.A6Sknq_chevron{width:14px;color:var(--dsw-alias-label-secondary);flex:none;transition:transform .15s}.A6Sknq_chevronOpen{transform:rotate(90deg)}.A6Sknq_rootTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;overflow:hidden}.A6Sknq_badge{color:var(--dsw-alias-label-secondary);border:1px solid var(--dsw-alias-border-l1);border-radius:4px;flex:none;padding:0 4px;font-size:10px}.A6Sknq_rootCounts{color:var(--dsw-alias-label-secondary);flex:none;gap:6px;font-size:11px;font-weight:400;display:inline-flex}.A6Sknq_runningCount{color:var(--dsw-alias-state-success-primary)}.A6Sknq_row{box-sizing:border-box;cursor:pointer;width:100%;color:var(--dsw-alias-label-primary);text-align:left;align-items:flex-start;gap:8px;padding:8px 12px;font-size:12.5px;display:flex}.A6Sknq_row:hover{background:var(--dsw-alias-bg-layer-1)}.A6Sknq_rowArchived{opacity:.65}.A6Sknq_disabled{cursor:default;color:var(--dsw-alias-label-secondary)}.A6Sknq_disclosure{width:18px;height:18px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:4px;flex:none;justify-content:center;align-items:center;margin-top:1px;padding:0;transition:transform .15s;display:inline-flex}.A6Sknq_disclosure:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-2)}.A6Sknq_disclosureOpen{transform:rotate(90deg)}.A6Sknq_disclosureSpace{flex:none;width:18px}.A6Sknq_content{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.A6Sknq_labelRow{align-items:center;gap:6px;min-width:0;display:flex}.A6Sknq_label{text-overflow:ellipsis;white-space:nowrap;font-weight:600;overflow:hidden}.A6Sknq_summary{color:var(--dsw-alias-label-secondary);text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;overflow:hidden}.A6Sknq_metrics{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-radius:4px;align-self:flex-start;padding:1px 5px;font-size:10.5px}.A6Sknq_empty,.A6Sknq_notice{color:var(--dsw-alias-label-secondary);text-align:center;padding:16px 14px;font-size:12px}";
-		const tagId = "@liuyera/dsh-client-ui-subagent-sidebar/SubagentSidebarPanel.module.css";
+		const tagId = "@liyuera/dsh-client-ui-subagent-sidebar/SubagentSidebarPanel.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
-			tag.dataset.plugin = "@liuyera/dsh-client-ui-subagent-sidebar";
+			tag.dataset.plugin = "@liyuera/dsh-client-ui-subagent-sidebar";
 			tag.dataset.pluginCss = tagId;
 			tag.textContent = css;
 			document.head.appendChild(tag);
 		}
 		var SubagentSidebarPanel_module_css_default = {
-			"rowArchived": "A6Sknq_rowArchived",
-			"filter": "A6Sknq_filter",
-			"body": "A6Sknq_body",
-			"root": "A6Sknq_root",
-			"rootTitle": "A6Sknq_rootTitle",
-			"title": "A6Sknq_title",
-			"row": "A6Sknq_row",
-			"chevronOpen": "A6Sknq_chevronOpen",
-			"runningCount": "A6Sknq_runningCount",
 			"badge": "A6Sknq_badge",
-			"disclosureSpace": "A6Sknq_disclosureSpace",
+			"body": "A6Sknq_body",
+			"chevron": "A6Sknq_chevron",
+			"chevronOpen": "A6Sknq_chevronOpen",
+			"close": "A6Sknq_close",
 			"content": "A6Sknq_content",
 			"counts": "A6Sknq_counts",
-			"metrics": "A6Sknq_metrics",
-			"empty": "A6Sknq_empty",
-			"head": "A6Sknq_head",
-			"notice": "A6Sknq_notice",
-			"summary": "A6Sknq_summary",
-			"disclosure": "A6Sknq_disclosure",
-			"labelRow": "A6Sknq_labelRow",
-			"close": "A6Sknq_close",
-			"label": "A6Sknq_label",
-			"rootHead": "A6Sknq_rootHead",
-			"chevron": "A6Sknq_chevron",
 			"disabled": "A6Sknq_disabled",
-			"rootCounts": "A6Sknq_rootCounts",
+			"disclosure": "A6Sknq_disclosure",
+			"disclosureOpen": "A6Sknq_disclosureOpen",
+			"disclosureSpace": "A6Sknq_disclosureSpace",
+			"empty": "A6Sknq_empty",
+			"filter": "A6Sknq_filter",
+			"head": "A6Sknq_head",
+			"label": "A6Sknq_label",
+			"labelRow": "A6Sknq_labelRow",
+			"metrics": "A6Sknq_metrics",
+			"notice": "A6Sknq_notice",
 			"panel": "A6Sknq_panel",
-			"disclosureOpen": "A6Sknq_disclosureOpen"
+			"root": "A6Sknq_root",
+			"rootCounts": "A6Sknq_rootCounts",
+			"rootHead": "A6Sknq_rootHead",
+			"rootTitle": "A6Sknq_rootTitle",
+			"row": "A6Sknq_row",
+			"rowArchived": "A6Sknq_rowArchived",
+			"runningCount": "A6Sknq_runningCount",
+			"summary": "A6Sknq_summary",
+			"title": "A6Sknq_title"
 		};
 		//#endregion
 		//#region lib/types/client/SubagentSidebarPanel.js
@@ -155,7 +190,7 @@ window.__ModuleLoader__.load({
 			const { open, collapsedRoots, collapsedNodes, onlyRunning } = useStore((state) => state);
 			const [now, setNow] = (0, react.useState)(() => Date.now());
 			const roots = (0, react.useMemo)(() => Object.values(byId).filter((summary) => summary.origin !== "subagent" && summary.parentId === void 0).sort((a, b) => a.displayTitle.localeCompare(b.displayTitle)), [byId]);
-			const descendants = (0, react.useMemo)(() => (0, _deepseek_ai_dsh_client_runtime_client.indexSubagentDescendants)(byId), [byId]);
+			const descendants = (0, react.useMemo)(() => indexSubagentDescendants(byId), [byId]);
 			const archived = (0, react.useMemo)(() => new Set(archivedSessionIds), [archivedSessionIds]);
 			(0, react.useEffect)(() => {
 				if (!open) return;
@@ -278,9 +313,10 @@ window.__ModuleLoader__.load({
 			const countKey = total === 1 ? "root.count.one" : "root.count.other";
 			const renderChildren = (parentSessionId, level) => {
 				const entries = catalogs[parentSessionId]?.entries ?? [];
+				const visible = onlyRunning ? entries.filter((entry) => entry.kind === "child" && byId[entry.id]?.running) : entries;
 				return (0, react_jsx_runtime.jsx)("div", {
 					role: "group",
-					children: (onlyRunning ? entries.filter((entry) => entry.kind === "child" && byId[entry.id]?.running) : entries).map((entry) => (0, react_jsx_runtime.jsx)(CatalogRow, {
+					children: visible.map((entry) => (0, react_jsx_runtime.jsx)(CatalogRow, {
 						entry,
 						parentSessionId,
 						level,
@@ -484,7 +520,7 @@ window.__ModuleLoader__.load({
 		* @returns the store handle (spec + type + identity + factory in one).
 		*/
 		function createSubagentSidebarStore() {
-			return (0, _deepseek_ai_dsh_client_runtime_client.defineStore)({
+			return (0, _deepseek_ai_dsh_client_store.defineStore)({
 				init: () => ({
 					open: false,
 					collapsedRoots: [],

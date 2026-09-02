@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-Web 子代理总览功能负责人：向 `shell.overlay` 贡献两个条目——一个全局的运行中计数胶囊和一个右侧停靠的总览面板。两者都只是 [`dsh-client-runtime`](../runtime/README.md) 从 host 帧折叠出的会话列表镜像的纯投影，因此本包不发任何 RPC、也不持有自己的数据：运行计数来自 `byId` 中 `origin: 'subagent'` 且摘要为运行中的行；面板树是 `subagentsByParent` 目录镜像（与[子代理目录](../ui-subagent/README.md)相同的推送式保鲜模型——面板订阅期间 manager 保持已打开目录的新鲜度，关闭时退订）。
+Web 子代理总览功能负责人：向 `shell.overlay` 贡献两个条目——一个全局的运行中计数胶囊和一个右侧停靠的总览面板。两者都只是 [`dsh-api-session-controller`](../../packages/api/session-controller) 从 host 帧折叠出的会话列表镜像的纯投影（经全局 `useSessions`/`useWorkspaces` 框架钩子读取），因此本包不发任何 RPC、也不持有自己的数据：运行计数来自 `byId` 中 `origin: 'subagent'` 且摘要为运行中的行；面板树是 `subagentsByParent` 目录镜像（与[子代理目录](../ui-subagent/README.md)相同的推送式保鲜模型——面板订阅期间 manager 保持已打开目录的新鲜度，关闭时退订）。
 
 胶囊只在至少有一个子代理会话运行时渲染，空闲的 host 保持角落干净；点击它打开面板。面板将每个根会话的直接子代理目录分组在可折叠的组头下——根会话是顶层会话（无 subagent 来源、无父级），组之间互相独立地展开/折叠；行遵循官方目录布局：状态点（运行中 → ongoing，已结束 → done）、持久化标签、`标题 · 模式 · 活动` 副行、以及从会话投影折叠出的 token/时长指标。分支像官方页头操作一样通过目录镜像懒加载展开。工作区归档集合中的会话在根组头和行上带「已归档」徽标，已归档行变暗。「仅显示运行中」过滤可以收窄树；Escape、方向键、Home 和 End 按官方键盘协议导航树。
 

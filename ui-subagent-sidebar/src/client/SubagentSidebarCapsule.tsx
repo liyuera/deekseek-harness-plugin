@@ -1,6 +1,7 @@
 import { StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import { NS } from './locales.ts'
 import type { createSubagentSidebarStore } from './stores.ts'
 import css from './SubagentSidebarCapsule.module.css'

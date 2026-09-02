@@ -7,7 +7,7 @@
  * Collapse sets are plain arrays: the immer-backed store engine has no
  * MapSet plugin, so mutable Set state is not draft-safe.
  */
-import { defineStore } from '@deepseek-ai/dsh-client-runtime/client';
+import { defineStore } from '@deepseek-ai/dsh-client-store';
 /** Toggle one id in a collapse array. */
 function toggle(list, id) {
     return list.includes(id)

@@ -3,9 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import { makeTranslate, workspaceListState } from '@deepseek-ai/dsh-client-test-runtime'
 import { bindSnapshotSelector } from '@deepseek-ai/dsh-client-web-react'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type {
-  SessionId, SessionListState, SessionSummary, SubagentCatalogSnapshot,
-} from '@deepseek-ai/dsh-client-runtime/client'
+  SessionListState, SessionSummary, SubagentCatalogSnapshot,
+} from '@deepseek-ai/dsh-api-session-controller/client'
 import {
   SubagentSidebarCapsule, type SubagentSidebarCapsuleProps,
 } from '../src/client/SubagentSidebarCapsule.tsx'

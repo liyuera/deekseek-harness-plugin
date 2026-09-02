@@ -6,10 +6,13 @@
  * and holds no data of its own. The two entries share one viewing store
  * (open/collapse/filter state) instantiated here.
  */
-import type { ClientContext, SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { SubagentSidebarCapsule } from './SubagentSidebarCapsule.tsx'
 import { SubagentSidebarPanel, type SubagentSidebarPanelInjected } from './SubagentSidebarPanel.tsx'
+import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { createSubagentSidebarStore } from './stores.ts'
 import { en, NS, zh, type SubagentSidebarKey } from './locales.ts'
 

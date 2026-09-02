@@ -4,7 +4,7 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-		let _deepseek_ai_dsh_client_runtime_client = require("@deepseek-ai/dsh-client-runtime/client");
+		let _deepseek_ai_dsh_client_store = require("@deepseek-ai/dsh-client-store");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
@@ -37,7 +37,7 @@ window.__ModuleLoader__.load({
 				namespace: "dev-dock",
 				decode: decodeSettings
 			});
-			const store = (0, _deepseek_ai_dsh_client_runtime_client.createSnapshotStore)({
+			const store = (0, _deepseek_ai_dsh_client_store.createSnapshotStore)({
 				ready: false,
 				settings: void 0
 			});
@@ -61,21 +61,23 @@ window.__ModuleLoader__.load({
 						const current = store.getSnapshot().settings;
 						if (current === void 0) return;
 						const rest = current.workspacePrefs.filter((p) => p.workspaceId !== workspaceId);
-						await write("workspacePrefs", editor === "" ? rest : [...rest, {
+						const next = editor === "" ? rest : [...rest, {
 							workspaceId,
 							editor
-						}]);
+						}];
+						await write("workspacePrefs", next);
 					},
 					async setEditorManualPath(name, manualPath) {
 						const current = store.getSnapshot().settings;
 						if (current === void 0) return;
-						await write("editors", current.editors.find((e) => e.name === name) === void 0 ? [...current.editors, {
+						const next = current.editors.find((e) => e.name === name) === void 0 ? [...current.editors, {
 							name,
 							manualPath
 						}] : current.editors.map((e) => e.name === name ? {
 							...e,
 							manualPath
-						} : e));
+						} : e);
+						await write("editors", next);
 					},
 					async setTerminalApp(app) {
 						await write("terminalApp", app);
@@ -139,7 +141,7 @@ window.__ModuleLoader__.load({
 		* @returns the store handle (spec + type + identity + factory in one).
 		*/
 		function createDevDockStore() {
-			return (0, _deepseek_ai_dsh_client_runtime_client.defineStore)({
+			return (0, _deepseek_ai_dsh_client_store.defineStore)({
 				init: () => ({ open: false }),
 				actions: { setOpen: (draft, open) => {
 					draft.open = open;
@@ -802,7 +804,7 @@ window.__ModuleLoader__.load({
 			const [iconFailed, setIconFailed] = (0, react.useState)({});
 			const prefs = settings?.workspacePrefs ?? [];
 			const editors = settings?.editors ?? [];
-			const editorNames = [...new Set([...EDITOR_OPTIONS, ...editors.map((e) => e.name)])];
+			const editorNames = [.../* @__PURE__ */ new Set([...EDITOR_OPTIONS, ...editors.map((e) => e.name)])];
 			const prefOf = (workspaceId) => prefs.find((p) => p.workspaceId === workspaceId)?.editor ?? "";
 			const setPref = async (workspaceId, editor) => {
 				await dataActions.setWorkspacePref(workspaceId, editor);

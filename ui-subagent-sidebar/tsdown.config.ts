@@ -6,4 +6,4 @@
 // (bins resolve from the harness root node_modules).
 import { clientBundle } from '../../packages/client/tsdown.client.ts'
 
-export default clientBundle('@liuyera/dsh-client-ui-subagent-sidebar', ['lib/types/index.js', 'lib/types/invariant.js'])
+export default clientBundle('@liyuera/dsh-client-ui-subagent-sidebar', ['lib/types/index.js', 'lib/types/invariant.js'])

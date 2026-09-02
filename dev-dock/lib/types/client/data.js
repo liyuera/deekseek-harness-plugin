@@ -7,7 +7,7 @@
  * half and runs deterministic desktop actions.
  * @module @liyuera/dsh-dev-dock/client/data
  */
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client';
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store';
 /** Canonical editor names across platforms (union for stable UI display). */
 export const EDITOR_NAMES = [
     'WebStorm', 'VS Code', 'IntelliJ IDEA', 'Cursor', 'Sublime Text', 'HBuilderX',

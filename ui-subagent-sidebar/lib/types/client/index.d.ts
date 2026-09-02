@@ -6,7 +6,7 @@
  * and holds no data of its own. The two entries share one viewing store
  * (open/collapse/filter state) instantiated here.
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client';
+import type { Context as ClientContext } from '@deepseek-ai/cordis';
 import { type SubagentSidebarKey } from './locales.ts';
 declare module '@deepseek-ai/dsh-client-ui-slots' {
     interface LocaleNamespaceMap {

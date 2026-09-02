@@ -4,7 +4,7 @@
  * and survives entry/overlay remounts.
  * @module @liyuera/dsh-dev-dock/client/stores
  */
-import { type EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client';
+import { type EngineStoreHandle } from '@deepseek-ai/dsh-client-store';
 /** Panel viewing state. */
 export type DevDockViewState = {
     /** Whether the start-work dialog is open. */
