@@ -1,0 +1,77 @@
+{
+  "name": "@liuyera/dsh-chrome-browser",
+  "description": "Chrome browser control for dsh: list the user's tabs, read page content, navigate, click/type, evaluate JS and capture screenshots through the Chrome DevTools Protocol, plus a composer tab picker that sends a selected tab to the agent",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./invariant": {
+      "types": "./lib/invariant.d.ts",
+      "default": "./lib/invariant.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-renderer"
+      ],
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b --force && tsdown --env.DSH_BUILD_FACE=client --config-loader tsx",
+    "bundle": "tsdown --config-loader tsx",
+    "watch": "tsdown --watch --config-loader tsx",
+    "test": "vitest run",
+    "test:smoke": "DSH_CHROME_SMOKE=1 vitest run tests/smoke.spec.ts"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liyuera/deepseek-harness-plugin.git",
+    "directory": "chrome-browser"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-tools": "^0.1.2-alpha.4",
+    "@deepseek-ai/schemastery": "^3.18.2"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-client-ui-conversation": "^0.1.2-alpha.4",
+    "@deepseek-ai/dsh-client-ui-primitives": "^0.1.2-alpha.4",
+    "@deepseek-ai/dsh-client-ui-renderer": "^0.1.2-alpha.4",
+    "@deepseek-ai/dsh-client-ui-slots": "^0.1.2-alpha.4",
+    "@deepseek-ai/dsh-invariants": "^0.1.2-alpha.4",
+    "@deepseek-ai/dsh-util-values": "^0.1.2-alpha.4",
+    "@types/react": "~18.3.1",
+    "@types/react-dom": "~18.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.3.1"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "extension"
+  ]
+}

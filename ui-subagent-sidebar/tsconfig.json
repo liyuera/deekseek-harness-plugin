@@ -5,7 +5,7 @@
   // the plugin repo has no node_modules links to workspace packages, so the
   // src-plane is the only resolution that works outside the harness build.
   // This project typechecks only while the repo lives inside a
-  // deepseek-harness checkout (the intended layout: deekseek-harness-plugin/
+  // deepseek-harness checkout (the intended layout: deepseek-harness-plugin/
   // at the harness root).
   "extends": "../../tsconfig.base.client.json",
   "compilerOptions": {

@@ -8,7 +8,9 @@
  */
 
 import z from '@deepseek-ai/schemastery'
-import { settingsNamespace } from '@deepseek-ai/dsh-settings'
+// dsh-settings 已移除运行时名称空间工厂函数（settingsNamespace），
+// 命名空间 id 现以 Branded 类型标记；字符串字面量经 register() 内建 brand。
+import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
 
 /** Workspace id (dsh workspace registry id) one IDE preference is keyed by. */
 export type WorkspacePrefKey = string
@@ -36,7 +38,8 @@ export interface DevDockSettings {
 }
 
 /** Branded settings namespace of this plugin. */
-export const DEV_DOCK_NAMESPACE = settingsNamespace('dev-dock')
+// 直接以字面量 brand（register 会校验小写连字符格式），不再经过已移除的工厂函数。
+export const DEV_DOCK_NAMESPACE = 'dev-dock' as SettingsNamespace
 
 /** Schemastery schema for the whole document (registered by the host half). */
 export const DevDockSettingsSchema: z<DevDockSettings> = z.object({

@@ -2,7 +2,6 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import z from "@deepseek-ai/schemastery";
-import { settingsNamespace } from "@deepseek-ai/dsh-settings";
 import { runNativeCommand } from "@deepseek-ai/dsh-native-command";
 //#region lib/types/schema.js
 /**
@@ -14,7 +13,7 @@ import { runNativeCommand } from "@deepseek-ai/dsh-native-command";
 * @module @liyuera/dsh-dev-dock/schema
 */
 /** Branded settings namespace of this plugin. */
-const DEV_DOCK_NAMESPACE = settingsNamespace("dev-dock");
+const DEV_DOCK_NAMESPACE = "dev-dock";
 /** Schemastery schema for the whole document (registered by the host half). */
 const DevDockSettingsSchema = z.object({
 	workspacePrefs: z.array(z.object({
@@ -232,9 +231,10 @@ function mergeEditors(detected, stored) {
 	for (const name of KNOWN_EDITORS) {
 		const current = byName.get(name);
 		const detectedPath = detected[name];
-		if (current !== void 0) if (detectedPath !== void 0) current.detectedPath = detectedPath;
-		else delete current.detectedPath;
-		else {
+		if (current !== void 0) {
+			if (detectedPath !== void 0) current.detectedPath = detectedPath;
+			else delete current.detectedPath;
+		} else {
 			const entry = { name };
 			if (detectedPath !== void 0) entry.detectedPath = detectedPath;
 			byName.set(name, entry);
@@ -421,7 +421,13 @@ async function openProjectTerminal(facts, projectPath, command, preferIterm = fa
 * @module @liyuera/dsh-dev-dock/actions
 */
 /** Gap between consecutive IDE launches in a start-work batch. */
-const IDE_LAUNCH_GAP_MS = 300;
+const IDE_LAUNCH_GAP_MS = 1200;
+/** How long to wait for the editor process after its first launch. */
+const IDE_LAUNCH_WAIT_MS = 2e4;
+/** Poll interval while waiting for the editor process. */
+const IDE_LAUNCH_POLL_MS = 400;
+/** How long to settle after the editor process appears. */
+const IDE_LAUNCH_SETTLE_MS = 800;
 /**
 * Whether a directory shows uni-app/miniapp traits (manifest.json markers).
 * @param workspacePath - canonical workspace directory.
@@ -560,16 +566,23 @@ async function startWorkFor(scope, facts, workspaces) {
 	const items = [];
 	let opened = 0;
 	let started = 0;
+	let lastEditorAppPath;
 	for (const workspace of workspaces) {
-		const ide = await openIdeFor(scope, facts, workspace);
+		const ide = await resolveWorkspaceEditor(scope, facts, workspace);
+		if (ide.ok && lastEditorAppPath !== void 0 && facts.platform === "darwin") await waitForAppProcess(facts, lastEditorAppPath);
+		const ideResult = ide.ok ? await openProjectInIde(facts, workspace.path, ide.editor, ide.path) : {
+			ok: false,
+			error: ide.error
+		};
+		if (ide.ok) lastEditorAppPath = ide.path;
 		const terminal = await openTerminalFor(scope, facts, workspace);
-		if (ide.ok) opened++;
+		if (ideResult.ok) opened++;
 		if (terminal.ok) started++;
 		const item = {
 			workspaceId: workspace.id,
-			ok: ide.ok && terminal.ok
+			ok: ideResult.ok && terminal.ok
 		};
-		if (!ide.ok) item.error = ide.error;
+		if (!ideResult.ok) item.error = ideResult.error;
 		else if (!terminal.ok) item.error = terminal.error;
 		items.push(item);
 		await new Promise((resolve) => setTimeout(resolve, IDE_LAUNCH_GAP_MS));
@@ -580,6 +593,28 @@ async function startWorkFor(scope, facts, workspaces) {
 		started,
 		items
 	};
+}
+/**
+* Wait until one editor app path has a live process (bounded). LaunchServices
+* hands a second `open -a <App>` to the running instance; if that instance is
+* still cold, the directory event can be lost, so subsequent launches wait
+* for it.
+* @param facts - platform facts with the injectable runner.
+* @param appPath - editor .app path launched first.
+*/
+async function waitForAppProcess(facts, appPath) {
+	const signal = new AbortController().signal;
+	const deadline = Date.now() + IDE_LAUNCH_WAIT_MS;
+	while (Date.now() < deadline) {
+		try {
+			const { stdout } = await facts.run("pgrep", ["-f", appPath], signal);
+			if (stdout.trim() !== "") {
+				await new Promise((resolve) => setTimeout(resolve, IDE_LAUNCH_SETTLE_MS));
+				return;
+			}
+		} catch {}
+		await new Promise((resolve) => setTimeout(resolve, IDE_LAUNCH_POLL_MS));
+	}
 }
 //#endregion
 //#region lib/types/platform/runner.js

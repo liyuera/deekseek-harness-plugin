@@ -37,7 +37,16 @@ export interface DesktopWorkspace {
 export type DesktopActionResult = { ok: true } | { ok: false; error: string }
 
 /** Gap between consecutive IDE launches in a start-work batch. */
-const IDE_LAUNCH_GAP_MS = 300
+const IDE_LAUNCH_GAP_MS = 1200
+
+/** How long to wait for the editor process after its first launch. */
+const IDE_LAUNCH_WAIT_MS = 20000
+
+/** Poll interval while waiting for the editor process. */
+const IDE_LAUNCH_POLL_MS = 400
+
+/** How long to settle after the editor process appears. */
+const IDE_LAUNCH_SETTLE_MS = 800
 
 /**
  * Whether a directory shows uni-app/miniapp traits (manifest.json markers).
@@ -201,16 +210,27 @@ export async function startWorkFor(
   const items: Array<{ workspaceId: string; ok: boolean; error?: string }> = []
   let opened = 0
   let started = 0
+  // The batch opens one editor app repeatedly; macOS LaunchServices merges
+  // `open` calls that hit a cold-starting app, so wait for the process to be
+  // up before the next launch.
+  let lastEditorAppPath: string | undefined
   for (const workspace of workspaces) {
-    const ide = await openIdeFor(scope, facts, workspace)
+    const ide = await resolveWorkspaceEditor(scope, facts, workspace)
+    if (ide.ok && lastEditorAppPath !== undefined && facts.platform === 'darwin') {
+      await waitForAppProcess(facts, lastEditorAppPath)
+    }
+    const ideResult = ide.ok
+      ? await openProjectInIde(facts, workspace.path, ide.editor, ide.path)
+      : { ok: false as const, error: ide.error }
+    if (ide.ok) lastEditorAppPath = ide.path
     const terminal = await openTerminalFor(scope, facts, workspace)
-    if (ide.ok) opened++
+    if (ideResult.ok) opened++
     if (terminal.ok) started++
     const item: { workspaceId: string; ok: boolean; error?: string } = {
       workspaceId: workspace.id,
-      ok: ide.ok && terminal.ok,
+      ok: ideResult.ok && terminal.ok,
     }
-    if (!ide.ok) item.error = ide.error
+    if (!ideResult.ok) item.error = ideResult.error
     else if (!terminal.ok) item.error = terminal.error
     items.push(item)
     await new Promise((resolve) => setTimeout(resolve, IDE_LAUNCH_GAP_MS))
@@ -220,6 +240,31 @@ export async function startWorkFor(
     opened,
     started,
     items,
+  }
+}
+
+/**
+ * Wait until one editor app path has a live process (bounded). LaunchServices
+ * hands a second `open -a <App>` to the running instance; if that instance is
+ * still cold, the directory event can be lost, so subsequent launches wait
+ * for it.
+ * @param facts - platform facts with the injectable runner.
+ * @param appPath - editor .app path launched first.
+ */
+async function waitForAppProcess(facts: PlatformFacts, appPath: string): Promise<void> {
+  const signal = new AbortController().signal
+  const deadline = Date.now() + IDE_LAUNCH_WAIT_MS
+  while (Date.now() < deadline) {
+    try {
+      const { stdout } = await facts.run('pgrep', ['-f', appPath], signal)
+      if (stdout.trim() !== '') {
+        await new Promise((resolve) => setTimeout(resolve, IDE_LAUNCH_SETTLE_MS))
+        return
+      }
+    } catch {
+      // Process not up yet; keep polling.
+    }
+    await new Promise((resolve) => setTimeout(resolve, IDE_LAUNCH_POLL_MS))
   }
 }
 

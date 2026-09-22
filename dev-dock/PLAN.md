@@ -1,7 +1,7 @@
 # devDock 插件实现计划
 
 > 将 devDock（前端工程管理桌面工具）的精选功能移植为 dsh 插件。
-> 独立仓库：`deekseek-harness-plugin/`（GitHub 单独管理，位于 deepseek-harness 工作区根）。
+> 独立仓库：`deepseek-harness-plugin/`（GitHub 单独管理，位于 deepseek-harness 工作区根）。
 > 完全符合 dsh 插件规范（slot 系统、工具契约、settings 能力、权限模型），不参考 devDock 实现。
 
 ## 0. 功能规格（已与用户确认）
@@ -20,7 +20,7 @@
 
 | 决策点 | 结论 | 依据 |
 |---|---|---|
-| 插件位置 | `deekseek-harness-plugin/dev-dock/`，包名 `@liyuera/dsh-dev-dock` | 仓库 README 约定"每个插件一个目录" |
+| 插件位置 | `deepseek-harness-plugin/dev-dock/`，包名 `@liyuera/dsh-dev-dock` | 仓库 README 约定"每个插件一个目录" |
 | 构建 | 借用 harness 的 `clientBundle` 预设（相对路径 `../../packages/client/tsdown.client.ts`），`tsc -b && tsdown --env.DSH_BUILD_FACE=client` | ui-subagent-sidebar 模板 |
 | 依赖解析 | `@deepseek-ai/*` 全部声明 peerDependencies，运行时由 harness 的 healed `$DSH_HOME/profiles/node_modules` 回退解析 | app-boot `profile.ts:204-239`；ui-subagent-sidebar package.json 先例 |
 | 数据存储 | settings 能力：注册 `dev-dock` namespace，持久化于 `$DSH_HOME/settings.yaml` | `ctx.settings.register(settingsNamespace('dev-dock'), schema)` |
@@ -37,7 +37,7 @@
 ## 2. 仓库结构
 
 ```
-deekseek-harness-plugin/
+deepseek-harness-plugin/
 ├── README.md                        # 更新插件列表
 └── dev-dock/                        # @liyuera/dsh-dev-dock
     ├── package.json                 # dsh.bundle + dsh.client + peerDeps + exports
@@ -221,7 +221,7 @@ export function apply(ctx: ClientContext): void {
 
 （照 ui-subagent-sidebar 的 cordis.patch.yml：单行 insert，name 即包名；`dsh.client` 声明在 package.json。）
 
-安装：`dsh plugin --profile web add link:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deekseek-harness-plugin/dev-dock`，重启 `dsh web`。
+安装：`dsh plugin --profile web add link:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/dev-dock`，重启 `dsh web`。
 
 ## 7. 测试策略
 

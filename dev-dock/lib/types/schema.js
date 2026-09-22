@@ -7,9 +7,9 @@
  * @module @liyuera/dsh-dev-dock/schema
  */
 import z from '@deepseek-ai/schemastery';
-import { settingsNamespace } from '@deepseek-ai/dsh-settings';
 /** Branded settings namespace of this plugin. */
-export const DEV_DOCK_NAMESPACE = settingsNamespace('dev-dock');
+// 直接以字面量 brand（register 会校验小写连字符格式），不再经过已移除的工厂函数。
+export const DEV_DOCK_NAMESPACE = 'dev-dock';
 /** Schemastery schema for the whole document (registered by the host half). */
 export const DevDockSettingsSchema = z.object({
     workspacePrefs: z.array(z.object({
