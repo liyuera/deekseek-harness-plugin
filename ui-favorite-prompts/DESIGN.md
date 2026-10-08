@@ -24,7 +24,7 @@
 
 ## 2. 硬约束
 
-**纯插件实现，不修改 dsh 本体任何代码。** 这条约束直接决定了下面每一处的实现方式，且排除了"给 ui-chat 加一个 user-actions 槽"这条最自然的路径（该槽不存在，见 §7 证据表 E1）。
+**纯插件实现，不修改 dsh 本体任何代码。** 这条约束直接决定了下面每一处的实现方式，且排除了"给 ui-chat 加一个 user-actions 槽"这条最自然的路径（该槽不存在，见 §14 证据表 E1）。
 
 ## 3. 包形态与安装
 
@@ -39,9 +39,10 @@ ui-favorite-prompts/
 │   └── client/
 │       ├── index.ts      # apply：建 store、装配三个域
 │       ├── locales.ts    # zh / en 词典
-│       ├── store.ts      # 收藏列表快照 store + 增删改 action
+│       ├── normalize.ts  # 文本归一化（"什么算同一条"的唯一实现）+ 候选短名派生
+│       ├── store.ts      # 收藏列表快照 store：增删改 action + 归一化派生索引
 │       ├── transport.ts  # fetch 封装
-│       ├── strip/        # 需求 1：收藏条（Definition + renderer + CSS Module）
+│       ├── strip/        # 需求 1：收藏条（Definition + renderer + 行内撤销 + CSS Module）
 │       ├── trigger/      # 需求 2：@ 触发源
 │       └── settings/     # 需求 3：设置页
 └── tests/
@@ -138,11 +139,39 @@ Chat 节点排序比较器为 anchor → rank → originalAnchor → **key 字�
 ### 5.3 渲染与交互
 
 - 右对齐一行，只有一个小小的书签按钮；未收藏＝空心，已收藏＝实心。
-- 用自己的 CSS Module + `--dsw-*` 语义 token，配一个负 margin 把这一行往气泡方向收，视觉上贴近；hover / focus-within 时才完全显形（和复制图标的显隐语言一致，但由本插件自己的 CSS 控制）。
-- 点击：已收藏 → 取消收藏；未收藏 → 收藏。两种都弹 toast 反馈，失败时弹错误 toast 且列表不变。
+- 布局用一个负 margin 把这一行往气泡方向收，视觉上贴近；静止时按钮低透明度常驻（保证可发现），指针悬停或键盘聚焦时完全显形。样式细节见 §9.2。
+- **点击即切换**：未收藏 → 收藏；已收藏 → 取消收藏。撤销手段见 §5.4。
 - 收藏时写入的 `source` 由两处拼成：`sessionId` 来自该槽的 standard props（`conversation.chat.node` 是 session 作用域），`seq` 来自节点 data —— 两者在组件里合成后交给 action，不由 inject 阶段闭包捕获。
-- "是否已收藏"的判定：把消息文本 trim 后与列表中记录的 `text` 做全等比较（不比较 `source`，同一段提示词可以从任何地方收藏/取消）。
 - 正文为空（纯附件）的消息不生成节点，因此不会出现空行。
+
+### 5.4 点击取消的撤销窗口
+
+收藏条可能出现在任何一条历史消息上（包括别的会话），一次误点就把收藏删了，因此**取消收藏必须在原地可撤销**：
+
+- 取消后，收藏条那一行原地换成「已取消收藏 · 撤销」的小字，**停留 5 秒**后自行消失。
+- 点「撤销」用**原 `id`、原 `createdAt`、原 `source`** 重建记录（不是新建一条），所以列表顺序与创建时间不变。
+- 5 秒内切换到别的会话/设置页或再次收藏同一条，撤销入口随之失效（状态归组件私有，不跨会话保存）。
+- **不能借用 ui-primitives 的 `Toast` 承载撤销**：`Toast` 只有 text / icon / holdMs / onDone，没有动作槽（E15），它是会淡出的横幅。所以撤销入口是本插件自己的行内控件，样式自控。
+
+### 5.5 "是否已收藏"的判定：归一化文本
+
+判定不比较 `source`，只看文本——同一段提示词可以从任何会话、任何消息收藏或取消。比较的是**归一化之后**的文本，规则如下（这就是"什么算同一条"的定义，写在 `src/normalize.ts` 里并有单测覆盖）：
+
+1. Unicode **NFC** 归一化（统一全角/半角与组合字符）；
+2. `\r\n`、`\r` → `\n`（跨平台复制粘贴）；
+3. 去掉每行行尾空白，再 trim 整串首尾；
+4. 行内连续空格/制表符压成一个空格。
+
+由此：
+
+- 从别处粘贴、编辑器自动去尾空格、Windows 换行 → **判为已收藏**（实心）；
+- 改动用词、增删句子 → **判为不同**（空心），这是对的：语义变了就是另一条。
+
+**性能**：不能在每条消息渲染时遍历收藏列表算归一化（30 条消息 × 50 条收藏 = 每次渲染 1500 次）。store 在列表变化的同一步里构建派生索引 `normalizedTexts: Set<string>`，收藏条只做 O(1) 命中判断。这是数据层的纯派生，不是组件里的订阅。
+
+**不要把归一化结果作为 `hash` 字段持久化**：索引是派生的，归一化规则将来还能改；一旦落盘成 hash，规则就改不动了（旧记录的 hash 会全部失配）。
+
+**跨会话的后果要明确接受**：列表是全局的，所以会话 B 里文本相同的消息会显示为已收藏；从任意一处取消，删掉的是同一条记录，所有相同文本的消息会同时变回空心。记录里的 `source` 只是"第一次收藏时的那条消息"，纯溯源用，不参与判定。
 
 ## 6. 需求 2：`@` 拉出收藏
 
@@ -214,9 +243,33 @@ interface FavoritesState {
 - 首帧 `status: 'loading'`；失败进 `error` 并在设置页与 `@` 菜单里表现为"空/不可用"，不抛给用户看堆栈。
 - 多标签页一致：`window` 的 `focus` 事件触发一次 `refresh()`（不做 SSE / 轮询，普通场景够用）。
 
-## 9. 文案与本地化
+## 9. 文案与样式（遵循 dsh 规范）
+
+### 9.1 文案
 
 所有产品可见文案走本插件自己的 typed locale 词典（`LocaleNamespaceMap` 合并 + `ctx.locale.register(NS, { zh, en })` + `locale: NS` 注册项拿 `t` 座位），与仓库规范一致。`@` 菜单的分组标题用候选行的 `section` 字段承载。
+
+### 9.2 样式规范
+
+权威依据是 `docs/web-styling.md`（E17）。落地要求：
+
+- **只用 CSS Modules + `clsx`**；不引入组件库、不引入 Tailwind；不写全局样式表（全局样式归 ui-theme）。
+- **只用 `--dsw-alias-*` 语义 token**，组件 CSS 里禁止出现色值；主题的明暗分支不得进入本插件（不写 `.dark &` 这类选择器）。
+- **先复用再自造**：设置页的按钮、单行输入、Tooltip 直接用 `ui-primitives` 的 `Button`（`variant` / `size` 已覆盖胶囊与紧凑形态）、`Input`、`Tooltip`。`Input` 是单行原子，多行编辑框没有 primitive，参照仓库既有先例（设置里的反馈对话框、自由问答的 textarea）自己写，颜色/字号/圆角一律走 token。
+- **中性描边 0.5px**；需要浮起的面用 `box-shadow: var(--dsw-elevation-*)` 且 `border: 0`，绝不把 `--dsw-alias-border-*` 与 elevation 阴影配对。
+- **键盘焦点必须可见**：仓库没有全局 outline 重置，默认焦点环要保留；若要自定义，必须给出等价的可见指示。hover 显现的控件在触屏上不能消失——`@media (hover: hover)` 之外保持常显。
+- **尊重减弱动效**：`prefers-reduced-motion` 下不做透明度过渡。
+- **跟随字号设置**：尺寸用 `calc(Npx + var(--dsh-content-font-delta, 0px))`（该变量由 ui-theme 挂在 `body` 上，随"设置 → 字号大小"变化），与现有消息动作行同源。
+
+**收藏条必须与现有消息动作行视觉同源**，否则一眼就是外挂。直接照搬 `MessageIconActions.module.css` 已验证的形态（E16）：28px 方形热区、`padding: 6px`、`border-radius: 28px`、透明底、`color: var(--dsw-alias-label-tertiary)`，hover 时底色 `--dsw-alias-interactive-bg-hover`、文字色 `--dsw-alias-label-secondary`，图标 15px，显隐过渡 `opacity 80ms ease`。
+
+**hover 显现用兄弟选择器，不动别人的 DOM**：ui-chat 给每个节点行发布 `data-chat-flow-kind={节点 kind}`，而收藏条行恰好是用户消息行的紧邻兄弟（§5.2 的排序保证），所以
+
+```css
+[data-chat-flow-kind='user']:hover + [data-chat-flow-kind='favorite-strip'] .strip { opacity: 1 }
+```
+
+就能做到"悬停气泡时浮现收藏按钮"，与复制图标的行为一致。这只是增强：选择器失效时退化为常驻低透明度，功能不受影响。属性选择器不受 CSS Modules 改名影响，本插件的类名照常哈希。
 
 ## 10. 失败与边界
 
@@ -226,7 +279,8 @@ interface FavoritesState {
 | 网络失败 / 非 2xx | 保留原列表，弹错误 toast；设置页的编辑态不关闭，草稿不丢 |
 | 未知 id（被别处删掉了） | 404 → 前端刷新列表并提示"该收藏已不存在" |
 | 手改 JSON 导致单条非法 | domain 层 `backup-and-skip` 把该条挪走并记日志，其余条目正常加载 |
-| 重复收藏同一段文本 | 允许（列表按 id 区分）；收藏条只按文本判"已收藏"，所以对同文本会显示为已收藏 |
+| 重复收藏同一段文本 | 允许（列表按 id 区分）；收藏条只按归一化文本判"已收藏"，所以对同文本会显示为已收藏 |
+| 误点取消收藏 | 行内 5 秒撤销窗口，按原 id/createdAt 原样恢复（§5.4）；窗口过后不可恢复 |
 | 超长正文 | 记录不设长度上限；候选行的 `name` / `description` 截断显示，插入时用全文 |
 
 ## 11. 验证计划
@@ -235,11 +289,13 @@ interface FavoritesState {
 
 - 正文 → 候选短名的派生（首行截断、重名追加序号）。
 - `candidates()` 的过滤与排序（中文子串、大小写、空查询上限）。
-- "是否已收藏"的选择器（trim 全等）。
+- 归一化函数：NFC、`\r\n`、行尾空白、行内空白压缩各一条用例，外加"改词不算同一条"的反例。
+- 派生索引：列表变化后 `normalizedTexts` 同步更新；同一文本在不同会话的消息都命中。
+- 取消收藏的撤销：5 秒内撤销恢复出**原 id 与 createdAt**，超时后入口失效。
 
 **组件测试**（jsdom + 直接喂 props）
 
-- 收藏条：未收藏/已收藏两态、点击触发正确 action、失败时不清空状态。
+- 收藏条：未收藏/已收藏两态、点击触发正确 action、失败时不清空状态、取消后出现撤销入口。
 - 设置页：列表渲染、空状态、新增、编辑保存/取消、删除二次确认。
 - `@` 菜单候选与 `onPick` 返回 `{ text }` 的形状。
 
@@ -254,8 +310,10 @@ interface FavoritesState {
 2. 发一条消息 → 消息下方出现收藏条 → 点击 → toast 成功，`$DSH_HOME/storages/favorite_prompts/prompts/` 下出现新文件。
 3. 输入框打 `@` → 出现「收藏」组 → 选中 → 提示词整段插入且可继续编辑 → 发送成功。
 4. 设置 → 收藏提示词：改一条、删一条、手动加一条，重启 dsh 后仍在。
-5. 再点一次已收藏消息的收藏条 → 取消收藏，文件消失。
-6. 手动把某条 JSON 改坏 → 重启 → 该条被挪走，其余正常（日志有记录）。
+5. 再点一次已收藏消息的收藏条 → 取消收藏；5 秒内点「撤销」→ 记录按原 id/createdAt 回来、顺序不变。
+6. 在**另一个会话**里发同一条提示词（或从别处粘贴、带 Windows 换行）→ 该消息的收藏条直接是实心。
+7. 悬停消息气泡 → 收藏按钮浮现，与复制图标的显隐节奏一致；键盘 Tab 到该按钮时焦点环可见。
+8. 手动把某条 JSON 改坏 → 重启 → 该条被挪走，其余正常（日志有记录）。
 
 ## 12. 已知限制
 
@@ -289,3 +347,6 @@ interface FavoritesState {
 | E12 | `onPick` 返回 `{ text }` → 纯文本插入，替换 `@查询串`，无需 codec | `packages/client/ui-conversation/src/client/contract/input.ts`、`.../client/input/facade.ts`、`.../client/input/hub.ts` |
 | E13 | `settings.section` 是 list 槽，注册项携带 id/order/label | `packages/client/ui-settings/src/client/contract/slots.ts` |
 | E14 | 新增设置页的最小范例（49 行） | `packages/client/ui-settings-unarchive-sessions/src/client/index.ts` |
+| E15 | `Toast` 只有 text/icon/anchor/holdMs/onDone，没有动作槽，无法承载"撤销" | `packages/client/ui-primitives/src/Toast.tsx` |
+| E16 | 消息动作行的形态（28px 热区 / 15px 图标 / 80ms 透明度过渡）；每个节点行发布 `data-chat-flow-kind={kind}`，节点行是同一父容器下的兄弟 | `packages/client/ui-chat/src/client/chat/MessageIconActions.module.css`、`.../chat/ChatNodeSeat.tsx`、`.../chat/ChatView.tsx` |
+| E17 | 样式规范：token、CSS Modules、0.5px 描边、elevation、焦点与减弱动效要求；`--dsh-content-font-delta` 挂在 body 上随字号设置变化 | `docs/web-styling.md`、`packages/client/ui-theme/src/styles/gradient-shadow-text.css`、`packages/client/ui-primitives/src/Button.module.css` |
