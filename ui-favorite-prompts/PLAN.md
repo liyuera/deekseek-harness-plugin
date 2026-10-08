@@ -2350,3 +2350,26 @@ cd deepseek-harness-plugin && git add ui-favorite-prompts && git commit -m "feat
 **2. 占位符扫描**：无 TBD/TODO；每个代码步骤都是完整文件内容。
 
 **3. 类型一致性**：`PromptRecord`/`PromptSourceRef` 只在 `src/schema.ts` 定义一次；`FavoritesState`/`FavoritesActions` 只由 `store.ts` 定义，Task 5/7 通过 `InjectFace` 复用；`PromptTable` 由 `src/host/route.ts` 定义并被 `src/index.ts` 以 `as unknown as PromptTable` 适配（存储域 `KvTable` 的同名方法签名一致）；`FAVORITE_STRIP_KIND`、`CANDIDATE_LIMIT`、`UNDO_WINDOW_MS` 各自单一来源。
+
+---
+
+## 实施偏差记录
+
+执行中与计划的偏离记在这里，包含原因，避免后人照着过时的计划走。
+
+### D1（Task 1）：`LocaleNamespaceMap` 模块增强必须放在已 import 该模块的文件里
+
+计划把 `declare module '@deepseek-ai/dsh-client-ui-slots'` 放在 `src/client/locales.ts`。实测失败：
+
+- 只有 `declare module` 而没有该模块的 `import` 时，`tsc -b` 报 `TS6305: Output file .../ui-slots/lib/types/index.d.ts has not been built from source file .../ui-slots/src/index.ts`（项目引用图里无法建立"源 → 输出"的映射）。
+- 把路径改成已构建的 `lib/types/index.d.ts`、或删掉该 `references` 项，会分别退化成 `TS2664`（模块无法解析）与把 harness 源码拉进本程序（`TS6059/TS6307`）。
+
+**采用 dev-dock 的写法**：增强块放在 `src/client/index.ts`，并在同文件写一行 `import type {} from '@deepseek-ai/dsh-client-ui-slots'`。`tsconfig.json` 里 `@deepseek-ai/dsh-client-ui-slots` 路径指向 `packages/client/ui-slots/src/index.ts`，并保留该项目引用。
+
+### D2（Task 1）：`tsconfig.json` 保留显式 `paths` 与 `references`
+
+计划里的精简版（只有 `references`，靠 harness 根 `tsconfig.base.json` 的 `paths`）同样触发 D1 的错误；按 chrome-browser 的形态，在插件自己的 `tsconfig.json` 中显式声明所需 `paths`（指向 harness 源码）并保留对应 `references`。
+
+### D3（Task 1）：构建期依赖用软链，`node_modules` 不入库
+
+仓库 `.gitignore` 忽略 `node_modules/`，因此 `react`/`react-dom`/`zod`/`@testing-library/react` 与各 `@deepseek-ai/*` 都通过软链指向 harness 工作区（`@deepseek-ai/*` → `packages/...`，第三方 → `node_modules/.pnpm/...`）。换机器重建时需要按 Task 1 Step 10 重新建链。

@@ -1,0 +1,107 @@
+{
+  "extends": "../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "types": [
+      "node"
+    ],
+    "paths": {
+      "@deepseek-ai/cordis": [
+        "./../../vendor/cordis/src/index.ts"
+      ],
+      "@deepseek-ai/schemastery": [
+        "./../../vendor/schemastery/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-ui-slots": [
+        "./../../packages/client/ui-slots/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-ui-renderer/client": [
+        "./../../packages/client/ui-renderer/src/client/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-ui-conversation/client": [
+        "./../../packages/client/ui-conversation/src/client/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-ui-chat/client": [
+        "./../../packages/client/ui-chat/src/client/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-ui-input-trigger/client": [
+        "./../../packages/client/ui-input-trigger/src/client/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-ui-settings/client": [
+        "./../../packages/client/ui-settings/src/client/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-locale/client": [
+        "./../../packages/client/locale/src/client/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-ui-primitives": [
+        "./../../packages/client/ui-primitives/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-client-store": [
+        "./../../packages/client/store/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-session/surface": [
+        "./../../packages/core/session/src/surface.ts"
+      ],
+      "@deepseek-ai/dsh-session/types": [
+        "./../../packages/core/session/src/types.ts"
+      ],
+      "@deepseek-ai/dsh-host-webserver": [
+        "./../../packages/host/webserver/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-storage-domain": [
+        "./../../packages/storage/storage-domain/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-storage": [
+        "./../../packages/storage/storage/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../vendor/cordis"
+    },
+    {
+      "path": "../../vendor/schemastery"
+    },
+    {
+      "path": "../../packages/client/ui-slots"
+    },
+    {
+      "path": "../../packages/client/ui-renderer"
+    },
+    {
+      "path": "../../packages/client/ui-conversation"
+    },
+    {
+      "path": "../../packages/client/ui-chat"
+    },
+    {
+      "path": "../../packages/client/ui-input-trigger"
+    },
+    {
+      "path": "../../packages/client/ui-settings"
+    },
+    {
+      "path": "../../packages/client/locale"
+    },
+    {
+      "path": "../../packages/client/ui-primitives"
+    },
+    {
+      "path": "../../packages/client/store"
+    },
+    {
+      "path": "../../packages/core/session"
+    },
+    {
+      "path": "../../packages/host/webserver"
+    },
+    {
+      "path": "../../packages/storage/storage-domain"
+    }
+  ]
+}
