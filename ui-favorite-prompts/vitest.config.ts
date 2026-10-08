@@ -21,6 +21,7 @@ const ALIASES: Array<[string, string]> = [
   ['@deepseek-ai/schemastery$', 'vendor/schemastery/src/index.ts'],
   ['@deepseek-ai/dsh-storage-domain$', 'packages/storage/storage-domain/src/index.ts'],
   ['@deepseek-ai/dsh-storage$', 'packages/storage/storage/src/index.ts'],
+  ['@deepseek-ai/dsh-storage-json$', 'packages/storage/storage-json/src/index.ts'],
   ['@deepseek-ai/dsh-client-store$', 'packages/client/store/src/index.ts'],
   ['@deepseek-ai/dsh-client-ui-slots$', 'packages/client/ui-slots/src/index.ts'],
   ['@deepseek-ai/dsh-client-ui-primitives$', 'packages/client/ui-primitives/src/index.ts'],
