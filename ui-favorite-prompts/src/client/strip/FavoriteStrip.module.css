@@ -1,0 +1,89 @@
+/* Bookmark strip under a user message. Geometry mirrors the shared message
+   action row (ui-chat's MessageIconActions.module.css): 28px hit area, 15px
+   glyph, and the same 80ms opacity reveal, so the control reads as part of
+   that row rather than as a foreign element. */
+
+.strip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  height: calc(28px + var(--dsh-content-font-delta, 0px));
+  /* Hug the bubble above without shifting the transcript. */
+  margin-top: -4px;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(28px + var(--dsh-content-font-delta, 0px));
+  height: calc(28px + var(--dsh-content-font-delta, 0px));
+  padding: 6px;
+  border: none;
+  border-radius: 28px;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+}
+
+.action svg {
+  width: calc(15px + var(--dsh-content-font-delta, 0px));
+  height: calc(15px + var(--dsh-content-font-delta, 0px));
+}
+
+.action:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+}
+
+.action[data-saved] {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.undo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--dsh-content-font-size-secondary, 13px);
+  line-height: calc(20px + var(--dsh-content-font-delta, 0px));
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.undoButton {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: var(--dsw-alias-link);
+  cursor: pointer;
+}
+
+.undoButton:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-style: dotted;
+}
+
+/* Hover reveal: the strip is the flow row right after the message it belongs
+   to, so hovering the bubble reveals its bookmark. Devices without hover keep
+   the control visible at its resting opacity. Enhancement only — if the
+   attribute ever changes, the resting state below still works. */
+@media (hover: hover) {
+  .strip {
+    opacity: 0.35;
+    transition: opacity 80ms ease;
+  }
+
+  .strip:hover,
+  .strip:focus-within,
+  [data-chat-flow-kind='user']:hover + [data-chat-flow-kind='favorite-strip'] .strip {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strip {
+    transition: none;
+  }
+}
