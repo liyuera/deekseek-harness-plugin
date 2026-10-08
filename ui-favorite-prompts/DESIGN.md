@@ -102,11 +102,12 @@ export const PromptRecord = z.object({
 | `GET` | `/favorite-prompts` | 返回 `{ ok: true, items: PromptRecord[] }`，按 `createdAt` 降序 |
 | `POST` | `/favorite-prompts` | body `{ text, source? }` → 新建，返回新记录 |
 | `PATCH` | `/favorite-prompts` | body `{ id, text }` → 改正文，返回更新后的记录 |
+| `PUT` | `/favorite-prompts` | body `{ id, text, createdAt, source? }` → 按原 id 原样写回（撤销窗口用） |
 | `DELETE` | `/favorite-prompts?id=…` | 删除，返回 `{ ok: true }` |
 
+- `PUT` 只服务于"取消收藏后 5 秒内撤销"（§5.4）：普通新增由 Host 铸造 id，浏览器不铸造 id。
 - `id` 由 Host 生成，浏览器不铸造。
-- 失败统一 `{ ok: false, error: '<一句话>' }` + 合适的 4xx/5xx；未知 `id` 返回 404 而不是静默成功。
-- 方法不匹配返回 405；body 不是合法 JSON 返回 400。
+- 失败统一 `{ ok: false, error: '<HTTP 状态码> <一句话>' }`；路由按这个前缀回填状态码（未知 `id` 404、方法不支持 405、body 不是对象或 `text` 为空 400、域不可用 503）。
 
 ### 4.5 为什么不用 settings 命名空间
 

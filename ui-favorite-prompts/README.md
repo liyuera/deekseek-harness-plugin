@@ -1,0 +1,54 @@
+# ui-favorite-prompts
+
+给 dsh Web GUI 的"收藏提示词"插件：在消息下方一键收藏自己发过的提示词，在输入框用 `@` 拉出收藏并整段插入，在设置里增删改。
+
+纯插件实现——不修改 `deepseek-harness` 任何代码，只用它公开的扩展点。
+
+设计见 [DESIGN.md](DESIGN.md)，实现计划与偏差记录见 [PLAN.md](PLAN.md)。
+
+## 安装
+
+```sh
+dsh plugin --profile web add link:/绝对路径/deepseek-harness/deepseek-harness-plugin/ui-favorite-prompts
+```
+
+重启 `dsh web` 生效（profile 的 insert 行在启动时读取）。
+
+## 三个入口
+
+| 入口 | 扩展点 | 说明 |
+|---|---|---|
+| 消息下方书签 | 自建 Chat 节点 `favorite-strip` | 悬停气泡浮现，空心/实心表示是否已收藏；取消后 5 秒内可撤销 |
+| `@` 收藏组 | `ctx.inputTriggers.registerSource` | 选中后把提示词整段作为纯文本插入输入框（不是 chip） |
+| 设置 → 收藏提示词 | `settings.section` | 列表、行内编辑、二次确认删除、手动新增 |
+
+## 数据
+
+存放在 dsh 存储域的 per-record JSON 里，每条收藏一个文件：
+
+```
+$DSH_HOME/storages/favorite_prompts/prompts/<id>.json
+{ "version": 1, "record": { "id": "…", "text": "…", "createdAt": 1730000000000 } }
+```
+
+可读、可手改、可 git。单条 JSON 损坏时，domain 层会把该条挪走并记日志，其余条目照常加载。
+
+浏览器半边不直接读盘：Host 半边暴露一条同源路由 `/favorite-prompts`（GET 列表 / POST 新增 / PATCH 改文 / PUT 撤销写回 / DELETE 删除），浏览器侧只做镜像。
+
+## 开发
+
+```sh
+npx tsc -b && npx tsdown --config-loader tsx   # 构建（bin 解析自 harness 根 node_modules）
+node ../../node_modules/vitest/vitest.mjs run  # 测试
+```
+
+构建产物 `lib/`（含浏览器 bundle `lib/client.js`）提交进本仓库，安装即用。
+
+### 两个容易踩的坑
+
+1. **构建期依赖靠软链**：`node_modules/` 不入库。换机器后需重建软链——`@deepseek-ai/*` 指向 harness 工作区的 `packages/*`，`react`/`react-dom`/`zod`/`@testing-library/react`/`@types/*` 指向 harness 根 `node_modules/.pnpm/*`。
+2. **`LocaleNamespaceMap` 模块增强必须写在已 import 该模块的文件里**（本插件的 `src/client/index.ts`）。只有 `declare module` 而没有对应 `import type {}`，`tsc -b` 会报 `TS6305`（项目引用图里建立不了"源 → 输出"映射）。详见 [PLAN.md](PLAN.md) 的实施偏差 D1。
+
+### 收藏条的排序契约
+
+收藏条是自建 Chat 节点，靠节点 key 的字典序落在用户消息正下方：`key = ${kind.length}:${kind}${id}`，内置用户节点是 `13:input-message…`，本插件 `favorite-strip` 是 `14:favorite-strip…`。**改 kind 名长度或把 `anchorSeq` 从 `event.seq` 挪开，都会让收藏条跑到气泡上面或被折进"思考过程"折叠组。** 契约写在 `src/client/strip/definition.ts` 顶部，并有单测守着。
