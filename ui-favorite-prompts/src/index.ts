@@ -14,6 +14,13 @@ import { PROMPT_ROUTE, PROMPT_TABLE, type PromptRequest, type PromptResponse } f
 /** Host plugin name. */
 export const name = 'favorite-prompts'
 
+/**
+ * Services the host half needs. Both arrive from plugins that mount later in
+ * the tree than this row, so `apply` runs when they land instead of reading
+ * an empty context and staying inert for the rest of the process.
+ */
+export const inject = ['webServer', 'storageDomain']
+
 /** Background open attempts tolerated while a previous fiber releases the domain. */
 const OPEN_ATTEMPTS = 10
 /** Delay between open attempts, in ms. */
