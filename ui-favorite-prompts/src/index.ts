@@ -1,5 +1,120 @@
-/** Favorite-prompts host half. Real wiring lands in Task 3. */
+/**
+ * Favorite-prompts host half: opens the storage domain its records live in and
+ * serves the browser half's same-origin route. A composition without a web
+ * server has no browser half either, so the plugin stays inert there.
+ */
 import type { Context } from '@deepseek-ai/cordis'
+import type { IncomingMessage, ServerResponse } from 'node:http'
+import { DomainError, type Domain, type DomainFacility } from '@deepseek-ai/dsh-storage-domain'
+import type { WebServer } from '@deepseek-ai/dsh-host-webserver'
+import { favoritesDomain } from './domain.ts'
+import { handlePromptRequest, type PromptTable } from './host/route.ts'
+import { PROMPT_ROUTE, PROMPT_TABLE, type PromptRequest, type PromptResponse } from './schema.ts'
 
-/** Host plugin body. */
-export function apply(_ctx: Context): void {}
+/** Host plugin name. */
+export const name = 'favorite-prompts'
+
+/** Background open attempts tolerated while a previous fiber releases the domain. */
+const OPEN_ATTEMPTS = 10
+/** Delay between open attempts, in ms. */
+const OPEN_RETRY_MS = 100
+
+/**
+ * Open the domain, tolerating the short window in which a reloaded fiber's
+ * predecessor still holds the installation-wide domain name.
+ * @param facility - mounted domain facility.
+ * @returns the opened domain.
+ */
+async function openDomain(facility: DomainFacility): Promise<Domain<typeof favoritesDomain>> {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await facility.open(favoritesDomain)
+    } catch (error) {
+      const retryable = error instanceof DomainError && error.code === 'already-open'
+      if (!retryable || attempt >= OPEN_ATTEMPTS) throw error
+      await new Promise(resolve => setTimeout(resolve, OPEN_RETRY_MS))
+    }
+  }
+}
+
+/**
+ * Read the request body as JSON, tolerating an empty or malformed body.
+ * @param req - incoming request.
+ * @returns the parsed body, or undefined.
+ */
+async function readJsonBody(req: IncomingMessage): Promise<unknown> {
+  const chunks: Buffer[] = []
+  for await (const chunk of req) chunks.push(chunk as Buffer)
+  const raw = Buffer.concat(chunks).toString('utf-8').trim()
+  if (raw === '') return undefined
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Write one JSON answer.
+ * @param res - response to own.
+ * @param status - HTTP status code.
+ * @param value - response body.
+ */
+function writeJson(res: ServerResponse, status: number, value: PromptResponse): void {
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' })
+  res.end(JSON.stringify(value))
+}
+
+/**
+ * Mount the domain and the route.
+ * @param ctx - host context carrying `webServer` and `storageDomain`.
+ */
+export function apply(ctx: Context): void {
+  const webServer = ctx.get('webServer') as WebServer | undefined
+  const facility = ctx.get('storageDomain') as DomainFacility | undefined
+  if (webServer === undefined || facility === undefined) return
+
+  let disposed = false
+  const ready = openDomain(facility).then((domain) => {
+    // A late open still has to reach quiescence: close it here instead of
+    // leaking the domain, and let the route report the failure.
+    if (disposed) {
+      void domain.close()
+      throw new Error('favorite-prompts: domain opened after disposal')
+    }
+    return domain
+  })
+  // Only the route observes this promise; its rejection becomes a 503 there.
+  ready.catch(() => {})
+
+  ctx.effect(() => () => {
+    disposed = true
+    void ready.then(domain => domain.close()).catch(() => {})
+  }, 'favorite-prompts: domain lifetime')
+
+  ctx.effect(() => webServer.register({
+    kind: 'exact',
+    path: PROMPT_ROUTE,
+    handler: async (req, res) => {
+      const url = new URL(req.url ?? PROMPT_ROUTE, 'http://localhost')
+      const queryId = url.searchParams.get('id')
+      const method = req.method ?? 'GET'
+      const request: PromptRequest = {
+        method,
+        ...(queryId === null ? {} : { queryId }),
+        ...(method === 'POST' || method === 'PATCH' || method === 'PUT'
+          ? { body: await readJsonBody(req) }
+          : {}),
+      }
+      try {
+        const domain = await ready
+        const table = domain.table(PROMPT_TABLE) as unknown as PromptTable
+        const response = await handlePromptRequest(table, request)
+        // The protocol layer prefixes every failure with its HTTP status.
+        writeJson(res, response.ok ? 200 : Number.parseInt(response.error, 10) || 500, response)
+      } catch (error) {
+        writeJson(res, 503, { ok: false, error: error instanceof Error ? error.message : String(error) })
+      }
+    },
+  }), 'favorite-prompts: route')
+}
