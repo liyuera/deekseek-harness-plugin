@@ -6,6 +6,7 @@ export interface PromptTransport {
   list(): Promise<PromptRecord[]>
   create(text: string, source?: PromptSourceRef): Promise<PromptRecord>
   update(id: string, text: string): Promise<PromptRecord>
+  rename(id: string, name: string): Promise<PromptRecord>
   restore(record: PromptRecord): Promise<PromptRecord>
   remove(id: string): Promise<void>
 }
@@ -40,6 +41,10 @@ export const promptTransport: PromptTransport = {
   },
   update: async (id, text) => {
     const answer = await call(PROMPT_ROUTE, { method: 'PATCH', body: JSON.stringify({ id, text }) })
+    return answer.item as PromptRecord
+  },
+  rename: async (id, name) => {
+    const answer = await call(PROMPT_ROUTE, { method: 'PATCH', body: JSON.stringify({ id, name }) })
     return answer.item as PromptRecord
   },
   restore: async (record) => {

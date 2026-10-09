@@ -18,6 +18,10 @@ export declare const zh: {
     'settings.edit': string;
     'settings.delete': string;
     'settings.confirmDelete': string;
+    'settings.name': string;
+    'settings.text': string;
+    'settings.namePlaceholder': string;
+    'settings.renameFailed': string;
     'settings.placeholder': string;
     'settings.createdAt': string;
 };
@@ -42,6 +46,10 @@ export declare const en: {
     'settings.edit': string;
     'settings.delete': string;
     'settings.confirmDelete': string;
+    'settings.name': string;
+    'settings.text': string;
+    'settings.namePlaceholder': string;
+    'settings.renameFailed': string;
     'settings.placeholder': string;
     'settings.createdAt': string;
 };

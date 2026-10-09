@@ -24,6 +24,12 @@ function transport(rows: PromptRecord[]): PromptTransport {
       rows[index] = next
       return next
     },
+    rename: async (id, name) => {
+      const index = rows.findIndex(row => row.id === id)
+      const next = { ...rows[index] as PromptRecord, name }
+      rows[index] = next
+      return next
+    },
     restore: async record => { rows.push(record); return record },
     remove: async (id) => { rows.splice(rows.findIndex(row => row.id === id), 1) },
   }
@@ -66,7 +72,7 @@ describe('FavoritesSettingsPage', () => {
     await favorites.actions.refresh()
     render(<FavoritesSettingsPage {...propsFor(favorites)} />)
     await act(async () => { screen.getByRole('button', { name: zh['settings.edit'] }).click() })
-    const editor = screen.getByRole('textbox')
+    const editor = screen.getByRole('textbox', { name: zh['settings.text'] })
     await act(async () => { fireEvent.change(editor, { target: { value: 'new' } }) })
     await act(async () => { screen.getByRole('button', { name: zh['settings.save'] }).click() })
     expect(favorites.state.getSnapshot().items[0]?.text).toBe('new')
@@ -87,7 +93,7 @@ describe('FavoritesSettingsPage', () => {
     await favorites.actions.refresh()
     render(<FavoritesSettingsPage {...propsFor(favorites)} />)
     await act(async () => { screen.getByRole('button', { name: zh['settings.edit'] }).click() })
-    const editor = screen.getByRole('textbox')
+    const editor = screen.getByRole('textbox', { name: zh['settings.text'] })
     await act(async () => { fireEvent.change(editor, { target: { value: 'discarded' } }) })
     await act(async () => { screen.getByRole('button', { name: zh['settings.cancel'] }).click() })
     expect(favorites.state.getSnapshot().items[0]?.text).toBe('keep')
@@ -102,5 +108,35 @@ describe('FavoritesSettingsPage', () => {
     await act(async () => { fireEvent.change(editor, { target: { value: '手写的提示词' } }) })
     await act(async () => { screen.getByRole('button', { name: zh['settings.save'] }).click() })
     expect(favorites.state.getSnapshot().items[0]?.text).toBe('手写的提示词')
+  })
+})
+
+describe('FavoritesSettingsPage names', () => {
+  it('shows the mention name and renames through the host', async () => {
+    const favorites = createFavoritesStore(transport([{ id: 'a', name: 'old', text: 'keep', createdAt: 1 }]))
+    await favorites.actions.refresh()
+    render(<FavoritesSettingsPage {...propsFor(favorites)} />)
+    expect(screen.getByText(/@old/u)).toBeTruthy()
+    await act(async () => { screen.getByRole('button', { name: zh['settings.edit'] }).click() })
+    const nameInput = screen.getByRole('textbox', { name: zh['settings.name'] })
+    await act(async () => { fireEvent.change(nameInput, { target: { value: 'renamed' } }) })
+    await act(async () => { screen.getByRole('button', { name: zh['settings.save'] }).click() })
+    expect(favorites.state.getSnapshot().items[0]?.name).toBe('renamed')
+  })
+
+  it('keeps the row open and reports the reason when the host rejects a rename', async () => {
+    const failing = transport([{ id: 'a', name: 'old', text: 'keep', createdAt: 1 }])
+    failing.rename = async () => { throw new Error('409 name "taken" is already used by another saved prompt') }
+    const favorites = createFavoritesStore(failing)
+    await favorites.actions.refresh()
+    render(<FavoritesSettingsPage {...propsFor(favorites)} />)
+    await act(async () => { screen.getByRole('button', { name: zh['settings.edit'] }).click() })
+    const nameInput = screen.getByRole('textbox', { name: zh['settings.name'] })
+    await act(async () => { fireEvent.change(nameInput, { target: { value: 'taken' } }) })
+    await act(async () => { screen.getByRole('button', { name: zh['settings.save'] }).click() })
+    expect(screen.getByRole('alert').textContent).toContain('409')
+    // The row stays open and nothing was written.
+    expect(screen.getByRole('button', { name: zh['settings.save'] })).toBeTruthy()
+    expect(favorites.state.getSnapshot().items[0]?.name).toBe('old')
   })
 })

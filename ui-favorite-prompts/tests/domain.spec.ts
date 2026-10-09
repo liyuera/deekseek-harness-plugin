@@ -48,10 +48,16 @@ describe('favoritesDomain over the real storage stack', () => {
     const files = await readdir(join(root, PROMPT_DOMAIN, PROMPT_TABLE))
     expect(files).toEqual([`${id}.json`])
     const document = JSON.parse(await readFile(join(root, PROMPT_DOMAIN, PROMPT_TABLE, `${id}.json`), 'utf-8'))
-    expect(document).toEqual({ version: 1, record: { id, text: '第一条提示词', createdAt: AT } })
+    expect(document).toEqual({
+      version: 1,
+      record: { id, name: '第一条提示词', text: '第一条提示词', createdAt: AT },
+    })
 
     const listed = await handlePromptRequest(table, { method: 'GET' })
-    expect(listed).toEqual({ ok: true, items: [{ id, text: '第一条提示词', createdAt: AT }] })
+    expect(listed).toEqual({
+      ok: true,
+      items: [{ id, name: '第一条提示词', text: '第一条提示词', createdAt: AT }],
+    })
 
     await handlePromptRequest(table, { method: 'PATCH', body: { id, text: '改过的提示词' } })
     const afterUpdate = await handlePromptRequest(table, { method: 'GET' })

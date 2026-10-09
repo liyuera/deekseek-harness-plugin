@@ -19,6 +19,10 @@ export const zh = {
   'settings.edit': '编辑',
   'settings.delete': '删除',
   'settings.confirmDelete': '确认删除',
+  'settings.name': '名字',
+  'settings.text': '提示词正文',
+  'settings.namePlaceholder': '用于 @ 引用的名字（字母、数字、中文或连字符）',
+  'settings.renameFailed': '改名失败：{reason}',
   'settings.placeholder': '粘贴或输入一段提示词',
   'settings.createdAt': '收藏于 {time}',
 } satisfies Record<string, string>
@@ -45,6 +49,10 @@ export const en = {
   'settings.edit': 'Edit',
   'settings.delete': 'Delete',
   'settings.confirmDelete': 'Confirm delete',
+  'settings.name': 'Name',
+  'settings.text': 'Prompt text',
+  'settings.namePlaceholder': 'Name used by @ mentions (letters, digits, CJK, hyphens)',
+  'settings.renameFailed': 'Rename failed: {reason}',
   'settings.placeholder': 'Paste or type a prompt',
   'settings.createdAt': 'Saved {time}',
 } satisfies Record<FavoritePromptsKey, string>

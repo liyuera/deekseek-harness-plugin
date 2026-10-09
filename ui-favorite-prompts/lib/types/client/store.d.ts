@@ -20,6 +20,13 @@ export interface FavoritesActions {
     refresh(): Promise<boolean>;
     add(text: string, source?: PromptSourceRef): Promise<boolean>;
     update(id: string, text: string): Promise<boolean>;
+    /** Rename for `@` mentions; a rejection carries the host's reason. */
+    rename(id: string, name: string): Promise<{
+        ok: true;
+    } | {
+        ok: false;
+        error: string;
+    }>;
     remove(id: string): Promise<PromptRecord | null>;
     restore(record: PromptRecord): Promise<boolean>;
 }

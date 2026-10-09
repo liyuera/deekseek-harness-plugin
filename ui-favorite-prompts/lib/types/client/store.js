@@ -66,6 +66,17 @@ export function createFavoritesStore(transport = promptTransport) {
             refresh,
             add: (text, source) => mutate(() => transport.create(text, source)),
             update: (id, text) => mutate(() => transport.update(id, text)),
+            rename: async (id, name) => {
+                try {
+                    await transport.rename(id, name);
+                }
+                catch (error) {
+                    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+                }
+                if (state.getSnapshot().status === 'ready')
+                    await refresh();
+                return { ok: true };
+            },
             remove: async (id) => {
                 const record = state.getSnapshot().items.find(item => item.id === id) ?? null;
                 if (record === null)

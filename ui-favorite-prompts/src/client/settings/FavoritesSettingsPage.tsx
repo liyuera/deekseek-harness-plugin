@@ -27,10 +27,12 @@ interface RowState {
   draft: string
   confirmingId: string | null
   adding: boolean
+  /** Name draft of the row being edited. */
+  draftName: string
 }
 
 /** No row is open. */
-const IDLE: RowState = { editingId: null, draft: '', confirmingId: null, adding: false }
+const IDLE: RowState = { editingId: null, draft: '', confirmingId: null, adding: false, draftName: '' }
 
 /**
  * Render the management page: edit, delete, and add saved prompts.
@@ -42,9 +44,22 @@ export function FavoritesSettingsPage({ useFavorites, actions, t }: FavoritesSet
   const error = useFavorites(state => state.error)
   const items = useFavorites(state => state.items)
   const [row, setRow] = useState<RowState>(IDLE)
+  const [renameError, setRenameError] = useState<string | null>(null)
 
   const submitEdit = async (): Promise<void> => {
     if (row.editingId === null || row.draft.trim() === '') return
+    const current = items.find(item => item.id === row.editingId)
+    const name = row.draftName.trim()
+    setRenameError(null)
+    if (name !== '' && name !== current?.name) {
+      const renamed = await actions.rename(row.editingId, name)
+      // A rejected name keeps the row open with the reason, so the draft is not
+      // silently rewritten or lost.
+      if (!renamed.ok) {
+        setRenameError(renamed.error)
+        return
+      }
+    }
     await actions.update(row.editingId, row.draft)
     setRow(IDLE)
   }
@@ -71,6 +86,9 @@ export function FavoritesSettingsPage({ useFavorites, actions, t }: FavoritesSet
 
   return (
     <div className={css.page}>
+      {renameError !== null && (
+        <div className={css.notice} role="alert">{t('settings.renameFailed', { reason: renameError })}</div>
+      )}
       <div className={css.toolbar}>
         <Button
           variant="outline"
@@ -86,6 +104,7 @@ export function FavoritesSettingsPage({ useFavorites, actions, t }: FavoritesSet
         <div className={css.rowBody}>
           <textarea
             className={css.editor}
+            aria-label={t('settings.text')}
             value={row.draft}
             placeholder={t('settings.placeholder')}
             onChange={(event) => { setRow(current => ({ ...current, draft: event.target.value })) }}
@@ -106,16 +125,27 @@ export function FavoritesSettingsPage({ useFavorites, actions, t }: FavoritesSet
                 <div className={css.rowBody}>
                   {row.editingId === item.id
                     ? (
-                      <textarea
-                        className={css.editor}
-                        value={row.draft}
-                        onChange={(event) => { setRow(current => ({ ...current, draft: event.target.value })) }}
-                      />
+                      <>
+                        <input
+                          className={css.nameInput}
+                          aria-label={t('settings.name')}
+                          placeholder={t('settings.namePlaceholder')}
+                          value={row.draftName}
+                          onChange={(event) => { setRow(current => ({ ...current, draftName: event.target.value })) }}
+                        />
+                        <textarea
+                          className={css.editor}
+                          aria-label={t('settings.text')}
+                          value={row.draft}
+                          onChange={(event) => { setRow(current => ({ ...current, draft: event.target.value })) }}
+                        />
+                      </>
                     )
                     : (
                       <>
                         <span className={css.text}>{item.text}</span>
                         <span className={css.meta}>
+                          {item.name === undefined ? '' : `@${item.name} · `}
                           {t('settings.createdAt', { time: new Date(item.createdAt).toLocaleString() })}
                         </span>
                       </>
@@ -139,7 +169,7 @@ export function FavoritesSettingsPage({ useFavorites, actions, t }: FavoritesSet
                           variant="ghost"
                           size="sm"
                           disabled={busy}
-                          onClick={() => { setRow({ ...IDLE, editingId: item.id, draft: item.text }) }}
+                          onClick={() => { setRenameError(null); setRow({ ...IDLE, editingId: item.id, draft: item.text, draftName: item.name ?? '' }) }}
                         >
                           {t('settings.edit')}
                         </Button>

@@ -26,6 +26,7 @@ function transport(rows: PromptRecord[] = []): PromptTransport {
       return record
     },
     update: async (id, text) => ({ id, text, createdAt: 1 }),
+    rename: async (id, name) => ({ id, name, text: '', createdAt: 1 }),
     restore: async record => { rows.push(record); return record },
     remove: async (id) => { rows.splice(rows.findIndex(row => row.id === id), 1) },
   }

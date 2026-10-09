@@ -17,6 +17,13 @@ export interface PromptSourceRef {
 /** One saved prompt. */
 export interface PromptRecord {
     id: string;
+    /**
+     * Mention name (`@name`) and chip label. Minted by the host on create and
+     * backfilled for records that predate mentions; hand-editable to any name
+     * the host's validator accepts. Absent only before the host has opened the
+     * domain that holds the record.
+     */
+    name?: string | undefined;
     text: string;
     createdAt: number;
     /** Absent for prompts typed by hand; `| undefined` because zod emits it. */

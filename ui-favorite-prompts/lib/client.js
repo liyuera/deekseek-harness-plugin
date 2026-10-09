@@ -9,7 +9,7 @@ window.__ModuleLoader__.load({
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 		let _deepseek_ai_dsh_client_store = require("@deepseek-ai/dsh-client-store");
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/ui-favorite-prompts/src/client/settings/FavoritesSettingsPage.module.css.mjs
-		const css$1 = ".Wp1I9q_page{flex-direction:column;gap:12px;display:flex}.Wp1I9q_toolbar{justify-content:flex-end;display:flex}.Wp1I9q_notice{font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary)}.Wp1I9q_empty{font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(22px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary);padding:24px 0}.Wp1I9q_list{flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;display:flex}.Wp1I9q_row{border:.5px solid var(--dsw-alias-border-l3);border-radius:10px;align-items:flex-start;gap:12px;padding:10px 12px;display:flex}.Wp1I9q_rowBody{flex-direction:column;flex:1;gap:4px;min-width:0;display:flex}.Wp1I9q_text{white-space:pre-wrap;word-break:break-word;font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-primary)}.Wp1I9q_meta{font-size:var(--dsh-content-font-size-secondary,13px);color:var(--dsw-alias-label-tertiary)}.Wp1I9q_rowActions{align-items:center;gap:4px;display:flex}.Wp1I9q_editor{box-sizing:border-box;resize:vertical;border:.5px solid var(--dsw-alias-border-l3);width:100%;min-height:96px;color:var(--dsw-alias-label-primary);font-family:inherit;font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));background:0 0;border-radius:8px;padding:8px 10px}.Wp1I9q_editor:focus-visible{outline:2px solid var(--dsw-alias-border-l3);outline-offset:1px}";
+		const css$1 = ".Wp1I9q_page{flex-direction:column;gap:12px;display:flex}.Wp1I9q_toolbar{justify-content:flex-end;display:flex}.Wp1I9q_notice{font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary)}.Wp1I9q_empty{font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(22px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary);padding:24px 0}.Wp1I9q_list{flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;display:flex}.Wp1I9q_row{border:.5px solid var(--dsw-alias-border-l3);border-radius:10px;align-items:flex-start;gap:12px;padding:10px 12px;display:flex}.Wp1I9q_rowBody{flex-direction:column;flex:1;gap:4px;min-width:0;display:flex}.Wp1I9q_text{white-space:pre-wrap;word-break:break-word;font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-primary)}.Wp1I9q_meta{font-size:var(--dsh-content-font-size-secondary,13px);color:var(--dsw-alias-label-tertiary)}.Wp1I9q_rowActions{align-items:center;gap:4px;display:flex}.Wp1I9q_editor{box-sizing:border-box;resize:vertical;border:.5px solid var(--dsw-alias-border-l3);width:100%;min-height:96px;color:var(--dsw-alias-label-primary);font-family:inherit;font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));background:0 0;border-radius:8px;padding:8px 10px}.Wp1I9q_editor:focus-visible{outline:2px solid var(--dsw-alias-border-l3);outline-offset:1px}.Wp1I9q_nameInput{box-sizing:border-box;border:.5px solid var(--dsw-alias-border-l3);width:100%;color:var(--dsw-alias-label-primary);font-family:inherit;font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));background:0 0;border-radius:8px;padding:6px 10px}.Wp1I9q_nameInput:focus-visible{outline:2px solid var(--dsw-alias-border-l3);outline-offset:1px}";
 		const tagId$1 = "@liyuera/dsh-favorite-prompts/FavoritesSettingsPage.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -23,6 +23,7 @@ window.__ModuleLoader__.load({
 			"empty": "Wp1I9q_empty",
 			"list": "Wp1I9q_list",
 			"meta": "Wp1I9q_meta",
+			"nameInput": "Wp1I9q_nameInput",
 			"notice": "Wp1I9q_notice",
 			"page": "Wp1I9q_page",
 			"row": "Wp1I9q_row",
@@ -39,7 +40,8 @@ window.__ModuleLoader__.load({
 			editingId: null,
 			draft: "",
 			confirmingId: null,
-			adding: false
+			adding: false,
+			draftName: ""
 		};
 		/**
 		* Render the management page: edit, delete, and add saved prompts.
@@ -51,8 +53,19 @@ window.__ModuleLoader__.load({
 			const error = useFavorites((state) => state.error);
 			const items = useFavorites((state) => state.items);
 			const [row, setRow] = (0, react.useState)(IDLE);
+			const [renameError, setRenameError] = (0, react.useState)(null);
 			const submitEdit = async () => {
 				if (row.editingId === null || row.draft.trim() === "") return;
+				const current = items.find((item) => item.id === row.editingId);
+				const name = row.draftName.trim();
+				setRenameError(null);
+				if (name !== "" && name !== current?.name) {
+					const renamed = await actions.rename(row.editingId, name);
+					if (!renamed.ok) {
+						setRenameError(renamed.error);
+						return;
+					}
+				}
 				await actions.update(row.editingId, row.draft);
 				setRow(IDLE);
 			};
@@ -84,6 +97,11 @@ window.__ModuleLoader__.load({
 			return (0, react_jsx_runtime.jsxs)("div", {
 				className: FavoritesSettingsPage_module_css_default.page,
 				children: [
+					renameError !== null && (0, react_jsx_runtime.jsx)("div", {
+						className: FavoritesSettingsPage_module_css_default.notice,
+						role: "alert",
+						children: t("settings.renameFailed", { reason: renameError })
+					}),
 					(0, react_jsx_runtime.jsx)("div", {
 						className: FavoritesSettingsPage_module_css_default.toolbar,
 						children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
@@ -103,6 +121,7 @@ window.__ModuleLoader__.load({
 						className: FavoritesSettingsPage_module_css_default.rowBody,
 						children: [(0, react_jsx_runtime.jsx)("textarea", {
 							className: FavoritesSettingsPage_module_css_default.editor,
+							"aria-label": t("settings.text"),
 							value: row.draft,
 							placeholder: t("settings.placeholder"),
 							onChange: (event) => {
@@ -139,8 +158,20 @@ window.__ModuleLoader__.load({
 							className: FavoritesSettingsPage_module_css_default.row,
 							children: [(0, react_jsx_runtime.jsx)("div", {
 								className: FavoritesSettingsPage_module_css_default.rowBody,
-								children: row.editingId === item.id ? (0, react_jsx_runtime.jsx)("textarea", {
+								children: row.editingId === item.id ? (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)("input", {
+									className: FavoritesSettingsPage_module_css_default.nameInput,
+									"aria-label": t("settings.name"),
+									placeholder: t("settings.namePlaceholder"),
+									value: row.draftName,
+									onChange: (event) => {
+										setRow((current) => ({
+											...current,
+											draftName: event.target.value
+										}));
+									}
+								}), (0, react_jsx_runtime.jsx)("textarea", {
 									className: FavoritesSettingsPage_module_css_default.editor,
+									"aria-label": t("settings.text"),
 									value: row.draft,
 									onChange: (event) => {
 										setRow((current) => ({
@@ -148,12 +179,12 @@ window.__ModuleLoader__.load({
 											draft: event.target.value
 										}));
 									}
-								}) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)("span", {
+								})] }) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)("span", {
 									className: FavoritesSettingsPage_module_css_default.text,
 									children: item.text
-								}), (0, react_jsx_runtime.jsx)("span", {
+								}), (0, react_jsx_runtime.jsxs)("span", {
 									className: FavoritesSettingsPage_module_css_default.meta,
-									children: t("settings.createdAt", { time: new Date(item.createdAt).toLocaleString() })
+									children: [item.name === void 0 ? "" : `@${item.name} · `, t("settings.createdAt", { time: new Date(item.createdAt).toLocaleString() })]
 								})] })
 							}), (0, react_jsx_runtime.jsx)("div", {
 								className: FavoritesSettingsPage_module_css_default.rowActions,
@@ -176,10 +207,12 @@ window.__ModuleLoader__.load({
 									size: "sm",
 									disabled: busy,
 									onClick: () => {
+										setRenameError(null);
 										setRow({
 											...IDLE,
 											editingId: item.id,
-											draft: item.text
+											draft: item.text,
+											draftName: item.name ?? ""
 										});
 									},
 									children: t("settings.edit")
@@ -543,6 +576,15 @@ window.__ModuleLoader__.load({
 					})
 				})).item;
 			},
+			rename: async (id, name) => {
+				return (await call(PROMPT_ROUTE, {
+					method: "PATCH",
+					body: JSON.stringify({
+						id,
+						name
+					})
+				})).item;
+			},
 			restore: async (record) => {
 				return (await call(PROMPT_ROUTE, {
 					method: "PUT",
@@ -622,6 +664,18 @@ window.__ModuleLoader__.load({
 					refresh,
 					add: (text, source) => mutate(() => transport.create(text, source)),
 					update: (id, text) => mutate(() => transport.update(id, text)),
+					rename: async (id, name) => {
+						try {
+							await transport.rename(id, name);
+						} catch (error) {
+							return {
+								ok: false,
+								error: error instanceof Error ? error.message : String(error)
+							};
+						}
+						if (state.getSnapshot().status === "ready") await refresh();
+						return { ok: true };
+					},
 					remove: async (id) => {
 						const record = state.getSnapshot().items.find((item) => item.id === id) ?? null;
 						if (record === null) return null;
@@ -653,6 +707,10 @@ window.__ModuleLoader__.load({
 			"settings.edit": "编辑",
 			"settings.delete": "删除",
 			"settings.confirmDelete": "确认删除",
+			"settings.name": "名字",
+			"settings.text": "提示词正文",
+			"settings.namePlaceholder": "用于 @ 引用的名字（字母、数字、中文或连字符）",
+			"settings.renameFailed": "改名失败：{reason}",
 			"settings.placeholder": "粘贴或输入一段提示词",
 			"settings.createdAt": "收藏于 {time}"
 		};
@@ -675,6 +733,10 @@ window.__ModuleLoader__.load({
 			"settings.edit": "Edit",
 			"settings.delete": "Delete",
 			"settings.confirmDelete": "Confirm delete",
+			"settings.name": "Name",
+			"settings.text": "Prompt text",
+			"settings.namePlaceholder": "Name used by @ mentions (letters, digits, CJK, hyphens)",
+			"settings.renameFailed": "Rename failed: {reason}",
 			"settings.placeholder": "Paste or type a prompt",
 			"settings.createdAt": "Saved {time}"
 		};

@@ -8,6 +8,9 @@ const PromptSourceSchema = z.object({
 });
 const PromptRecordSchema = z.object({
     id: z.string().min(1),
+    // Optional so records written before mentions existed still load; the host
+    // backfills a name when it opens the domain.
+    name: z.string().min(1).optional(),
     text: z.string().min(1),
     createdAt: z.number().int().nonnegative(),
     source: PromptSourceSchema.optional(),

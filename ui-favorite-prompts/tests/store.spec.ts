@@ -27,6 +27,7 @@ function fakeTransport(seed: PromptRecord[] = []): PromptTransport & { rows: Pro
       rows[index] = next
       return next
     },
+    rename: async (id, name) => ({ id, name, text: '', createdAt: 1 }),
     restore: async (record) => { rows.push(record); return record },
     remove: async (id) => { rows.splice(rows.findIndex(row => row.id === id), 1) },
   }

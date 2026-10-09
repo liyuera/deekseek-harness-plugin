@@ -71,3 +71,39 @@ describe('handlePromptRequest', () => {
     expect(await handlePromptRequest(fakeTable(), { method: 'POST', body: 'nope' })).toEqual({ ok: false, error: expect.stringContaining('400') })
   })
 })
+
+describe('handlePromptRequest names', () => {
+  it('mints a mention name on create and keeps it unique', async () => {
+    const table = fakeTable()
+    const first = await handlePromptRequest(table, { method: 'POST', body: { text: 'git commit message' } }, () => AT)
+    expect(first).toMatchObject({ ok: true, item: { name: 'git-commit-message' } })
+    const second = await handlePromptRequest(table, { method: 'POST', body: { text: 'git commit message' } }, () => AT + 1)
+    expect(second).toMatchObject({ ok: true, item: { name: 'git-commit-message-2' } })
+  })
+
+  it('renames through PATCH without touching text or time', async () => {
+    const table = fakeTable([{ id: 'a', name: 'old', text: 'keep', createdAt: AT }])
+    expect(await handlePromptRequest(table, { method: 'PATCH', body: { id: 'a', name: 'renamed' } }))
+      .toEqual({ ok: true, item: { id: 'a', name: 'renamed', text: 'keep', createdAt: AT } })
+  })
+
+  it('rejects an invalid name and a duplicate name', async () => {
+    const table = fakeTable([
+      { id: 'a', name: 'taken', text: 'x', createdAt: AT },
+      { id: 'b', name: 'other', text: 'y', createdAt: AT },
+    ])
+    expect(await handlePromptRequest(table, { method: 'PATCH', body: { id: 'b', name: 'two words' } }))
+      .toEqual({ ok: false, error: expect.stringContaining('400') })
+    expect(await handlePromptRequest(table, { method: 'PATCH', body: { id: 'b', name: 'taken' } }))
+      .toEqual({ ok: false, error: expect.stringContaining('409') })
+    // Renaming a record to the name it already has is not a conflict.
+    expect(await handlePromptRequest(table, { method: 'PATCH', body: { id: 'a', name: 'taken' } }))
+      .toMatchObject({ ok: true })
+  })
+
+  it('requires text or name on PATCH', async () => {
+    const table = fakeTable([{ id: 'a', text: 'x', createdAt: AT }])
+    expect(await handlePromptRequest(table, { method: 'PATCH', body: { id: 'a' } }))
+      .toEqual({ ok: false, error: expect.stringContaining('400') })
+  })
+})

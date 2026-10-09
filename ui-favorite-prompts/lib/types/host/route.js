@@ -1,3 +1,4 @@
+import { isValidName, NAME_LIMIT, slugify, uniqueName } from "./slug.js";
 /** Response carrying the HTTP status the transport should answer with. */
 function fail(status, error) {
     return { ok: false, error: `${status} ${error}` };
@@ -20,6 +21,17 @@ function readSource(body) {
     if (typeof seq !== 'number' || !Number.isInteger(seq) || seq < 0)
         return undefined;
     return { sessionId, seq };
+}
+/** Names already in use, for minting a free one. */
+function takenNames(table, except) {
+    const taken = new Set();
+    for (const [key, record] of table.entries()) {
+        if (key === except)
+            continue;
+        if (record.name !== undefined)
+            taken.add(record.name);
+    }
+    return taken;
 }
 /**
  * Answer one parsed request against one table.
@@ -44,6 +56,7 @@ export async function handlePromptRequest(table, request, now = Date.now) {
         const source = readSource(body);
         const record = {
             id: crypto.randomUUID(),
+            name: uniqueName(slugify(text), takenNames(table)),
             text,
             createdAt: now(),
             ...(source === undefined ? {} : { source }),
@@ -59,11 +72,18 @@ export async function handlePromptRequest(table, request, now = Date.now) {
         const createdAt = typeof body.createdAt === 'number' && Number.isFinite(body.createdAt)
             ? body.createdAt
             : undefined;
+        const name = typeof body.name === 'string' && body.name !== '' ? body.name : undefined;
         if (text === undefined || id === undefined || createdAt === undefined) {
             return fail(400, 'id, text, and createdAt are required');
         }
         const source = readSource(body);
-        const record = { id, text, createdAt, ...(source === undefined ? {} : { source }) };
+        const record = {
+            id,
+            text,
+            createdAt,
+            ...(name === undefined ? {} : { name }),
+            ...(source === undefined ? {} : { source }),
+        };
         await table.put(id, record);
         return { ok: true, item: record };
     }
@@ -72,12 +92,26 @@ export async function handlePromptRequest(table, request, now = Date.now) {
             return fail(400, 'body must be a JSON object');
         const text = readText(body);
         const id = readId(body);
-        if (text === undefined || id === undefined)
-            return fail(400, 'id and text are required');
+        const requestedName = typeof body.name === 'string' && body.name !== '' ? body.name : undefined;
+        if (id === undefined || (text === undefined && requestedName === undefined)) {
+            return fail(400, 'id and at least one of text/name are required');
+        }
         const current = table.get(id);
         if (current === undefined)
             return fail(404, `no saved prompt with id ${id}`);
-        const next = { ...current, text };
+        if (requestedName !== undefined) {
+            if (!isValidName(requestedName)) {
+                return fail(400, `name "${requestedName}" may only contain letters, digits, CJK, or hyphens, up to ${NAME_LIMIT} characters`);
+            }
+            if (takenNames(table, id).has(requestedName)) {
+                return fail(409, `name "${requestedName}" is already used by another saved prompt`);
+            }
+        }
+        const next = {
+            ...current,
+            ...(text === undefined ? {} : { text }),
+            ...(requestedName === undefined ? {} : { name: requestedName }),
+        };
         await table.put(id, next);
         return { ok: true, item: next };
     }

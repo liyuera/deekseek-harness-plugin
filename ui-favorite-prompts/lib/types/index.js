@@ -1,5 +1,6 @@
 import { DomainError } from '@deepseek-ai/dsh-storage-domain';
 import { favoritesDomain } from "./domain.js";
+import { backfillNames } from "./host/backfill.js";
 import { handlePromptRequest } from "./host/route.js";
 import { PROMPT_ROUTE, PROMPT_TABLE } from "./schema.js";
 /** Host plugin name. */
@@ -63,30 +64,38 @@ function writeJson(res, status, value) {
     res.end(JSON.stringify(value));
 }
 /**
- * Mount the domain and the route.
- * @param ctx - host context carrying `webServer` and `storageDomain`.
+ * Mount the domain, name any records that predate mentions, and serve the
+ * browser half's route. The domain and the mention expansion are independent of
+ * the web server, so a composition without one still cites saved prompts.
+ * @param ctx - host context carrying `storageDomain` (and `webServer` for the route).
  */
 export function apply(ctx) {
-    const webServer = ctx.get('webServer');
     const facility = ctx.get('storageDomain');
-    if (webServer === undefined || facility === undefined)
+    if (facility === undefined)
         return;
     let disposed = false;
-    const ready = openDomain(facility).then((domain) => {
+    const ready = openDomain(facility).then(async (domain) => {
         // A late open still has to reach quiescence: close it here instead of
-        // leaking the domain, and let the route report the failure.
+        // leaking the domain, and let consumers report the failure.
         if (disposed) {
             void domain.close();
             throw new Error('favorite-prompts: domain opened after disposal');
         }
+        // Records saved before mentions existed get their name before anything can
+        // cite them, so the route and the expansion never see a nameless record.
+        await backfillNames(domain.table(PROMPT_TABLE));
         return domain;
     });
-    // Only the route observes this promise; its rejection becomes a 503 there.
+    // Consumers observe this promise; its rejection becomes a 503 or a skipped
+    // expansion rather than an unhandled rejection.
     ready.catch(() => { });
     ctx.effect(() => () => {
         disposed = true;
         void ready.then(domain => domain.close()).catch(() => { });
     }, 'favorite-prompts: domain lifetime');
+    const webServer = ctx.get('webServer');
+    if (webServer === undefined)
+        return;
     ctx.effect(() => webServer.register({
         kind: 'exact',
         path: PROMPT_ROUTE,

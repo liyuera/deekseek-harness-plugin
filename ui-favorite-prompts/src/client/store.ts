@@ -23,6 +23,8 @@ export interface FavoritesActions {
   refresh(): Promise<boolean>
   add(text: string, source?: PromptSourceRef): Promise<boolean>
   update(id: string, text: string): Promise<boolean>
+  /** Rename for `@` mentions; a rejection carries the host's reason. */
+  rename(id: string, name: string): Promise<{ ok: true } | { ok: false; error: string }>
   remove(id: string): Promise<PromptRecord | null>
   restore(record: PromptRecord): Promise<boolean>
 }
@@ -94,6 +96,15 @@ export function createFavoritesStore(transport: PromptTransport = promptTranspor
       refresh,
       add: (text, source) => mutate(() => transport.create(text, source)),
       update: (id, text) => mutate(() => transport.update(id, text)),
+      rename: async (id, name) => {
+        try {
+          await transport.rename(id, name)
+        } catch (error) {
+          return { ok: false, error: error instanceof Error ? error.message : String(error) }
+        }
+        if (state.getSnapshot().status === 'ready') await refresh()
+        return { ok: true }
+      },
       remove: async (id) => {
         const record = state.getSnapshot().items.find(item => item.id === id) ?? null
         if (record === null) return null

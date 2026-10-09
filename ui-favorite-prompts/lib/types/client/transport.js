@@ -30,6 +30,10 @@ export const promptTransport = {
         const answer = await call(PROMPT_ROUTE, { method: 'PATCH', body: JSON.stringify({ id, text }) });
         return answer.item;
     },
+    rename: async (id, name) => {
+        const answer = await call(PROMPT_ROUTE, { method: 'PATCH', body: JSON.stringify({ id, name }) });
+        return answer.item;
+    },
     restore: async (record) => {
         const answer = await call(PROMPT_ROUTE, { method: 'PUT', body: JSON.stringify(record) });
         return answer.item;

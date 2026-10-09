@@ -13,8 +13,10 @@ export declare const name = "favorite-prompts";
  */
 export declare const inject: string[];
 /**
- * Mount the domain and the route.
- * @param ctx - host context carrying `webServer` and `storageDomain`.
+ * Mount the domain, name any records that predate mentions, and serve the
+ * browser half's route. The domain and the mention expansion are independent of
+ * the web server, so a composition without one still cites saved prompts.
+ * @param ctx - host context carrying `storageDomain` (and `webServer` for the route).
  */
 export declare function apply(ctx: Context): void;
 //# sourceMappingURL=index.d.ts.map

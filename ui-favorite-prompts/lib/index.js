@@ -126,7 +126,7 @@ function mergeDefs(...defs) {
 function esc(str) {
 	return JSON.stringify(str);
 }
-function slugify(input) {
+function slugify$1(input) {
 	return input.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "");
 }
 const captureStackTrace = "captureStackTrace" in Error ? Error.captureStackTrace : (..._args) => {};
@@ -2585,7 +2585,7 @@ function _toUpperCase() {
 }
 // @__NO_SIDE_EFFECTS__
 function _slugify() {
-	return /* @__PURE__ */ _overwrite((input) => slugify(input));
+	return /* @__PURE__ */ _overwrite((input) => slugify$1(input));
 }
 // @__NO_SIDE_EFFECTS__
 function _array(Class, element, params) {
@@ -3965,6 +3965,7 @@ const PromptSourceSchema = object({
 });
 const PromptRecordSchema = object({
 	id: string().min(1),
+	name: string().min(1).optional(),
 	text: string().min(1),
 	createdAt: number().int().nonnegative(),
 	source: PromptSourceSchema.optional()
@@ -3980,6 +3981,67 @@ const favoritesDomain = defineDomain({
 	invalidRecords: "backup-and-skip",
 	tables: { [PROMPT_TABLE]: domainTable(PromptRecordSchema) }
 });
+/** A name that survives the `@` mention grammar: letters, digits, CJK, hyphen. */
+const NAME_RE = /^[\p{L}\p{N}-]+$/u;
+/** Characters a slug keeps. */
+const KEEP_RE = /[\p{L}\p{N}-]/u;
+/**
+* Derive a mention name from prompt text: the first non-empty line, whitespace
+* folded to hyphens, everything but letters/digits/CJK dropped, truncated by
+* code point.
+* @param text - prompt text.
+* @param limit - longest slug in code points.
+* @returns the slug, or `prompt` when nothing survives.
+*/
+function slugify(text, limit = 24) {
+	const sliced = [...[...(text.split("\n").find((line) => line.trim() !== "") ?? text).trim().replace(/\s+/gu, "-")].filter((char) => KEEP_RE.test(char)).join("").replace(/-{2,}/gu, "-").replace(/^-+|-+$/gu, "")].slice(0, limit).join("").replace(/-+$/gu, "");
+	return sliced === "" ? "prompt" : sliced;
+}
+/**
+* Make one slug unique among the names already in use.
+* @param base - minted or requested slug.
+* @param taken - names that are already taken.
+* @returns a name absent from `taken`.
+*/
+function uniqueName(base, taken) {
+	if (!taken.has(base)) return base;
+	for (let suffix = 2;; suffix += 1) {
+		const candidate = `${base}-${suffix}`;
+		if (!taken.has(candidate)) return candidate;
+	}
+}
+/**
+* Whether a hand-typed name is usable as a mention.
+* @param name - candidate name.
+* @returns true when it survives the mention grammar and the length limit.
+*/
+function isValidName(name) {
+	const points = [...name];
+	return points.length > 0 && points.length <= 32 && NAME_RE.test(name);
+}
+//#endregion
+//#region lib/types/host/backfill.js
+/**
+* Give every record without a name a unique one, keeping existing names.
+* @param table - saved-prompt table.
+* @returns how many records were named.
+*/
+async function backfillNames(table) {
+	const records = [...table.entries()].map(([, record]) => record);
+	const taken = new Set(records.flatMap((record) => record.name === void 0 ? [] : [record.name]));
+	let named = 0;
+	for (const record of records) {
+		if (record.name !== void 0) continue;
+		const name = uniqueName(slugify(record.text), taken);
+		taken.add(name);
+		await table.put(record.id, {
+			...record,
+			name
+		});
+		named += 1;
+	}
+	return named;
+}
 //#endregion
 //#region lib/types/host/route.js
 /** Response carrying the HTTP status the transport should answer with. */
@@ -4008,6 +4070,15 @@ function readSource(body) {
 		seq
 	};
 }
+/** Names already in use, for minting a free one. */
+function takenNames(table, except) {
+	const taken = /* @__PURE__ */ new Set();
+	for (const [key, record] of table.entries()) {
+		if (key === except) continue;
+		if (record.name !== void 0) taken.add(record.name);
+	}
+	return taken;
+}
 /**
 * Answer one parsed request against one table.
 * @param table - saved-prompt table (the storage domain's `prompts` table).
@@ -4028,6 +4099,7 @@ async function handlePromptRequest(table, request, now = Date.now) {
 		const source = readSource(body);
 		const record = {
 			id: crypto.randomUUID(),
+			name: uniqueName(slugify(text), takenNames(table)),
 			text,
 			createdAt: now(),
 			...source === void 0 ? {} : { source }
@@ -4043,12 +4115,14 @@ async function handlePromptRequest(table, request, now = Date.now) {
 		const text = readText(body);
 		const id = readId(body);
 		const createdAt = typeof body.createdAt === "number" && Number.isFinite(body.createdAt) ? body.createdAt : void 0;
+		const name = typeof body.name === "string" && body.name !== "" ? body.name : void 0;
 		if (text === void 0 || id === void 0 || createdAt === void 0) return fail(400, "id, text, and createdAt are required");
 		const source = readSource(body);
 		const record = {
 			id,
 			text,
 			createdAt,
+			...name === void 0 ? {} : { name },
 			...source === void 0 ? {} : { source }
 		};
 		await table.put(id, record);
@@ -4061,12 +4135,18 @@ async function handlePromptRequest(table, request, now = Date.now) {
 		if (body === void 0) return fail(400, "body must be a JSON object");
 		const text = readText(body);
 		const id = readId(body);
-		if (text === void 0 || id === void 0) return fail(400, "id and text are required");
+		const requestedName = typeof body.name === "string" && body.name !== "" ? body.name : void 0;
+		if (id === void 0 || text === void 0 && requestedName === void 0) return fail(400, "id and at least one of text/name are required");
 		const current = table.get(id);
 		if (current === void 0) return fail(404, `no saved prompt with id ${id}`);
+		if (requestedName !== void 0) {
+			if (!isValidName(requestedName)) return fail(400, `name "${requestedName}" may only contain letters, digits, CJK, or hyphens, up to 32 characters`);
+			if (takenNames(table, id).has(requestedName)) return fail(409, `name "${requestedName}" is already used by another saved prompt`);
+		}
 		const next = {
 			...current,
-			text
+			...text === void 0 ? {} : { text },
+			...requestedName === void 0 ? {} : { name: requestedName }
 		};
 		await table.put(id, next);
 		return {
@@ -4137,19 +4217,21 @@ function writeJson(res, status, value) {
 	res.end(JSON.stringify(value));
 }
 /**
-* Mount the domain and the route.
-* @param ctx - host context carrying `webServer` and `storageDomain`.
+* Mount the domain, name any records that predate mentions, and serve the
+* browser half's route. The domain and the mention expansion are independent of
+* the web server, so a composition without one still cites saved prompts.
+* @param ctx - host context carrying `storageDomain` (and `webServer` for the route).
 */
 function apply(ctx) {
-	const webServer = ctx.get("webServer");
 	const facility = ctx.get("storageDomain");
-	if (webServer === void 0 || facility === void 0) return;
+	if (facility === void 0) return;
 	let disposed = false;
-	const ready = openDomain(facility).then((domain) => {
+	const ready = openDomain(facility).then(async (domain) => {
 		if (disposed) {
 			domain.close();
 			throw new Error("favorite-prompts: domain opened after disposal");
 		}
+		await backfillNames(domain.table(PROMPT_TABLE));
 		return domain;
 	});
 	ready.catch(() => {});
@@ -4157,6 +4239,8 @@ function apply(ctx) {
 		disposed = true;
 		ready.then((domain) => domain.close()).catch(() => {});
 	}, "favorite-prompts: domain lifetime");
+	const webServer = ctx.get("webServer");
+	if (webServer === void 0) return;
 	ctx.effect(() => webServer.register({
 		kind: "exact",
 		path: PROMPT_ROUTE,

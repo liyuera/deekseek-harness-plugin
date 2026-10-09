@@ -8,6 +8,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { DomainError, type Domain, type DomainFacility } from '@deepseek-ai/dsh-storage-domain'
 import type { WebServer } from '@deepseek-ai/dsh-host-webserver'
 import { favoritesDomain } from './domain.ts'
+import { backfillNames, type NameableTable } from './host/backfill.ts'
 import { handlePromptRequest, type PromptTable } from './host/route.ts'
 import { PROMPT_ROUTE, PROMPT_TABLE, type PromptRequest, type PromptResponse } from './schema.ts'
 
@@ -73,31 +74,39 @@ function writeJson(res: ServerResponse, status: number, value: PromptResponse): 
 }
 
 /**
- * Mount the domain and the route.
- * @param ctx - host context carrying `webServer` and `storageDomain`.
+ * Mount the domain, name any records that predate mentions, and serve the
+ * browser half's route. The domain and the mention expansion are independent of
+ * the web server, so a composition without one still cites saved prompts.
+ * @param ctx - host context carrying `storageDomain` (and `webServer` for the route).
  */
 export function apply(ctx: Context): void {
-  const webServer = ctx.get('webServer') as WebServer | undefined
   const facility = ctx.get('storageDomain') as DomainFacility | undefined
-  if (webServer === undefined || facility === undefined) return
+  if (facility === undefined) return
 
   let disposed = false
-  const ready = openDomain(facility).then((domain) => {
+  const ready = openDomain(facility).then(async (domain) => {
     // A late open still has to reach quiescence: close it here instead of
-    // leaking the domain, and let the route report the failure.
+    // leaking the domain, and let consumers report the failure.
     if (disposed) {
       void domain.close()
       throw new Error('favorite-prompts: domain opened after disposal')
     }
+    // Records saved before mentions existed get their name before anything can
+    // cite them, so the route and the expansion never see a nameless record.
+    await backfillNames(domain.table(PROMPT_TABLE) as unknown as NameableTable)
     return domain
   })
-  // Only the route observes this promise; its rejection becomes a 503 there.
+  // Consumers observe this promise; its rejection becomes a 503 or a skipped
+  // expansion rather than an unhandled rejection.
   ready.catch(() => {})
 
   ctx.effect(() => () => {
     disposed = true
     void ready.then(domain => domain.close()).catch(() => {})
   }, 'favorite-prompts: domain lifetime')
+
+  const webServer = ctx.get('webServer') as WebServer | undefined
+  if (webServer === undefined) return
 
   ctx.effect(() => webServer.register({
     kind: 'exact',

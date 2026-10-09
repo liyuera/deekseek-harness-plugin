@@ -90,3 +90,21 @@
   outline: 2px solid var(--dsw-alias-border-l3);
   outline-offset: 1px;
 }
+
+.nameInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border: 0.5px solid var(--dsw-alias-border-l3);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: var(--dsh-content-font-size-secondary, 13px);
+  line-height: calc(20px + var(--dsh-content-font-delta, 0px));
+}
+
+.nameInput:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l3);
+  outline-offset: 1px;
+}
