@@ -201,24 +201,13 @@ Chat 节点排序比较器为 anchor → rank → originalAnchor → **key 字�
 - `value` = 记录 `id`（opaque pick payload）。
 - 过滤与排序**全部由本插件在 `candidates()` 里做**：对整段正文做大小写不敏感的子串匹配（中文直接命中），按 `createdAt` 降序，空查询返回全部（上限 50 条，避免一次渲染过多行）。
 
-### 6.3 选中后的插入：reference chip
+### 6.3 选中后的插入：提及 chip（`@名字`）
 
-`onPick` 返回 `{ insert: { source, ref, label, clipboardText } }`，走的是 `slash/input-insert-reference` → `insertReference(ref, span)`：**替换掉 `@查询串` 那一段，落进输入框的是一个和文件/目录同款的胶囊 chip**（原子块，不能就地编辑），与纯文本插入相对（E12）。
+`onPick` 返回 `{ insert: { source, ref, label, clipboardText } }`，走 `slash/input-insert-reference` → `insertReference(ref, span)`：**替换掉 `@查询串`，落进输入框的是一个和文件/目录同款的胶囊 chip**（原子块，不能就地编辑）。
 
-字段取值：
+字段取值与后续展开见 **[DESIGN-references.md](DESIGN-references.md)**（方案 D）：`ref` / `label` / `clipboardText` 都是该收藏的**提及名字** `@名字`，codec 做 `@ref` 往返；消息里因此只留提及，提示词全文由宿主在 `agent/pre-step` 追加成上下文消息。这条设计同时解决了"发出后胶囊消失"和"模型拿全文"两个诉求。
 
-- `source: 'favorites'` —— chip 在提交时按 source 名路由回本插件的 codec。
-- `ref` = **提示词全文**（自包含）。这样 chip 提交时序列化回的就是当初选中的那段文字，即使收藏在设置页被改或被删也不会让草稿发不出去——`ref` 不依赖任何查表。
-- `label` = 用户点的那一行显示的短名（`pick.candidate.label ?? name`），不是重新派生的，保证输入框里看到的就是菜单里点的那一行。
-- `clipboardText` = 提示词全文（复制/剪切/草稿持久化用它）。
-- **不传 `appearance`**：该字段是封闭联合 `'session' | 'file' | 'folder'`，没有"收藏"这一类；省略时 chip 渲染 `@` 字形（`ReferenceChip.tsx` 的 marker 分支），对"用 `@` 找到的提示词"语义反而贴切，也避免像文件 chip 那样被加上"可点开"的样式。
-
-`codec` 必须实现（产出 `insert` 结果的源缺 codec 会在提交时硬报错）：`clipboardText: ref => ref`、`serialize: ref => Promise.resolve(ref)`。
-
-两个已知细节：
-
-- chip 是原子块：**不能在输入框里微调提示词**，要改就整块删掉重选。这是换外观的代价，已与使用者确认。
-- 不实现 `lexicon` / `subscribeLexicon`：那条通道会把草稿里的 `@名字` 装饰成"看似 chip 但可编辑"的文本节点，而它序列化时保留 `@名字` 字面量——发给模型的就是别名而不是提示词全文，正是要避免的。代价是菜单打开期间新增收藏不会实时刷新。
+记录里没有名字的收藏（宿主尚未回填）会退化成旧的纯文本插入，避免造出宿主解析不了的引用。
 
 ## 7. 需求 3：设置页
 
@@ -335,7 +324,10 @@ interface FavoritesState {
 - 多标签页靠窗口 focus 重取，不是实时推送。
 - 只收藏文本，不收藏附件与图片。
 - `@` 选中后插入的是 chip 原子块，**不能在输入框里微调**（要改就整块删掉重选）。
-- chip 的图标是 `@` 字形，不是书签：`ReferenceInsert.appearance` 是封闭联合，无法扩展成"收藏"这一类。
+- chip 的图标是 `@` 字形、转录里是文件/文件夹字形，不是书签：`ReferenceInsert.appearance` 与转录装饰的 `referenceKind` 都是封闭联合。
+- 改名或删除收藏后，**历史消息里的旧提及会变成"未解析"**（宿主注入说明而不是静默）。这是"提及即文本"的必然结果。
+- 中文标点**紧贴**提及会被吞进 token（`@名字，然后…` 整段算一个 token，与转录装饰同款词法）：使用时用空格断开即可。
+- 胶囊只在输入框里存在；草稿持久化用 clipboard 投影，刷新后会退回成 `@名字` 文本——但语义不变（宿主照样展开）。
 - 不参与 dsh 的 session 日志，因此模型看不到"哪些提示词被收藏了"；若将来想让 agent 也能用，需要另加工具或 prompt 段落。
 
 ## 13. 后续可选（明确不在本期）
