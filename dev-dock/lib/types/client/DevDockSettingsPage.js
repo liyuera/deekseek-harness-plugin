@@ -6,7 +6,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  * goes through the host route.
  */
 import { useState } from 'react';
-import { Button, IconChevronDownOutline14, Input, Menu } from '@deepseek-ai/dsh-client-ui-primitives';
+import { Button, IconChevronDownOutlineRegular, Input, Menu } from '@deepseek-ai/dsh-client-ui-primitives';
 import { EDITOR_NAMES } from "./data.js";
 import { DevIdeIcon, DevTerminalIcon } from "./icons.js";
 import css from './DevDockSettingsPage.module.css';
@@ -22,7 +22,7 @@ function WorkspaceEditorSelect({ value, options, onChange, }) {
     const [open, setOpen] = useState(false);
     const items = [{ id: '', label: '自动' }, ...options.map(name => ({ id: name, label: name }))];
     const display = value === '' ? '自动' : value;
-    return (_jsx(Menu, { open: open, items: items, selectedId: value === '' ? '' : value, onSelect: (id) => { setOpen(false); onChange(id); }, onClose: () => { setOpen(false); }, align: "end", side: "bottom", anchor: (_jsxs("button", { type: "button", className: css.selector, onClick: () => { setOpen(!open); }, children: [_jsx("span", { children: display }), _jsx("span", { className: `${css.chevron} ${open ? css.chevronOpen : ''}`, "aria-hidden": true, children: _jsx(IconChevronDownOutline14, {}) })] })) }));
+    return (_jsx(Menu, { open: open, items: items, selectedId: value === '' ? '' : value, onSelect: (id) => { setOpen(false); onChange(id); }, onClose: () => { setOpen(false); }, align: "end", side: "bottom", anchor: (_jsxs("button", { type: "button", className: css.selector, onClick: () => { setOpen(!open); }, children: [_jsx("span", { children: display }), _jsx("span", { className: `${css.chevron} ${open ? css.chevronOpen : ''}`, "aria-hidden": true, children: _jsx(IconChevronDownOutlineRegular, {}) })] })) }));
 }
 /**
  * Render the devDock settings page.

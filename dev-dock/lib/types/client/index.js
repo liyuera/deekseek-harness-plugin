@@ -6,7 +6,7 @@ import { ComposerActions } from "./ComposerActions.js";
 import { DevDockSettingsPage } from "./DevDockSettingsPage.js";
 import { en, NS, zh } from "./locales.js";
 /** Required services for data binding and slot contributions. */
-export const inject = ['slots', 'locale', 'settingsScope'];
+export const inject = ['slots', 'locale'];
 /**
  * Client plugin body: register dictionaries and every surface entry.
  * @param ctx - client root context.

@@ -36,7 +36,7 @@ export type { DevDockData, DevDockActions } from './data.ts'
 interface ModalInjected extends StartWorkModalInjected {}
 
 /** Required services for data binding and slot contributions. */
-export const inject = ['slots', 'locale', 'settingsScope']
+export const inject = ['slots', 'locale']
 
 /**
  * Client plugin body: register dictionaries and every surface entry.

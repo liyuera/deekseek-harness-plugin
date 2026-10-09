@@ -1,23 +1,22 @@
 /**
- * devDock browser data layer v2: mirrors the plugin's settings namespace
- * through settingsScope and exposes the desktop-action bridge. The bridge is
- * a same-origin POST to the plugin's host route (`/dev-dock/action`) because
- * static client bundles have no package-private RPC channel (host.call is a
- * dynamic-plugin builtin); the web server route is registered by the host
- * half and runs deterministic desktop actions.
+ * devDock browser data layer v2: mirrors the plugin's document from the host
+ * through the same-origin `/dev-dock/state` route and exposes the
+ * desktop-action bridge. Both are plain HTTP because static client bundles
+ * have no package-private RPC channel (host.call is a dynamic-plugin
+ * builtin); the host half owns the storage domain behind that route and runs
+ * the deterministic desktop actions.
  * @module @liyuera/dsh-dev-dock/client/data
  */
 
 import { createSnapshotStore, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
-import type { SettingsScope } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { DevDockSettings, EditorRecord } from '../schema.ts'
 
-/** Client-visible data snapshot: settings document plus readiness. */
+/** Client-visible data snapshot: document plus readiness. */
 export interface DevDockData {
-  /** Loading until the first accepted settings section. */
+  /** Loading until the first accepted state read. */
   ready: boolean
-  /** The settings document; undefined before readiness. */
+  /** The document; undefined before readiness. */
   settings: DevDockSettings | undefined
 }
 
@@ -75,32 +74,57 @@ type FetchFailure = { fetchError: string }
 
 /**
  * Create the devDock data layer for one client plugin fiber.
- * @param ctx - client root context (needs settingsScope).
- * @returns the settings mirror and the action facade.
+ * @param ctx - client root context, used to own the mirror's effects.
+ * @returns the document mirror and the action facade.
  */
 export function createDevDockData(ctx: ClientContext): {
   store: SnapshotStore<DevDockData>
   actions: DevDockActions
 } {
-  const scope: SettingsScope<DevDockSettings> = ctx.settingsScope.bind({
-    namespace: 'dev-dock',
-    decode: decodeSettings,
-  })
   const store = createSnapshotStore<DevDockData>({ ready: false, settings: undefined })
 
-  const reflect = (): void => {
-    const snapshot = scope.getSnapshot()
-    store.set({
-      ready: snapshot.status === 'ready',
-      settings: snapshot.value,
-    })
+  const adopt = (raw: unknown): void => {
+    const settings = decodeSettings(raw)
+    if (settings === undefined) return
+    store.set({ ready: true, settings })
   }
-  reflect()
-  const unsubscribe = scope.subscribe(reflect)
-  ctx.effect(() => unsubscribe, 'dev-dock: settings mirror')
+
+  const refresh = async (): Promise<void> => {
+    try {
+      const response = await fetch('/dev-dock/state', { method: 'GET' })
+      const answer = await response.json() as { ok?: boolean; settings?: unknown }
+      if (answer.ok === true) adopt(answer.settings)
+    } catch {
+      // The route is unreachable until the host half has booted; the next
+      // gesture or focus event retries.
+    }
+  }
+  void refresh()
+
+  // Multi-tab consistency without a push channel: refetch when the page
+  // regains focus.
+  ctx.effect(() => {
+    const onFocus = (): void => { void refresh() }
+    window.addEventListener('focus', onFocus)
+    return () => { window.removeEventListener('focus', onFocus) }
+  }, 'dev-dock: focus refresh')
 
   const write = async (field: keyof DevDockSettings, value: unknown): Promise<void> => {
-    await scope.set(field, value)
+    // Reflect the gesture immediately, then let the host's answer (its own
+    // validated document) replace the optimistic copy.
+    const snapshot = store.getSnapshot().settings
+    if (snapshot !== undefined) store.set({ ready: true, settings: { ...snapshot, [field]: value } as DevDockSettings })
+    try {
+      const response = await fetch('/dev-dock/state', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ field, value }),
+      })
+      const answer = await response.json() as { ok?: boolean; settings?: unknown }
+      if (answer.ok === true) adopt(answer.settings)
+    } catch {
+      // The optimistic copy stays visible; the next refresh reconciles.
+    }
   }
 
   const actions: DevDockActions = {

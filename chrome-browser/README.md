@@ -22,7 +22,11 @@ Chrome 浏览器控制插件(host + composer UI):通过 Chrome DevTools Protocol
 
 1. Chrome 打开 `chrome://extensions` → 右上开启「开发者模式」;
 2. 点「加载已解压的扩展程序」→ 选择本插件目录下的 `extension/` 文件夹;
-3. 打开 dsh web 页面(默认 `http://127.0.0.1:3080`;若端口不同,修改 `extension/service-worker.js` 顶部的 `WS_URL` 后重新加载扩展)。
+3. 打开 dsh 页面。扩展会依次尝试 `ws://127.0.0.1:19387`(官方 APP 的 desktop profile)与
+   `ws://127.0.0.1:3080`(源码启动的 `pnpm dsh web`),哪个在跑连哪个,不用改代码;
+   两个都换了端口时,改 `extension/service-worker.js` 顶部的 `WS_URLS` 后重新加载扩展。
+
+改了 `extension/` 里的文件后,必须在 `chrome://extensions` 点该扩展的「重新加载」才会生效——Chrome 不会自动重读已加载的解压扩展。
 
 之后扩展通过本地 WebSocket(`/chrome-browser/ext/ws`)与插件通信:列真实标签页(自带站点图标)、读取/点击/输入/求值/导航/新开/截图。没有安装在列表时会提示你怎么装。
 

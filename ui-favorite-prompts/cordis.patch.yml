@@ -1,0 +1,4 @@
+# dsh bundle layer: mount the favorite-prompts plugin (host route + browser UI).
+- insert:
+    - id: favorite-prompts
+      name: '@liyuera/dsh-favorite-prompts'

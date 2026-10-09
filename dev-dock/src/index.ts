@@ -18,11 +18,16 @@ import type { ServerResponse } from 'node:http'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
+import type { Domain, DomainFacility } from '@deepseek-ai/dsh-storage-domain'
+import { DomainError } from '@deepseek-ai/dsh-storage-domain'
 import {
-  DEV_DOCK_NAMESPACE,
-  DevDockSettingsSchema,
+  DevDockDocumentSchema,
+  DEV_DOCK_FIELDS,
   EMPTY_DEV_DOCK_SETTINGS,
+  type DevDockField,
+  type DevDockSettings,
 } from './schema.ts'
+import { devDockDomain } from './domain.ts'
 import { detectEditors, mergeEditors } from './editors.ts'
 import {
   openIdeFor,
@@ -40,8 +45,13 @@ import { detectDarwinApp } from './platform/editors-darwin.ts'
 /** Plugin identity. */
 export const name = 'dev-dock'
 
-/** Services required by the host half. */
-export const inject = ['settings', 'workspaceRegistry']
+/**
+ * Services required by the host half. `webServer` and `storageDomain` mount
+ * later in the tree than this row, so they must be declared here: reading them
+ * through `ctx.get` in `apply` would find an empty context and silently leave
+ * every route and the document unregistered.
+ */
+export const inject = ['webServer', 'storageDomain', 'workspaceRegistry']
 
 /** Minimal live workspace-registry face (service type stays private). */
 interface WorkspaceRegistry {
@@ -160,21 +170,43 @@ function writeJson(res: ServerResponse, status: number, value: unknown): void {
   res.end(JSON.stringify(value))
 }
 
+/** Open attempts tolerated while a reloaded fiber's predecessor still holds the domain. */
+const OPEN_ATTEMPTS = 10
+/** Delay between open attempts, in ms. */
+const OPEN_RETRY_MS = 100
+
 /**
- * Register the settings namespace and the action route.
- * @param ctx - Cordis context carrying settings, sandboxPolicy, the
- * workspace registry, and the web server.
+ * Open the document's domain, tolerating the short window in which a reloaded
+ * fiber's predecessor still holds the installation-wide domain name.
+ * @param facility - mounted domain facility.
+ * @returns the opened domain.
+ */
+async function openDomain(facility: DomainFacility): Promise<Domain<typeof devDockDomain>> {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await facility.open(devDockDomain)
+    } catch (error) {
+      const retryable = error instanceof DomainError && error.code === 'already-open'
+      if (!retryable || attempt >= OPEN_ATTEMPTS) throw error
+      await new Promise(resolve => setTimeout(resolve, OPEN_RETRY_MS))
+    }
+  }
+}
+
+/** Read one addressed field out of a browser write body. */
+function readFieldWrite(body: Record<string, unknown>): { field: DevDockField; value: unknown } | undefined {
+  const field = body.field
+  if (typeof field !== 'string') return undefined
+  if (!(DEV_DOCK_FIELDS as readonly string[]).includes(field)) return undefined
+  return { field: field as DevDockField, value: body.value }
+}
+
+/**
+ * Register the document domain, the state route, and the desktop-action routes.
+ * @param ctx - Cordis context carrying the web server, the storage facility, the
+ * workspace registry, and the sandbox policy.
  */
 export function apply(ctx: Context): void {
-  const scope = ctx.settings.register(
-    DEV_DOCK_NAMESPACE,
-    DevDockSettingsSchema,
-    { base: EMPTY_DEV_DOCK_SETTINGS },
-  )
-  const devDock: DesktopScope = {
-    get: () => scope.get(),
-    update: (patch) => scope.update(patch),
-  }
   const facts: PlatformFacts = liveFacts()
   const readOnly = (): boolean => {
     const sandbox = ctx.get('sandboxPolicy') as SandboxPolicy | undefined
@@ -186,9 +218,87 @@ export function apply(ctx: Context): void {
 
   if (webServer === undefined) {
     // No HTTP carrier (headless profile): the browser half is not mounted
-    // either, so there is nothing to serve. Keep the settings namespace.
+    // either, so there is nothing to serve and no document to read.
     return
   }
+
+  // The authoritative in-memory document. `get` stays synchronous for the
+  // action helpers; durability is ordered through `writes` below, and the
+  // storage medium is the source of truth on reopen.
+  let current: DevDockSettings = EMPTY_DEV_DOCK_SETTINGS
+  const pending = openDomain(ctx.get('storageDomain') as DomainFacility)
+    .then((domain) => {
+      current = domain.global.get()
+      return domain
+    })
+  // The route reports this rejection as a 503; nothing else observes it.
+  pending.catch(() => {})
+  ctx.effect(() => () => { void pending.then(domain => domain.close()).catch(() => {}) },
+    'dev-dock: document domain lifetime')
+
+  let writes: Promise<void> = Promise.resolve()
+  const devDock: DesktopScope = {
+    get: () => current,
+    update: (patch) => {
+      const next = { ...current, ...patch }
+      current = next
+      writes = writes.then(() => pending).then(domain => domain.global.set(next))
+      // A failed write is visible on the next state read; the document keeps
+      // the value the session already saw rather than reverting mid-gesture.
+      writes.catch(() => {})
+    },
+  }
+
+  ctx.effect(
+    () => webServer.register({
+      kind: 'exact',
+      path: '/dev-dock/state',
+      handler: async (req, res) => {
+        if (req.method === 'GET') {
+          try {
+            await pending
+            writeJson(res, 200, { ok: true, settings: devDock.get() })
+          } catch (error) {
+            writeJson(res, 503, { ok: false, error: error instanceof Error ? error.message : String(error) })
+          }
+          return
+        }
+        if (req.method !== 'POST') {
+          writeJson(res, 405, { ok: false, error: 'method not allowed' })
+          return
+        }
+        const chunks: Buffer[] = []
+        for await (const chunk of req) chunks.push(chunk as Buffer)
+        let body: Record<string, unknown>
+        try {
+          body = JSON.parse(Buffer.concat(chunks).toString('utf-8')) as Record<string, unknown>
+        } catch {
+          writeJson(res, 400, { ok: false, error: 'invalid JSON body' })
+          return
+        }
+        const write = readFieldWrite(body)
+        if (write === undefined) {
+          writeJson(res, 400, { ok: false, error: `unknown dev-dock field ${JSON.stringify(body.field ?? '(missing)')}` })
+          return
+        }
+        const parsed = DevDockDocumentSchema.safeParse({ ...devDock.get(), [write.field]: write.value })
+        if (!parsed.success) {
+          const detail = parsed.error.issues[0]?.message ?? 'value rejected by the document schema'
+          writeJson(res, 400, { ok: false, error: `${write.field}: ${detail}` })
+          return
+        }
+        try {
+          await pending
+          devDock.update({ [write.field]: parsed.data[write.field] })
+          await writes
+          writeJson(res, 200, { ok: true, settings: devDock.get() })
+        } catch (error) {
+          writeJson(res, 503, { ok: false, error: error instanceof Error ? error.message : String(error) })
+        }
+      },
+    }),
+    'dev-dock: state route',
+  )
 
   ctx.effect(
     () => webServer.register({

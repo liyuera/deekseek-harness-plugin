@@ -15,12 +15,17 @@
 import type { Context } from '@deepseek-ai/cordis';
 /** Plugin identity. */
 export declare const name = "dev-dock";
-/** Services required by the host half. */
+/**
+ * Services required by the host half. `webServer` and `storageDomain` mount
+ * later in the tree than this row, so they must be declared here: reading them
+ * through `ctx.get` in `apply` would find an empty context and silently leave
+ * every route and the document unregistered.
+ */
 export declare const inject: string[];
 /**
- * Register the settings namespace and the action route.
- * @param ctx - Cordis context carrying settings, sandboxPolicy, the
- * workspace registry, and the web server.
+ * Register the document domain, the state route, and the desktop-action routes.
+ * @param ctx - Cordis context carrying the web server, the storage facility, the
+ * workspace registry, and the sandbox policy.
  */
 export declare function apply(ctx: Context): void;
 //# sourceMappingURL=index.d.ts.map

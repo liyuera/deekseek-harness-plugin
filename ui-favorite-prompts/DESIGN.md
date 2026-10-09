@@ -102,11 +102,12 @@ export const PromptRecord = z.object({
 | `GET` | `/favorite-prompts` | 返回 `{ ok: true, items: PromptRecord[] }`，按 `createdAt` 降序 |
 | `POST` | `/favorite-prompts` | body `{ text, source? }` → 新建，返回新记录 |
 | `PATCH` | `/favorite-prompts` | body `{ id, text }` → 改正文，返回更新后的记录 |
+| `PUT` | `/favorite-prompts` | body `{ id, text, createdAt, source? }` → 按原 id 原样写回（撤销窗口用） |
 | `DELETE` | `/favorite-prompts?id=…` | 删除，返回 `{ ok: true }` |
 
+- `PUT` 只服务于"取消收藏后 5 秒内撤销"（§5.4）：普通新增由 Host 铸造 id，浏览器不铸造 id。
 - `id` 由 Host 生成，浏览器不铸造。
-- 失败统一 `{ ok: false, error: '<一句话>' }` + 合适的 4xx/5xx；未知 `id` 返回 404 而不是静默成功。
-- 方法不匹配返回 405；body 不是合法 JSON 返回 400。
+- 失败统一 `{ ok: false, error: '<HTTP 状态码> <一句话>' }`；路由按这个前缀回填状态码（未知 `id` 404、方法不支持 405、body 不是对象或 `text` 为空 400、域不可用 503）。
 
 ### 4.5 为什么不用 settings 命名空间
 
@@ -159,12 +160,12 @@ Chat 节点排序比较器为 anchor → rank → originalAnchor → **key 字�
 
 1. Unicode **NFC** 归一化（统一全角/半角与组合字符）；
 2. `\r\n`、`\r` → `\n`（跨平台复制粘贴）；
-3. 去掉每行行尾空白，再 trim 整串首尾；
-4. 行内连续空格/制表符压成一个空格。
+3. 每行的水平空白统一：连续空格/制表符压成一个空格，并去掉该行首尾空白（整串首尾随之干净）；
+4. 空行保持为空——不压缩行结构。
 
 由此：
 
-- 从别处粘贴、编辑器自动去尾空格、Windows 换行 → **判为已收藏**（实心）；
+- 从别处粘贴、编辑器自动去尾空格、Windows 换行、缩进被重排 → **判为已收藏**（实心）；
 - 改动用词、增删句子 → **判为不同**（空心），这是对的：语义变了就是另一条。
 
 **性能**：不能在每条消息渲染时遍历收藏列表算归一化（30 条消息 × 50 条收藏 = 每次渲染 1500 次）。store 在列表变化的同一步里构建派生索引 `normalizedTexts: Set<string>`，收藏条只做 O(1) 命中判断。这是数据层的纯派生，不是组件里的订阅。
@@ -173,6 +174,8 @@ Chat 节点排序比较器为 anchor → rank → originalAnchor → **key 字�
 
 **跨会话的后果要明确接受**：列表是全局的，所以会话 B 里文本相同的消息会显示为已收藏；从任意一处取消，删掉的是同一条记录，所有相同文本的消息会同时变回空心。记录里的 `source` 只是"第一次收藏时的那条消息"，纯溯源用，不参与判定。
 
+**归一化会抹平缩进**：只差缩进（比如代码块整体左移/右移）的两段文本会被判为同一条。这是"容忍细微偏差"的代价。如果实践中发现某段有语义的缩进被误判，再收紧规则（只压行内连续空白、保留行首缩进）——规则集中在 `normalize.ts` 一处，改起来只动那一个函数和它的单测。
+
 ## 6. 需求 2：`@` 拉出收藏
 
 ### 6.1 机制
@@ -180,13 +183,13 @@ Chat 节点排序比较器为 anchor → rank → originalAnchor → **key 字�
 `ctx.inputTriggers.registerSource(source)`（E9）：
 
 ```ts
-{ trigger: '@', name: 'favorites', order: 100, showGroupTitle: false,
+{ trigger: '@', name: 'favorites', order: FAVORITES_SOURCE_ORDER, showGroupTitle: false,
   candidates, onPick }
 ```
 
 - **`showGroupTitle: false` 是必须的**：分组标题走 ui-input-trigger 自己的 `slash.menu` 词典，插件无法本地化它（E10）。改为在每条候选上带 `section: t('group')`，由本插件的词典提供「收藏」/「Favorites」标题——这正是 ui-reference 的做法。
 - `name: 'favorites'` 必须与现有 `@` 源不重名（现有 `reference`），`(trigger, name)` 重复会在注册时抛错（E9）。
-- `order: 100` 让「收藏」组排在「文件与文件夹」之后。
+- `order: -100`（常量 `FAVORITES_SOURCE_ORDER`）让「收藏」组排在 `@` 菜单最前：菜单按 source 的 `order` 升序排组，ui-reference 未声明（默认 0），所以只有负值能把收藏置顶。数值改了要同步 `tests/trigger.spec.ts` 里那条排序断言。
 
 ### 6.2 候选行的构造
 
@@ -198,14 +201,13 @@ Chat 节点排序比较器为 anchor → rank → originalAnchor → **key 字�
 - `value` = 记录 `id`（opaque pick payload）。
 - 过滤与排序**全部由本插件在 `candidates()` 里做**：对整段正文做大小写不敏感的子串匹配（中文直接命中），按 `createdAt` 降序，空查询返回全部（上限 50 条，避免一次渲染过多行）。
 
-### 6.3 选中后的插入
+### 6.3 选中后的插入：提及 chip（`@名字`）
 
-`onPick` 返回 `{ text: record.text }`。走的是 `slash/input-insert-text` → `insertText(text, span)`：**替换掉 `@查询串` 那一段，插入的是可继续编辑的纯文本，不是 chip 令牌，也不需要实现 `codec`**（E12）。
+`onPick` 返回 `{ insert: { source, ref, label, clipboardText } }`，走 `slash/input-insert-reference` → `insertReference(ref, span)`：**替换掉 `@查询串`，落进输入框的是一个和文件/目录同款的胶囊 chip**（原子块，不能就地编辑）。
 
-两个已知细节：
+字段取值与后续展开见 **[DESIGN-references.md](DESIGN-references.md)**（方案 D）：`ref` / `label` / `clipboardText` 都是该收藏的**提及名字** `@名字`，codec 做 `@ref` 往返；消息里因此只留提及，提示词全文由宿主在 `agent/pre-step` 追加成上下文消息。这条设计同时解决了"发出后胶囊消失"和"模型拿全文"两个诉求。
 
-- 若收藏正文以 `@xxx` 形式结尾，插入后可能重新触发菜单；实际提示词几乎不会，若不放心可在插入文本末尾补一个空格。
-- 不实现 `lexicon` / `subscribeLexicon`：这两个是给"短名字引用装饰"用的（实现后草稿里的 `@名字` 会被画成 chip 样式）。本插件的候选是整段提示词，没有这种语义。代价是菜单打开期间新增收藏不会实时刷新——可接受。
+记录里没有名字的收藏（宿主尚未回填）会退化成旧的纯文本插入，避免造出宿主解析不了的引用。
 
 ## 7. 需求 3：设置页
 
@@ -321,6 +323,11 @@ interface FavoritesState {
 - 设置导航项用通用齿轮图标。
 - 多标签页靠窗口 focus 重取，不是实时推送。
 - 只收藏文本，不收藏附件与图片。
+- `@` 选中后插入的是 chip 原子块，**不能在输入框里微调**（要改就整块删掉重选）。
+- chip 的图标是 `@` 字形、转录里是文件/文件夹字形，不是书签：`ReferenceInsert.appearance` 与转录装饰的 `referenceKind` 都是封闭联合。
+- 改名或删除收藏后，**历史消息里的旧提及会变成"未解析"**（宿主注入说明而不是静默）。这是"提及即文本"的必然结果。
+- 中文标点**紧贴**提及会被吞进 token（`@名字，然后…` 整段算一个 token，与转录装饰同款词法）：使用时用空格断开即可。
+- 胶囊只在输入框里存在；草稿持久化用 clipboard 投影，刷新后会退回成 `@名字` 文本——但语义不变（宿主照样展开）。
 - 不参与 dsh 的 session 日志，因此模型看不到"哪些提示词被收藏了"；若将来想让 agent 也能用，需要另加工具或 prompt 段落。
 
 ## 13. 后续可选（明确不在本期）

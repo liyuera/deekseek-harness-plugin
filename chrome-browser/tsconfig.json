@@ -31,9 +31,6 @@
       "@deepseek-ai/dsh-client-ui-slots": [
         "./../../packages/client/ui-slots/src/index.ts"
       ],
-      "@deepseek-ai/dsh-client-ui-primitives": [
-        "./../../packages/client/ui-primitives/src/index.ts"
-      ],
       "@deepseek-ai/dsh-client-ui-conversation/client": [
         "./../../packages/client/ui-conversation/src/client/index.ts"
       ]
@@ -63,9 +60,6 @@
     },
     {
       "path": "../../packages/client/ui-slots"
-    },
-    {
-      "path": "../../packages/client/ui-primitives"
     },
     {
       "path": "../../packages/client/ui-conversation"
