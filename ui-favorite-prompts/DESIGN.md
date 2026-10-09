@@ -183,13 +183,13 @@ Chat 节点排序比较器为 anchor → rank → originalAnchor → **key 字�
 `ctx.inputTriggers.registerSource(source)`（E9）：
 
 ```ts
-{ trigger: '@', name: 'favorites', order: 100, showGroupTitle: false,
+{ trigger: '@', name: 'favorites', order: FAVORITES_SOURCE_ORDER, showGroupTitle: false,
   candidates, onPick }
 ```
 
 - **`showGroupTitle: false` 是必须的**：分组标题走 ui-input-trigger 自己的 `slash.menu` 词典，插件无法本地化它（E10）。改为在每条候选上带 `section: t('group')`，由本插件的词典提供「收藏」/「Favorites」标题——这正是 ui-reference 的做法。
 - `name: 'favorites'` 必须与现有 `@` 源不重名（现有 `reference`），`(trigger, name)` 重复会在注册时抛错（E9）。
-- `order: 100` 让「收藏」组排在「文件与文件夹」之后。
+- `order: -100`（常量 `FAVORITES_SOURCE_ORDER`）让「收藏」组排在 `@` 菜单最前：菜单按 source 的 `order` 升序排组，ui-reference 未声明（默认 0），所以只有负值能把收藏置顶。数值改了要同步 `tests/trigger.spec.ts` 里那条排序断言。
 
 ### 6.2 候选行的构造
 

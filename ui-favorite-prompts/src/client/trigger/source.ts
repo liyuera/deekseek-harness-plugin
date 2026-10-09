@@ -15,6 +15,13 @@ export type Translate = (key: FavoritePromptsKey, params?: Record<string, string
 /** Rows rendered for one query, at most. */
 export const CANDIDATE_LIMIT = 50
 
+/**
+ * Menu position among `@` sources. The menu lays groups out by ascending
+ * `order`, and the file/session source (`ui-reference`) declares none (0), so
+ * a negative value is what lifts saved prompts to the top of the `@` menu.
+ */
+export const FAVORITES_SOURCE_ORDER = -100
+
 /** Longest row preview, in code points. */
 const PREVIEW_LIMIT = 60
 
@@ -28,7 +35,7 @@ export function createFavoritesSource(state: () => FavoritesState, t: Translate)
   return {
     trigger: '@',
     name: 'favorites',
-    order: 100,
+    order: FAVORITES_SOURCE_ORDER,
     showGroupTitle: false,
     candidates: (_session, req) => {
       const query = req.query.trim().toLowerCase()

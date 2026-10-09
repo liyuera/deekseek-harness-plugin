@@ -440,6 +440,12 @@ window.__ModuleLoader__.load({
 				};
 			}
 		};
+		/**
+		* Menu position among `@` sources. The menu lays groups out by ascending
+		* `order`, and the file/session source (`ui-reference`) declares none (0), so
+		* a negative value is what lifts saved prompts to the top of the `@` menu.
+		*/
+		const FAVORITES_SOURCE_ORDER = -100;
 		/** Longest row preview, in code points. */
 		const PREVIEW_LIMIT = 60;
 		/**
@@ -452,7 +458,7 @@ window.__ModuleLoader__.load({
 			return {
 				trigger: "@",
 				name: "favorites",
-				order: 100,
+				order: FAVORITES_SOURCE_ORDER,
 				showGroupTitle: false,
 				candidates: (_session, req) => {
 					const query = req.query.trim().toLowerCase();

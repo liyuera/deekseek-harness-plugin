@@ -11,6 +11,12 @@ export type Translate = (key: FavoritePromptsKey, params?: Record<string, string
 /** Rows rendered for one query, at most. */
 export declare const CANDIDATE_LIMIT = 50;
 /**
+ * Menu position among `@` sources. The menu lays groups out by ascending
+ * `order`, and the file/session source (`ui-reference`) declares none (0), so
+ * a negative value is what lifts saved prompts to the top of the `@` menu.
+ */
+export declare const FAVORITES_SOURCE_ORDER = -100;
+/**
  * Build the saved-prompt trigger source.
  * @param state - current store snapshot, read per keystroke.
  * @param t - dictionary-bound translator.

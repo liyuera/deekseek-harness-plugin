@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createFavoritesSource, CANDIDATE_LIMIT } from '../src/client/trigger/source.ts'
+import { createFavoritesSource, CANDIDATE_LIMIT, FAVORITES_SOURCE_ORDER } from '../src/client/trigger/source.ts'
 import { zh } from '../src/client/locales.ts'
 import type { FavoritesState } from '../src/client/store.ts'
 import type { PromptRecord } from '../src/schema.ts'
@@ -35,6 +35,14 @@ describe('createFavoritesSource', () => {
     expect(source.trigger).toBe('@')
     expect(source.name).toBe('favorites')
     expect(source.showGroupTitle).toBe(false)
+  })
+
+  it('sorts ahead of every other @ source so the group leads the menu', () => {
+    // The menu lays groups out by ascending `order`; ui-reference declares none
+    // (0), so the favorites group leads the @ menu only with a negative order.
+    const source = createFavoritesSource(() => stateOf(items), t)
+    expect(source.order).toBe(FAVORITES_SOURCE_ORDER)
+    expect(source.order ?? 0).toBeLessThan(0)
   })
 
   it('lists newest first with a localized section heading and a short label', async () => {
