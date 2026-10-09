@@ -278,5 +278,85 @@ ask the user which prompt they meant.
 | R2 | 引用展开样板：`agent/pre-step` + 追加 user-role 上下文消息 | `packages/context/session-reference/src/index.ts` |
 | R3 | 注入的消息会被写入 session 日志（首个 attempt） | `packages/core/agent-loop/src/agent.ts` |
 | R4 | pre-step 的 `messages` 是本步新声明的消息，天然幂等 | `packages/core/agent-loop/src/agent.ts` |
-| R5 | 消息来源可用通用 `{ kind: 'plugin', plugin }` | `packages/llm/llm/src/message.ts` |
+| R5 | `MessageSourceMap` 在 0.2.0 收敛为闭集，插件靠声明合并加入自己的来源 | `packages/context/session-reference/src/types.ts`（同做法）、本插件 `src/host/source.ts` |
 | R6 | chip 的 `appearance` 是 `'session' \| 'file' \| 'folder'` 封闭联合 | `packages/client/ui-conversation/src/client/contract/draft-editor.ts` |
+| R7 | 注入行的标签与正文形态由闭式 switch + 白名单决定，无插件注册入口 | `node_modules/@deepseek-ai/dsh-client-ui-chat/lib/client.js`、`.../lib/types/client/contract/context-producer.d.ts`（0.2.0 产物） |
+
+## 9. 转录里的引用回看（收藏条内的引用行）
+
+### 9.1 目标
+
+发出消息后能就地看清**这条消息引用了哪几条收藏**、以及那条收藏的全文，不必去展开系统那条注入上下文行。
+
+### 9.2 为什么不改系统那条注入行
+
+注入的消息在转录里由 Chat 的 `ContextInjectionRow` 呈现，其标签与正文形态由两个**闭式**函数决定（实测 0.2.0 打包产物）：
+
+```js
+switch (kind) {
+  case "session-reference": → { role: "recall", label: 引用会话标题 }
+  case "agent-instructions": → { role: "inject", label: 指令文件路径 }
+  case "skill-invocation":  → { role: "inject", label: skill 名 }
+  default:                  → { role: "inject", label: kind }   // 本插件走这里
+}
+contextForm(source) → 仅认 instructions/catalog/snapshot/notice/relay/recall，其余为 null（不透明正文）
+```
+
+`ui-conversation` 的服务契约里没有"注册上下文呈现"的方法。插件能动那行的只有两种手段：把 source kind 写成人话（标识符当文案），或冒充已知来源（例如声称 `agent-instructions` 并塞 `changes[].path`，标签就会显示成 `@名字`）——后者让日志语义撒谎，不用。因此**系统那行保持原样**（它仍然如实记录模型收到了什么），人看的摘要放在插件自己的行里。
+
+### 9.3 结构
+
+收藏条（`14:favorite-strip…`，紧贴用户消息）同时承载两件事：这条消息的**引用摘要**与**收藏动作**。不新增节点，排序契约仍只有一套。
+
+```
+[书签按钮]  [已收藏 / 撤销]
+📎 引用了 @生成commit                        ← 新增（可点开）
+   ┌───────────────────────────────┐
+   │ @生成commit                    │        ← 展开区：每条引用 = 名字 + 全文
+   │ 根据git diff 的结果，给我生成…  │
+   └───────────────────────────────┘
+```
+
+摘要行放在动作行**下方**：书签按钮的位置因此在所有消息上保持一致（有引用的消息不会把按钮挤下去）。
+
+### 9.4 数据流（零新增通信）
+
+| 需要 | 来源 |
+|---|---|
+| 消息文本 | 节点数据 `FavoriteStripData.text`（已有） |
+| 收藏列表与名字 | 组件已注入的 `hooks.favorites` store（已有） |
+
+```
+text ──scanMentions──▶ 名字[]（去重、按出现顺序、上限 3）
+                        │
+      store.items ──────┴─ 按 name 精确匹配 ─▶ { resolved: [{name, text}], unresolved: [name], omitted: n }
+```
+
+**词法只有一份**：`scanMentions` 与 `MAX_REFERENCES_PER_MESSAGE` 从 `src/host/expand.ts` 提到 `src/mentions.ts`，宿主与客户端各自打包时都引它。客户端显示的引用集合必须与宿主展开的集合同源——这是本插件一直在守的约束（看起来像胶囊的，就是会被展开的）。`resolveMentions`（算 `PromptRecord`）留在宿主。
+
+### 9.5 交互
+
+- 摘要行是可点击的整行按钮，`aria-expanded` 标记开合，默认**收起**；再点收起。
+- 展开区按需渲染（不展开不构造正文），内容为纯文本 `pre-wrap`（不渲染 Markdown——提示词是用户数据，按原样显示，与设置页一致）。
+- 展开区限高并内部滚动（避免超长提示词撑爆转录）。
+- 不做动画：折叠/展开即时生效，天然满足 reduced-motion。
+- 每条消息的开合状态各自独立、不持久化（刷新回到收起）。
+
+### 9.6 边界
+
+| 情形 | 显示 |
+|---|---|
+| 没有引用 | 不渲染摘要行，只剩书签按钮（外观与本次改动前一致） |
+| 引用的名字已改名/删除 | 名字照常显示，附「未找到」标记——这正是最需要回看的时候：它同时也是模型收到"未解析"提示的原因 |
+| 超过 3 条 | 只列前 3 条（与宿主展开一致），另附「另有 N 条未展开」 |
+| 收藏列表尚未就绪或不可用 | **不渲染摘要行**（此时无法判断解析与否，不能谎称「未找到」）；store 就绪后自然出现 |
+| 消息文本为空 | 收藏条本身不匹配该消息（既有行为） |
+
+### 9.7 文案与无障碍
+
+新增文案全部走 zh/en 两份类型化字典：`strip.cites`（引用了）、`strip.notFound`（未找到）、`strip.omitted`（另有 N 条未展开）、`strip.expand`/`strip.collapse`（展开/收起，作为 `aria-label`）。焦点可见性沿用全局焦点环；颜色只用 `--dsw-alias-*` 令牌，0.5px 中性描边。
+
+### 9.8 验证
+
+- 单测：`mentions.spec.ts`（词法原样搬迁的断言）+ `strip.spec.tsx` 新增——列出名字、未解析标记、超限提示、store 未就绪时不渲染、点击展开后出现全文、再点收起、无引用时不渲染摘要行。
+- 真实环境：刷新页面后，在引用了收藏的历史消息下方应出现摘要行；点开后是该收藏的全文。
