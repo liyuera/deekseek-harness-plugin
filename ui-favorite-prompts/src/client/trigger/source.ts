@@ -46,7 +46,9 @@ export function createFavoritesSource(state: () => FavoritesState, t: Translate)
       const matched = query === '' ? items : items.filter(item => item.text.toLowerCase().includes(query))
       const taken = new Set<string>()
       const rows: InputTriggerCandidate[] = matched.slice(0, CANDIDATE_LIMIT).map((item) => {
-        const name = candidateName(item.text, taken)
+        // The stored name is what the mention will be, so the row shows it; a
+        // record the host has not named yet falls back to a derived one.
+        const name = item.name ?? candidateName(item.text, taken)
         taken.add(name)
         return {
           name,
@@ -63,21 +65,27 @@ export function createFavoritesSource(state: () => FavoritesState, t: Translate)
       const id = pick.candidate.value
       const record = id === undefined ? undefined : state().items.find(item => item.id === id)
       if (record === undefined) return undefined
+      if (record.name === undefined) {
+        // No mention to cite yet: send the prompt itself rather than inventing a
+        // reference the host cannot resolve.
+        return { text: record.text }
+      }
       return {
         insert: {
           source: FAVORITES_SOURCE_NAME,
-          // The ref IS the prompt, so the chip submits exactly what was picked
-          // even if the favorite is edited or deleted before the draft is sent.
-          ref: record.text,
+          // The ref IS the name, so the chip serializes without a lookup and a
+          // later rename turns the message into an unresolved mention (the
+          // designed failure path) instead of silently citing something else.
+          ref: record.name,
           // The row the user clicked, not a freshly derived one.
           label: pick.candidate.label ?? pick.candidate.name,
-          clipboardText: record.text,
+          clipboardText: `@${record.name}`,
         },
       }
     },
     codec: {
-      clipboardText: ref => ref,
-      serialize: ref => Promise.resolve(ref),
+      clipboardText: ref => `@${ref}`,
+      serialize: ref => Promise.resolve(`@${ref}`),
     },
   }
 }

@@ -503,7 +503,7 @@ window.__ModuleLoader__.load({
 					const matched = query === "" ? items : items.filter((item) => item.text.toLowerCase().includes(query));
 					const taken = /* @__PURE__ */ new Set();
 					const rows = matched.slice(0, 50).map((item) => {
-						const name = candidateName(item.text, taken);
+						const name = item.name ?? candidateName(item.text, taken);
 						taken.add(name);
 						return {
 							name,
@@ -520,16 +520,17 @@ window.__ModuleLoader__.load({
 					const id = pick.candidate.value;
 					const record = id === void 0 ? void 0 : state().items.find((item) => item.id === id);
 					if (record === void 0) return void 0;
+					if (record.name === void 0) return { text: record.text };
 					return { insert: {
 						source: FAVORITES_SOURCE_NAME,
-						ref: record.text,
+						ref: record.name,
 						label: pick.candidate.label ?? pick.candidate.name,
-						clipboardText: record.text
+						clipboardText: `@${record.name}`
 					} };
 				},
 				codec: {
-					clipboardText: (ref) => ref,
-					serialize: (ref) => Promise.resolve(ref)
+					clipboardText: (ref) => `@${ref}`,
+					serialize: (ref) => Promise.resolve(`@${ref}`)
 				}
 			};
 		}
