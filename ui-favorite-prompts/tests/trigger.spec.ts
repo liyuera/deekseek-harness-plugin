@@ -79,7 +79,7 @@ describe('createFavoritesSource', () => {
     expect(await source.candidates(session, request(''))).toHaveLength(CANDIDATE_LIMIT)
   })
 
-  it('inserts the whole prompt text on pick and ignores an unknown id', async () => {
+  it('picks a reference chip labelled with the row the user saw', async () => {
     const source = createFavoritesSource(() => stateOf(items), t)
     const [first] = await source.candidates(session, request(''))
     const outcome = source.onPick({
@@ -90,8 +90,43 @@ describe('createFavoritesSource', () => {
       action: 'pick',
       span: { start: 0, end: 2, draftRev: 1 },
     } as never)
-    expect(outcome).toEqual({ text: '第一条中文提示词\n第二行' })
+    expect(outcome).toEqual({
+      insert: {
+        source: 'favorites',
+        ref: '第一条中文提示词\n第二行',
+        label: '第一条中文提示词',
+        clipboardText: '第一条中文提示词\n第二行',
+      },
+    })
+  })
 
+  it('serializes a chip back to the prompt itself, for the model and for copy', async () => {
+    const source = createFavoritesSource(() => stateOf(items), t)
+    const ref = '第一条中文提示词\n第二行'
+    expect(source.codec?.clipboardText(ref)).toBe(ref)
+    await expect(source.codec?.serialize(ref, new AbortController().signal)).resolves.toBe(ref)
+  })
+
+  it('keeps the prompt inside the ref, so deleting the favorite cannot break a pending draft', async () => {
+    const live: PromptRecord[] = [{ id: 'a', text: 'Run the tests', createdAt: AT }]
+    const source = createFavoritesSource(() => stateOf(live), t)
+    const [only] = await source.candidates(session, request(''))
+    const outcome = source.onPick({
+      candidate: only as never,
+      session,
+      position: 'inline',
+      via: 'menu',
+      action: 'pick',
+      span: { start: 0, end: 2, draftRev: 1 },
+    } as never)
+    const insert = (outcome as { insert: { ref: string } }).insert
+    // The user removes the favorite in Settings while the chip sits in the composer.
+    live.length = 0
+    await expect(source.codec?.serialize(insert.ref, new AbortController().signal)).resolves.toBe('Run the tests')
+  })
+
+  it('ignores a pick whose record is gone', () => {
+    const source = createFavoritesSource(() => stateOf(items), t)
     const missing = source.onPick({
       candidate: { name: 'x', value: 'gone' } as never,
       session,

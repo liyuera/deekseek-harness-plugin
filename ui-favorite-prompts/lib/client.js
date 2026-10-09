@@ -440,6 +440,10 @@ window.__ModuleLoader__.load({
 				};
 			}
 		};
+		//#endregion
+		//#region lib/types/client/trigger/source.js
+		/** Source name; a picked chip routes back through it at submit time. */
+		const FAVORITES_SOURCE_NAME = "favorites";
 		/**
 		* Menu position among `@` sources. The menu lays groups out by ascending
 		* `order`, and the file/session source (`ui-reference`) declares none (0), so
@@ -457,7 +461,7 @@ window.__ModuleLoader__.load({
 		function createFavoritesSource(state, t) {
 			return {
 				trigger: "@",
-				name: "favorites",
+				name: FAVORITES_SOURCE_NAME,
 				order: FAVORITES_SOURCE_ORDER,
 				showGroupTitle: false,
 				candidates: (_session, req) => {
@@ -482,7 +486,17 @@ window.__ModuleLoader__.load({
 				onPick: (pick) => {
 					const id = pick.candidate.value;
 					const record = id === void 0 ? void 0 : state().items.find((item) => item.id === id);
-					return record === void 0 ? void 0 : { text: record.text };
+					if (record === void 0) return void 0;
+					return { insert: {
+						source: FAVORITES_SOURCE_NAME,
+						ref: record.text,
+						label: pick.candidate.label ?? pick.candidate.name,
+						clipboardText: record.text
+					} };
+				},
+				codec: {
+					clipboardText: (ref) => ref,
+					serialize: (ref) => Promise.resolve(ref)
 				}
 			};
 		}

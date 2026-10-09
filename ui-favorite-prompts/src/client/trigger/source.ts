@@ -12,6 +12,9 @@ import { IconBookmarkOutline16 } from '../strip/icons.tsx'
 /** Translation seat of this plugin's dictionary. */
 export type Translate = (key: FavoritePromptsKey, params?: Record<string, string>) => string
 
+/** Source name; a picked chip routes back through it at submit time. */
+export const FAVORITES_SOURCE_NAME = 'favorites'
+
 /** Rows rendered for one query, at most. */
 export const CANDIDATE_LIMIT = 50
 
@@ -34,7 +37,7 @@ const PREVIEW_LIMIT = 60
 export function createFavoritesSource(state: () => FavoritesState, t: Translate): InputTriggerSource {
   return {
     trigger: '@',
-    name: 'favorites',
+    name: FAVORITES_SOURCE_NAME,
     order: FAVORITES_SOURCE_ORDER,
     showGroupTitle: false,
     candidates: (_session, req) => {
@@ -59,7 +62,22 @@ export function createFavoritesSource(state: () => FavoritesState, t: Translate)
     onPick: (pick) => {
       const id = pick.candidate.value
       const record = id === undefined ? undefined : state().items.find(item => item.id === id)
-      return record === undefined ? undefined : { text: record.text }
+      if (record === undefined) return undefined
+      return {
+        insert: {
+          source: FAVORITES_SOURCE_NAME,
+          // The ref IS the prompt, so the chip submits exactly what was picked
+          // even if the favorite is edited or deleted before the draft is sent.
+          ref: record.text,
+          // The row the user clicked, not a freshly derived one.
+          label: pick.candidate.label ?? pick.candidate.name,
+          clipboardText: record.text,
+        },
+      }
+    },
+    codec: {
+      clipboardText: ref => ref,
+      serialize: ref => Promise.resolve(ref),
     },
   }
 }

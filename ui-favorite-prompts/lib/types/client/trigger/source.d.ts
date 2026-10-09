@@ -8,6 +8,8 @@ import type { FavoritePromptsKey } from '../locales.ts';
 import type { FavoritesState } from '../store.ts';
 /** Translation seat of this plugin's dictionary. */
 export type Translate = (key: FavoritePromptsKey, params?: Record<string, string>) => string;
+/** Source name; a picked chip routes back through it at submit time. */
+export declare const FAVORITES_SOURCE_NAME = "favorites";
 /** Rows rendered for one query, at most. */
 export declare const CANDIDATE_LIMIT = 50;
 /**

@@ -201,14 +201,24 @@ Chat 节点排序比较器为 anchor → rank → originalAnchor → **key 字�
 - `value` = 记录 `id`（opaque pick payload）。
 - 过滤与排序**全部由本插件在 `candidates()` 里做**：对整段正文做大小写不敏感的子串匹配（中文直接命中），按 `createdAt` 降序，空查询返回全部（上限 50 条，避免一次渲染过多行）。
 
-### 6.3 选中后的插入
+### 6.3 选中后的插入：reference chip
 
-`onPick` 返回 `{ text: record.text }`。走的是 `slash/input-insert-text` → `insertText(text, span)`：**替换掉 `@查询串` 那一段，插入的是可继续编辑的纯文本，不是 chip 令牌，也不需要实现 `codec`**（E12）。
+`onPick` 返回 `{ insert: { source, ref, label, clipboardText } }`，走的是 `slash/input-insert-reference` → `insertReference(ref, span)`：**替换掉 `@查询串` 那一段，落进输入框的是一个和文件/目录同款的胶囊 chip**（原子块，不能就地编辑），与纯文本插入相对（E12）。
+
+字段取值：
+
+- `source: 'favorites'` —— chip 在提交时按 source 名路由回本插件的 codec。
+- `ref` = **提示词全文**（自包含）。这样 chip 提交时序列化回的就是当初选中的那段文字，即使收藏在设置页被改或被删也不会让草稿发不出去——`ref` 不依赖任何查表。
+- `label` = 用户点的那一行显示的短名（`pick.candidate.label ?? name`），不是重新派生的，保证输入框里看到的就是菜单里点的那一行。
+- `clipboardText` = 提示词全文（复制/剪切/草稿持久化用它）。
+- **不传 `appearance`**：该字段是封闭联合 `'session' | 'file' | 'folder'`，没有"收藏"这一类；省略时 chip 渲染 `@` 字形（`ReferenceChip.tsx` 的 marker 分支），对"用 `@` 找到的提示词"语义反而贴切，也避免像文件 chip 那样被加上"可点开"的样式。
+
+`codec` 必须实现（产出 `insert` 结果的源缺 codec 会在提交时硬报错）：`clipboardText: ref => ref`、`serialize: ref => Promise.resolve(ref)`。
 
 两个已知细节：
 
-- 若收藏正文以 `@xxx` 形式结尾，插入后可能重新触发菜单；实际提示词几乎不会，若不放心可在插入文本末尾补一个空格。
-- 不实现 `lexicon` / `subscribeLexicon`：这两个是给"短名字引用装饰"用的（实现后草稿里的 `@名字` 会被画成 chip 样式）。本插件的候选是整段提示词，没有这种语义。代价是菜单打开期间新增收藏不会实时刷新——可接受。
+- chip 是原子块：**不能在输入框里微调提示词**，要改就整块删掉重选。这是换外观的代价，已与使用者确认。
+- 不实现 `lexicon` / `subscribeLexicon`：那条通道会把草稿里的 `@名字` 装饰成"看似 chip 但可编辑"的文本节点，而它序列化时保留 `@名字` 字面量——发给模型的就是别名而不是提示词全文，正是要避免的。代价是菜单打开期间新增收藏不会实时刷新。
 
 ## 7. 需求 3：设置页
 
@@ -324,6 +334,8 @@ interface FavoritesState {
 - 设置导航项用通用齿轮图标。
 - 多标签页靠窗口 focus 重取，不是实时推送。
 - 只收藏文本，不收藏附件与图片。
+- `@` 选中后插入的是 chip 原子块，**不能在输入框里微调**（要改就整块删掉重选）。
+- chip 的图标是 `@` 字形，不是书签：`ReferenceInsert.appearance` 是封闭联合，无法扩展成"收藏"这一类。
 - 不参与 dsh 的 session 日志，因此模型看不到"哪些提示词被收藏了"；若将来想让 agent 也能用，需要另加工具或 prompt 段落。
 
 ## 13. 后续可选（明确不在本期）

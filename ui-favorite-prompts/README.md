@@ -19,7 +19,7 @@ dsh plugin --profile web add link:/绝对路径/deepseek-harness/deepseek-harnes
 | 入口 | 扩展点 | 说明 |
 |---|---|---|
 | 消息下方书签 | 自建 Chat 节点 `favorite-strip` | 悬停气泡浮现，空心/实心表示是否已收藏；取消后 5 秒内可撤销 |
-| `@` 收藏组 | `ctx.inputTriggers.registerSource` | 选中后把提示词整段作为纯文本插入输入框（不是 chip） |
+| `@` 收藏组 | `ctx.inputTriggers.registerSource` | 排在 `@` 菜单最前；选中后插入 reference chip（与文件/目录同款胶囊块），提交时序列化回提示词全文 |
 | 设置 → 收藏提示词 | `settings.section` | 列表、行内编辑、二次确认删除、手动新增 |
 
 ## 数据
