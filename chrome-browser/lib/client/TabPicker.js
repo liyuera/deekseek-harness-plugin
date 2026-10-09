@@ -10,7 +10,7 @@
  * @module @liuyera/dsh-chrome-browser/client/tab-picker
  */
 import React from 'react';
-import { IconCheckOutline16, IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives';
+import { IconCheckOutlineRegular, IconChevronDownOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives';
 import { CHROME_ICON_SRC } from "./chrome-icon.js";
 /** Fixed list height with internal scroll; width follows the dock card. */
 const LIST_HEIGHT = 340;
@@ -301,7 +301,7 @@ export function TabPicker(props) {
             color: 'inherit',
             userSelect: 'none',
         },
-    }, summary, React.createElement(IconChevronDownOutline14, { size: 14 })), open && position !== null
+    }, summary, React.createElement(IconChevronDownOutlineRegular, { size: 14 })), open && position !== null
         ? React.createElement('div', {
             ref: listRef,
             className: 'cb-tab-list',
@@ -322,7 +322,7 @@ export function TabPicker(props) {
                     toggle(row.id);
             },
         }, React.createElement(Favicon, { url: row.icon, fallback: '🌐' }), React.createElement('span', { className: 'cb-title' }, row.label), selectedIds.includes(row.id)
-            ? React.createElement('span', { className: 'cb-check' }, React.createElement(IconCheckOutline16, { size: 16 }))
+            ? React.createElement('span', { className: 'cb-check' }, React.createElement(IconCheckOutlineRegular, { size: 16 }))
             : null)))
         : null);
 }

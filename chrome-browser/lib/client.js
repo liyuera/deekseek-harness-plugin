@@ -21,7 +21,7 @@ window.__ModuleLoader__.load({
 			}
 			return to;
 		};
-		var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
+		var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
 			value: mod,
 			enumerable: true
 		}) : target, mod));
@@ -136,8 +136,8 @@ window.__ModuleLoader__.load({
 				right: vw / 2,
 				width: 400
 			};
-			const width = Math.min(rect.width, vw - 24);
-			const height = Math.min(LIST_HEIGHT, vh - 24);
+			const width = Math.min(rect.width, vw - margin * 2);
+			const height = Math.min(LIST_HEIGHT, vh - margin * 2);
 			return {
 				left: Math.min(Math.max(rect.left, margin), vw - width - margin),
 				top: Math.min(Math.max(rect.top - height - 14, margin), vh - height - margin),
@@ -246,8 +246,7 @@ window.__ModuleLoader__.load({
 				const current = (tabs ?? []).filter((tab) => selectedIds.includes(tab.id));
 				const target = (tabs ?? []).find((tab) => tab.id === id);
 				if (target === void 0) return;
-				const next = current.some((tab) => tab.id === id) ? current.filter((tab) => tab.id !== id) : [...current, target];
-				applySelection(next);
+				applySelection(current.some((tab) => tab.id === id) ? current.filter((tab) => tab.id !== id) : [...current, target]);
 			};
 			const remove = (id) => {
 				applySelection((tabs ?? []).filter((tab) => selectedIds.includes(tab.id)).filter((tab) => tab.id !== id));
@@ -342,7 +341,7 @@ window.__ModuleLoader__.load({
 				fontSize: 12,
 				color: "inherit",
 				userSelect: "none"
-			} }, summary, react.default.createElement(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, { size: 14 })), open && position !== null ? react.default.createElement("div", {
+			} }, summary, react.default.createElement(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutlineRegular, { size: 14 })), open && position !== null ? react.default.createElement("div", {
 				ref: listRef,
 				className: "cb-tab-list",
 				role: "menu",
@@ -368,7 +367,7 @@ window.__ModuleLoader__.load({
 			}, react.default.createElement(Favicon, {
 				url: row.icon,
 				fallback: "🌐"
-			}), react.default.createElement("span", { className: "cb-title" }, row.label), selectedIds.includes(row.id) ? react.default.createElement("span", { className: "cb-check" }, react.default.createElement(_deepseek_ai_dsh_client_ui_primitives.IconCheckOutline16, { size: 16 })) : null))) : null);
+			}), react.default.createElement("span", { className: "cb-title" }, row.label), selectedIds.includes(row.id) ? react.default.createElement("span", { className: "cb-check" }, react.default.createElement(_deepseek_ai_dsh_client_ui_primitives.IconCheckOutlineRegular, { size: 16 })) : null))) : null);
 		}
 		//#endregion
 		//#region lib/client/index.js

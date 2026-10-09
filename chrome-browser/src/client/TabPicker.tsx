@@ -11,7 +11,7 @@
  */
 
 import React from 'react'
-import { IconCheckOutline16, IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconCheckOutlineRegular, IconChevronDownOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
 import { CHROME_ICON_SRC } from './chrome-icon.ts'
 
 /** One live tab as the host describes it. */
@@ -357,7 +357,7 @@ export function TabPicker(props: TabPickerProps) {
         },
       },
       summary,
-      React.createElement(IconChevronDownOutline14, { size: 14 }),
+      React.createElement(IconChevronDownOutlineRegular, { size: 14 }),
     ),
     open && position !== null
       ? React.createElement(
@@ -387,7 +387,7 @@ export function TabPicker(props: TabPickerProps) {
           React.createElement(Favicon, { url: row.icon, fallback: '🌐' }),
           React.createElement('span', { className: 'cb-title' }, row.label),
           selectedIds.includes(row.id)
-            ? React.createElement('span', { className: 'cb-check' }, React.createElement(IconCheckOutline16, { size: 16 }))
+            ? React.createElement('span', { className: 'cb-check' }, React.createElement(IconCheckOutlineRegular, { size: 16 }))
             : null,
         )),
       )
