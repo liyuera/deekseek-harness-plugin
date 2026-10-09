@@ -35,7 +35,7 @@ function bench(seed: PromptRecord[] = records) {
 }
 
 /** Run the pre-step waterfall with one user message, as the loop does. */
-async function preStep(ctx: Context, text: string): Promise<{ messages: { source: { kind: string; plugin?: string }; content: unknown[] }[] }> {
+async function preStep(ctx: Context, text: string): Promise<{ messages: { source: { kind: string }; content: unknown[] }[] }> {
   const message = createUserMessage({
     content: [{ type: 'text', text }],
     source: { kind: 'user' },
@@ -44,7 +44,7 @@ async function preStep(ctx: Context, text: string): Promise<{ messages: { source
   const decision = await (ctx as unknown as {
     waterfall: (name: string, payload: unknown, fallback: () => Promise<unknown>) => Promise<unknown>
   }).waterfall('agent/pre-step', payload, () => Promise.resolve({ kind: 'enter', messages: [message] }))
-  return decision as { messages: { source: { kind: string; plugin?: string }; content: unknown[] }[] }
+  return decision as { messages: { source: { kind: string }; content: unknown[] }[] }
 }
 
 /** Text of one message's first block. */
@@ -60,7 +60,7 @@ describe('agent/pre-step expansion', () => {
     const decision = await preStep(ctx, '照 @git-commit-msg 办')
     expect(decision.messages).toHaveLength(2)
     const context = decision.messages[1]
-    expect(context?.source).toEqual({ kind: 'plugin', plugin: 'favorite-prompts' })
+    expect(context?.source).toMatchObject({ kind: 'favorite-prompts', form: 'reference', version: 1 })
     expect(textOf(context as { content: unknown[] })).toContain('### @git-commit-msg')
     expect(textOf(context as { content: unknown[] })).toContain('根据git diff 的结果，给我生成commit msg')
   })

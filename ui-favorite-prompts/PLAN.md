@@ -2379,3 +2379,14 @@ cd deepseek-harness-plugin && git add ui-favorite-prompts && git commit -m "feat
 - `createUserMessage` 从 **`@deepseek-ai/dsh-llm/message`** 子路径导入，不是主入口：主入口（`index.ts`）在本插件的测试别名环境下解析不了（它经 typert-protocol 等一串依赖），而 `message.ts` 的依赖图只有 brand / util-crypto / util-values。该子路径是包 `exports` 里正式导出的一项。
 - `nodeLibraryConfig` 只按**精确 specifier** 判定外部化（`production.has(specifier)`），`@deepseek-ai/dsh-llm/message` 与依赖键 `@deepseek-ai/dsh-llm` 不相等，所以它连同三个 util 被**内联**进 `lib/index.js`；宿主包因此只外置 `@deepseek-ai/dsh-storage-domain`。这些内联的都是纯工厂/纯助手，不涉及模块级状态或身份共享，内联是安全的。
 - 测试侧：`agent/pre-step` 用 `ctx.waterfall('agent/pre-step', payload, fallback)` 直接驱动真实的 Cordis waterfall（`dsh-agent` 只作类型导入，运行时被擦除）。
+
+### D5（T12 之后）：迁移到 0.2.0 类型源
+
+运行环境是桌面应用 `0.2.0-rc.2`（从 `app.asar` 读出），本地检出是 0.1.6，所以按仓库 README 的流程把本插件也迁到 npm 的 0.2.0 包。**迁移当场炸出四处真实 API 变更，全是 0.1.6 编译期发现不了的：**
+
+1. `dsh-client-ui-conversation` 的类型引用 `@deepseek-ai/dsh-api-session-controller/client`，但它没声明这个依赖（客户端 baseline 由 shell 提供）→ 必须自己装，否则 `SessionEventLike` 解析不了、`user/message` 的事件载荷无法窄化。
+2. chat 节点 props 的 `sessionId` 由 `ui-session` 的 `SessionStandardProps` 合并进来 → 组件里要 `import type {} from '@deepseek-ai/dsh-client-ui-session/client'`。
+3. `MessageSourceMap` 里**没有通用 `plugin` 来源**了 → 改为声明本插件自己的 source（`src/host/source.ts`），与 `session-reference` 的做法一致。
+4. 单测里 `ctx.slots.inject(...)` 的清理语义暴露了一个**真 bug**：真实 registry 的内部 effect 绑在它自己的上下文上，插件 fiber 释放时不会回收 → 两处注入改为各自骑一个 `ctx.effect`（与 Definition 那处同理）。
+
+测试侧的取舍：`/client` 出口是浏览器 lazy-CJS 产物（`window.__ModuleLoader__`），Node 里跑不了；发布包不含 `src/`，所以 `SlotRegistry` 用记录式替身验证注册与释放。`ui-primitives` 的 Node 入口拉一串浏览器专用依赖（shiki/simple-icons/…），用最小替身。

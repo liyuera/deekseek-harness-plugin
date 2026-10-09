@@ -1,55 +1,41 @@
 /**
- * Standalone vitest project. Workspace packages resolve through explicit
- * aliases because this repo has no node_modules links for them; react resolves
- * to the local install so the renderer, ui-primitives, and the testing library
- * share one instance.
+ * Standalone vitest project.
+ *
+ * Harness packages resolve from this package's own node_modules — the published
+ * versions the plugin ships against. Two deliberate substitutions:
+ *
+ * - `/client` entries are the Web shell's lazy-CJS browser artifacts, which only
+ *   run inside the page. Their packages also publish `./src/*`, so the specs
+ *   import that source instead: same version, loadable under Node.
+ * - `ui-primitives`' Node entry pulls a browser-only dependency chain the shell
+ *   supplies at runtime, so the specs use a test double of the one control the
+ *   plugin passes props to.
  */
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 
-const root = fileURLToPath(new URL('../../', import.meta.url))
-const reactDir = fileURLToPath(new URL('./node_modules/react', import.meta.url))
-const reactDomDir = fileURLToPath(new URL('./node_modules/react-dom', import.meta.url))
-
-const ALIASES: Array<[string, string]> = [
-  ['react$', `${reactDir}/index.js`],
-  ['react/jsx-runtime$', `${reactDir}/jsx-runtime.js`],
-  ['react-dom$', `${reactDomDir}/index.js`],
-  ['react-dom/client$', `${reactDomDir}/client.js`],
-  ['@deepseek-ai/cordis$', 'vendor/cordis/src/index.ts'],
-  ['@deepseek-ai/cordis/', 'vendor/cordis/src/'],
-  ['@deepseek-ai/schemastery$', 'vendor/schemastery/src/index.ts'],
-  ['@deepseek-ai/dsh-storage-domain$', 'packages/storage/storage-domain/src/index.ts'],
-  ['@deepseek-ai/dsh-storage$', 'packages/storage/storage/src/index.ts'],
-  ['@deepseek-ai/dsh-storage-json$', 'packages/storage/storage-json/src/index.ts'],
-  ['@deepseek-ai/dsh-client-store$', 'packages/client/store/src/index.ts'],
-  ['@deepseek-ai/dsh-client-ui-slots$', 'packages/client/ui-slots/src/index.ts'],
-  ['@deepseek-ai/dsh-client-ui-primitives$', 'packages/client/ui-primitives/src/index.ts'],
-  ['@deepseek-ai/dsh-client-ui-renderer/client$', 'packages/client/ui-renderer/src/client/index.ts'],
-  ['@deepseek-ai/dsh-client-locale/client$', 'packages/client/locale/src/client/index.ts'],
-  ['@deepseek-ai/dsh-client-ui-conversation/client$', 'packages/client/ui-conversation/src/client/index.ts'],
-  ['@deepseek-ai/dsh-client-ui-chat/client$', 'packages/client/ui-chat/src/client/index.ts'],
-  ['@deepseek-ai/dsh-client-ui-input-trigger/client$', 'packages/client/ui-input-trigger/src/client/index.ts'],
-
-  ['@deepseek-ai/dsh-llm/message$', 'packages/llm/llm/src/message.ts'],
-  ['@deepseek-ai/dsh-brand$', 'packages/util/brand/src/index.ts'],
-  ['@deepseek-ai/dsh-util-crypto$', 'packages/util/crypto/src/index.ts'],
-  ['@deepseek-ai/dsh-util-values$', 'packages/util/values/src/index.ts'],
-  ['@deepseek-ai/dsh-session/surface$', 'packages/core/session/src/surface.ts'],
-  ['@deepseek-ai/dsh-session/types$', 'packages/core/session/src/types.ts'],
-  ['@deepseek-ai/dsh-host-webserver$', 'packages/host/webserver/src/index.ts'],
-]
+/** Published client source of one harness package. */
+const clientSource = (name: string): string =>
+  fileURLToPath(new URL(`./node_modules/@deepseek-ai/${name}/src/client/index.ts`, import.meta.url))
 
 export default defineConfig({
   resolve: {
-    alias: ALIASES.map(([find, replacement]) => ({
-      find: new RegExp(`^${find}`),
-      replacement: replacement.startsWith('/') ? replacement : `${root}${replacement}`,
-    })),
+    alias: {
+      '@deepseek-ai/dsh-client-ui-primitives': fileURLToPath(new URL('./tests/support/ui-primitives.tsx', import.meta.url)),
+      '@deepseek-ai/dsh-client-ui-renderer/client': clientSource('dsh-client-ui-renderer'),
+      '@deepseek-ai/dsh-client-ui-conversation/client': clientSource('dsh-client-ui-conversation'),
+      '@deepseek-ai/dsh-client-ui-chat/client': clientSource('dsh-client-ui-chat'),
+      '@deepseek-ai/dsh-client-ui-input-trigger/client': clientSource('dsh-client-ui-input-trigger'),
+      '@deepseek-ai/dsh-client-ui-settings/client': clientSource('dsh-client-ui-settings'),
+      '@deepseek-ai/dsh-client-ui-session/client': clientSource('dsh-client-ui-session'),
+      '@deepseek-ai/dsh-client-locale/client': clientSource('dsh-client-locale'),
+    },
   },
   test: {
     include: ['tests/**/*.spec.ts', 'tests/**/*.spec.tsx'],
     environment: 'node',
+    // Keep the testing library on the vite pipeline so its react/react-dom
+    // imports resolve through the same instance the components use.
     server: { deps: { inline: ['@testing-library/react'] } },
   },
 })

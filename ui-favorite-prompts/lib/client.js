@@ -388,10 +388,11 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region ../../packages/core/session/src/surface.ts
+		//#region node_modules/@deepseek-ai/dsh-session/lib/types/surface.js
 		/** Runtime counterpart of the message-producing event union. */
 		const SURFACE_EVENT_TYPES = new Set([
 			"system/message",
+			"developer/message",
 			"user/message",
 			"assistant/message",
 			"tool/result"
@@ -774,7 +775,7 @@ window.__ModuleLoader__.load({
 				};
 			}, "favorite-prompts: focus refresh");
 			ctx.effect(() => ctx.uiConversation.events.register(favoriteStripDefinition), "favorite-prompts: strip definition");
-			ctx.slots.inject("conversation.chat.node", () => ctx.slots.register({
+			ctx.effect(() => ctx.slots.inject("conversation.chat.node", () => ctx.slots.register({
 				name: "conversation.chat.node",
 				key: FAVORITE_STRIP_KIND,
 				locale: NS,
@@ -782,10 +783,10 @@ window.__ModuleLoader__.load({
 					hooks: { favorites: favorites.state },
 					actions: favorites.actions
 				})
-			}, FavoriteStrip));
+			}, FavoriteStrip)), "favorite-prompts: strip slot");
 			const inputTriggers = ctx.get("inputTriggers");
 			ctx.effect(() => inputTriggers.registerSource(createFavoritesSource(() => favorites.state.getSnapshot(), t)), "favorite-prompts: @ source");
-			ctx.slots.inject("settings.section", () => ctx.slots.register({
+			ctx.effect(() => ctx.slots.inject("settings.section", () => ctx.slots.register({
 				name: "settings.section",
 				id: "favorite-prompts",
 				order: 30,
@@ -795,7 +796,7 @@ window.__ModuleLoader__.load({
 					hooks: { favorites: favorites.state },
 					actions: favorites.actions
 				})
-			}, FavoritesSettingsPage));
+			}, FavoritesSettingsPage)), "favorite-prompts: settings section");
 		}
 		//#endregion
 		exports.apply = apply;

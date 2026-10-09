@@ -1,31 +1,57 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from 'vitest'
+/**
+ * Wiring and disposal of the browser half.
+ *
+ * The real slot registry lives in `ui-renderer/lib/client.js`, the Web shell's
+ * lazy-CJS browser artifact — it only runs inside the page, so these specs drive
+ * a recording stand-in with the same two-method surface the plugin uses. The
+ * behavioral claim is unchanged: every contribution lands under its declared
+ * slot key and every one is released when the fiber is disposed (HMR safety).
+ */
+import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { apply, inject } from '../src/client/index.ts'
 
-afterEach(() => {
-  // Nothing global to clean: each case boots its own context.
-})
+/** One recorded contribution. */
+interface Contribution {
+  key: string
+  options: Record<string, unknown>
+  disposed: boolean
+}
 
-/** Boot the browser half over a real slot tree declaring the two seats it fills. */
+/** Recording `ctx.slots`: same register/inject contract the plugin relies on. */
+function slotsStandIn(): { service: unknown; entries: Contribution[] } {
+  const entries: Contribution[] = []
+  const service = {
+    register: (options: Record<string, unknown>) => {
+      const entry: Contribution = { key: String(options.name), options, disposed: false }
+      entries.push(entry)
+      return () => { entry.disposed = true }
+    },
+    inject: (key: string, callback: () => (() => void) | void) => {
+      // The real registry releases the injected registration when the caller's
+      // fiber is disposed; chaining that disposer is what `inject` is for.
+      const dispose = callback()
+      return () => { if (typeof dispose === 'function') dispose() }
+    },
+    entries: (key: string) => entries.filter(entry => entry.key === key),
+  }
+  return { service, entries }
+}
+
+/** Boot the browser half over recording services. */
 async function bench(): Promise<{
   ctx: Context
   fiber: { dispose(): Promise<void> }
+  contributions: Contribution[]
   sources: unknown[]
   definitions: unknown[]
 }> {
   const ctx = new Context()
-  await ctx.plugin(SlotRegistry).await()
-  ctx.slots.register({
-    name: 'root',
-    children: {
-      'conversation.chat.node': { kind: 'keyed', scope: 'session' },
-      'settings.section': { kind: 'list', scope: 'root' },
-    },
-  } as never, () => null)
+  const slots = slotsStandIn()
   const sources: unknown[] = []
   const definitions: unknown[] = []
+  ctx.provide('slots', slots.service as never)
   ctx.provide('locale', {
     register: () => () => {},
     bind: () => (key: string) => key,
@@ -47,7 +73,7 @@ async function bench(): Promise<{
   } as never)
   const fiber = ctx.plugin({ inject: [...inject], apply })
   await fiber.await()
-  return { ctx, fiber, sources, definitions }
+  return { ctx, fiber, contributions: slots.entries, sources, definitions }
 }
 
 describe('favorite-prompts browser half', () => {
@@ -56,25 +82,28 @@ describe('favorite-prompts browser half', () => {
   })
 
   it('registers the strip definition, the @ source, and the settings page', async () => {
-    const { ctx, definitions, sources } = await bench()
+    const { contributions, definitions, sources } = await bench()
     expect(definitions).toHaveLength(1)
     expect(sources).toHaveLength(1)
-    expect(ctx.slots.entries('conversation.chat.node').map(entry => entry.options.key)).toContain('favorite-strip')
-    expect(ctx.slots.entries('settings.section').map(entry => entry.options.id)).toContain('favorite-prompts')
+    expect(contributions.map(entry => entry.key)).toEqual([
+      'conversation.chat.node',
+      'settings.section',
+    ])
+    expect(contributions[0]?.options.key).toBe('favorite-strip')
+    expect(contributions[1]?.options.id).toBe('favorite-prompts')
   })
 
   it('keeps the settings page last in the navigation order', async () => {
-    const { ctx } = await bench()
-    const entry = ctx.slots.entries('settings.section').find(candidate => candidate.options.id === 'favorite-prompts')
-    expect(entry?.options.order).toBe(30)
+    const { contributions } = await bench()
+    const settings = contributions.find(entry => entry.options.id === 'favorite-prompts')
+    expect(settings?.options.order).toBe(30)
   })
 
-  it('removes every contribution when the fiber is disposed (HMR safety)', async () => {
-    const { ctx, fiber, sources, definitions } = await bench()
+  it('releases every contribution when the fiber is disposed (HMR safety)', async () => {
+    const { fiber, contributions, sources, definitions } = await bench()
     await fiber.dispose()
     expect(definitions).toHaveLength(0)
     expect(sources).toHaveLength(0)
-    expect(ctx.slots.entries('conversation.chat.node')).toHaveLength(0)
-    expect(ctx.slots.entries('settings.section')).toHaveLength(0)
+    expect(contributions.every(entry => entry.disposed)).toBe(true)
   })
 })

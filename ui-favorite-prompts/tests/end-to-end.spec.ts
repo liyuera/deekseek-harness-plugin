@@ -75,7 +75,7 @@ describe('host half end to end', () => {
 
     const decision = await preStep(ctx, `照 @${slugify(PROMPT)} 办`)
     expect(decision.messages).toHaveLength(2)
-    expect(decision.messages[1]?.source.kind).toBe('plugin')
+    expect(decision.messages[1]?.source.kind).toBe('favorite-prompts')
     expect(textOf(decision.messages[1] as { content: unknown[] })).toContain(PROMPT)
   })
 

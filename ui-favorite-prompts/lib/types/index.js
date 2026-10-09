@@ -4,12 +4,11 @@ import { createUserMessage } from '@deepseek-ai/dsh-llm/message';
 import { favoritesDomain } from "./domain.js";
 import { backfillNames } from "./host/backfill.js";
 import { renderReferenceContext, resolveMentions, scanMentions } from "./host/expand.js";
+import { referenceSource } from "./host/source.js";
 import { handlePromptRequest } from "./host/route.js";
 import { PROMPT_ROUTE, PROMPT_TABLE } from "./schema.js";
 /** Host plugin name. */
 export const name = 'favorite-prompts';
-/** Message-source attribution of the injected context. */
-const CONTEXT_SOURCE = { kind: 'plugin', plugin: name };
 /**
  * Services the host half needs. Both arrive from plugins that mount later in
  * the tree than this row, so `apply` runs when they land instead of reading
@@ -133,7 +132,7 @@ export function apply(ctx) {
                 continue;
             const { resolved, unresolved, omitted } = resolveMentions(names, records);
             messages.push(createUserMessage({
-                source: CONTEXT_SOURCE,
+                source: referenceSource(names),
                 content: [{ type: 'text', text: renderReferenceContext(resolved, unresolved, omitted) }],
             }));
             expanded = true;

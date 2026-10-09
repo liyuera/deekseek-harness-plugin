@@ -54,12 +54,17 @@ export function apply(ctx: ClientContext): void {
     () => ctx.uiConversation.events.register(favoriteStripDefinition),
     'favorite-prompts: strip definition',
   )
-  ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
-    name: 'conversation.chat.node',
-    key: FAVORITE_STRIP_KIND,
-    locale: NS,
-    inject: () => ({ hooks: { favorites: favorites.state }, actions: favorites.actions }),
-  }, FavoriteStrip))
+  // Like the Definition above, an injection is released by the registry's own
+  // effect rather than this fiber, so it rides one here to stay HMR-safe.
+  ctx.effect(
+    () => ctx.slots.inject('conversation.chat.node', () => ctx.slots.register({
+      name: 'conversation.chat.node',
+      key: FAVORITE_STRIP_KIND,
+      locale: NS,
+      inject: () => ({ hooks: { favorites: favorites.state }, actions: favorites.actions }),
+    }, FavoriteStrip)),
+    'favorite-prompts: strip slot',
+  )
 
   // 2. `@` group listing saved prompts.
   const inputTriggers = ctx.get('inputTriggers') as InputTriggerServiceContract
@@ -69,12 +74,15 @@ export function apply(ctx: ClientContext): void {
   )
 
   // 3. Settings page.
-  ctx.slots.inject('settings.section', () => ctx.slots.register({
-    name: 'settings.section',
-    id: 'favorite-prompts',
-    order: 30,
-    label: () => t('nav'),
-    locale: NS,
-    inject: () => ({ hooks: { favorites: favorites.state }, actions: favorites.actions }),
-  }, FavoritesSettingsPage))
+  ctx.effect(
+    () => ctx.slots.inject('settings.section', () => ctx.slots.register({
+      name: 'settings.section',
+      id: 'favorite-prompts',
+      order: 30,
+      label: () => t('nav'),
+      locale: NS,
+      inject: () => ({ hooks: { favorites: favorites.state }, actions: favorites.actions }),
+    }, FavoritesSettingsPage)),
+    'favorite-prompts: settings section',
+  )
 }

@@ -38,6 +38,7 @@ $DSH_HOME/storages/favorite_prompts/prompts/<id>.json
 ## 开发
 
 ```sh
+npm install                                    # 依赖全部来自 npm 的 0.2.0 包
 npx tsc -b && npx tsdown --config-loader tsx   # 构建（bin 解析自 harness 根 node_modules）
 node ../../node_modules/vitest/vitest.mjs run  # 测试
 ```
@@ -46,7 +47,7 @@ node ../../node_modules/vitest/vitest.mjs run  # 测试
 
 ### 两个容易踩的坑
 
-1. **构建期依赖靠软链**：`node_modules/` 不入库。换机器后需重建软链——`@deepseek-ai/*` 指向 harness 工作区的 `packages/*`，`react`/`react-dom`/`zod`/`@testing-library/react`/`@types/*` 指向 harness 根 `node_modules/.pnpm/*`。
+1. **类型源是 npm 上的 0.2.0 包，不是本地 harness 检出**：`tsconfig.json` 用空 `paths: {}` 覆盖掉从 `tsconfig.base.client.json` 继承的映射（那些映射指向本地 0.1.6 的 `packages/*/src`，会盖住 node_modules 里的 0.2.0 类型）。`node_modules/zod` 仍软链到 harness 根的那一份，与存储域共用同一实例。
 2. **`LocaleNamespaceMap` 模块增强必须写在已 import 该模块的文件里**（本插件的 `src/client/index.ts`）。只有 `declare module` 而没有对应 `import type {}`，`tsc -b` 会报 `TS6305`（项目引用图里建立不了"源 → 输出"映射）。详见 [PLAN.md](PLAN.md) 的实施偏差 D1。
 
 ### 收藏条的排序契约

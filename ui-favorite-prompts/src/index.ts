@@ -13,14 +13,12 @@ import type { WebServer } from '@deepseek-ai/dsh-host-webserver'
 import { favoritesDomain } from './domain.ts'
 import { backfillNames, type NameableTable } from './host/backfill.ts'
 import { renderReferenceContext, resolveMentions, scanMentions } from './host/expand.ts'
+import { referenceSource } from './host/source.ts'
 import { handlePromptRequest, type PromptTable } from './host/route.ts'
 import { PROMPT_ROUTE, PROMPT_TABLE, type PromptRequest, type PromptResponse } from './schema.ts'
 
 /** Host plugin name. */
 export const name = 'favorite-prompts'
-
-/** Message-source attribution of the injected context. */
-const CONTEXT_SOURCE = { kind: 'plugin', plugin: name } as const
 
 /**
  * Services the host half needs. Both arrive from plugins that mount later in
@@ -144,7 +142,7 @@ export function apply(ctx: Context): void {
       if (names.length === 0) continue
       const { resolved, unresolved, omitted } = resolveMentions(names, records)
       messages.push(createUserMessage({
-        source: CONTEXT_SOURCE,
+        source: referenceSource(names),
         content: [{ type: 'text', text: renderReferenceContext(resolved, unresolved, omitted) }],
       }))
       expanded = true

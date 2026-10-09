@@ -1,6 +1,8 @@
 /** One bookmark strip under a user message, with an inline undo window. */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
+// Type-only: merges the session standard props (`sessionId`) this component reads.
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { PromptRecord } from '../../schema.ts'
 import type { FavoritesActions, FavoritesState } from '../store.ts'
