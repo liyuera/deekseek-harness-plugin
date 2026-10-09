@@ -6,9 +6,20 @@
  * and the 15s ping keeps both sides honest.
  */
 
-/** dsh web origin (change the port here when the GUI listens elsewhere). */
-const WS_URL = 'ws://127.0.0.1:3080/chrome-browser/ext/ws'
+/**
+ * dsh web origins, tried in order until one accepts the socket. 19387 is the
+ * desktop APP's profile, 3080 a source-launched `pnpm dsh web`; whichever is
+ * running wins, so neither environment needs this file edited. The upload
+ * origin follows the socket that connected.
+ */
+const WS_URLS = [
+  'ws://127.0.0.1:19387/chrome-browser/ext/ws',
+  'ws://127.0.0.1:3080/chrome-browser/ext/ws',
+]
 
+let candidate = 0
+/** Origin of the socket that last opened; the HTTP upload posts here. */
+let hostOrigin = 'http://127.0.0.1:19387'
 let socket = null
 let retryMs = 1000
 let closed = false
@@ -20,18 +31,29 @@ function connect() {
   // close) the current one mid-command, and the closed socket's onclose
   // schedules yet another connect — an open/close flap every ~2s.
   if (socket !== null && (socket.readyState === 0 || socket.readyState === 1)) return
+  const url = WS_URLS[candidate]
+  let opened = false
   try {
-    socket = new WebSocket(WS_URL)
+    socket = new WebSocket(url)
   } catch {
     scheduleRetry()
     return
   }
-  socket.onopen = () => { retryMs = 1000; trace('open') }
+  socket.onopen = () => {
+    opened = true
+    retryMs = 1000
+    hostOrigin = url.replace(/^ws/u, 'http').replace(/\/chrome-browser\/ext\/ws$/u, '')
+    trace('open ' + url)
+  }
   socket.onmessage = (event) => { void handle(event.data) }
   socket.onerror = () => { /* onclose follows */ }
   socket.onclose = (event) => {
     trace('close ' + (event && event.code !== undefined ? event.code : '?'))
     socket = null
+    // Nothing answered at this origin: advance before retrying, so a machine
+    // running only the other profile connects without an edit. A socket that
+    // did open keeps its origin — that host is the right one to reconnect to.
+    if (!opened) candidate = (candidate + 1) % WS_URLS.length
     scheduleRetry()
   }
 }
@@ -151,7 +173,7 @@ async function run(command) {
       // frame: an oversized base64 frame closed the bridge right after a
       // successful capture. The host persists the upload and returns a path.
       const blob = await (await fetch(dataUrl)).blob()
-      const upload = await fetch('http://127.0.0.1:3080/chrome-browser/ext/upload', {
+      const upload = await fetch(`${hostOrigin}/chrome-browser/ext/upload`, {
         method: 'POST',
         headers: { 'content-type': 'application/octet-stream' },
         body: blob,
