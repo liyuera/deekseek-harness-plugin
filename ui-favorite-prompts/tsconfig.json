@@ -54,6 +54,21 @@
       ],
       "@deepseek-ai/dsh-storage": [
         "./../../packages/storage/storage/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-agent": [
+        "./../../packages/core/agent/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-llm/message": [
+        "./../../packages/llm/llm/src/message.ts"
+      ],
+      "@deepseek-ai/dsh-brand": [
+        "./../../packages/util/brand/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-util-crypto": [
+        "./../../packages/util/crypto/src/index.ts"
+      ],
+      "@deepseek-ai/dsh-util-values": [
+        "./../../packages/util/values/src/index.ts"
       ]
     }
   },
@@ -102,6 +117,12 @@
     },
     {
       "path": "../../packages/storage/storage-domain"
+    },
+    {
+      "path": "../../packages/llm/llm"
+    },
+    {
+      "path": "../../packages/core/agent"
     }
   ]
 }

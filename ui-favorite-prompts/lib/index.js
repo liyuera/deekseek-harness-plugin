@@ -1,4 +1,104 @@
 import { DomainError, defineDomain, domainTable } from "@deepseek-ai/dsh-storage-domain";
+//#region ../../packages/util/crypto/src/index.ts
+/**
+* Random v4 UUID, minted from `crypto.getRandomValues`.
+* @returns the UUID string.
+*/
+function randomUUID() {
+	const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+	const hex = Array.from(bytes, (byte, index) => {
+		return (index === 6 ? byte & 15 | 64 : index === 8 ? byte & 63 | 128 : byte).toString(16).padStart(2, "0");
+	}).join("");
+	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+//#endregion
+//#region ../../packages/util/brand/src/index.ts
+/**
+* Apply a compile-time string brand without changing the value.
+* @param value - string admitted by the domain that owns the target brand.
+* @returns the same string with the requested compile-time brand.
+*/
+function brandString(value) {
+	return value;
+}
+//#endregion
+//#region ../../packages/util/values/src/index.ts
+/**
+* Deep-freeze an object graph in place while leaving live AbortSignal objects mutable.
+* @param value - value to freeze.
+* @returns the same value after every reachable enumerable child is frozen.
+*/
+function deepFreeze(value) {
+	const seen = /* @__PURE__ */ new WeakSet();
+	const pending = [{
+		kind: "visit",
+		node: value
+	}];
+	while (pending.length > 0) {
+		const task = pending.pop();
+		/* v8 ignore next -- the loop condition guarantees one pending task. */
+		if (task === void 0) continue;
+		if (task.kind === "property") {
+			pending.push({
+				kind: "visit",
+				node: task.source[task.key]
+			});
+			continue;
+		}
+		const node = task.node;
+		if (node === null || typeof node !== "object") continue;
+		if (node instanceof AbortSignal) continue;
+		if (seen.has(node)) continue;
+		seen.add(node);
+		Object.freeze(node);
+		const keys = Object.keys(node);
+		for (let index = keys.length - 1; index >= 0; index--) {
+			const key = keys[index];
+			/* v8 ignore next -- the loop is bounded by the captured key count. */
+			if (key === void 0) continue;
+			pending.push({
+				kind: "property",
+				source: node,
+				key
+			});
+		}
+	}
+	return value;
+}
+//#endregion
+//#region ../../packages/llm/llm/src/message.ts
+/** Message value types, identity, and immutable construction helpers. */
+/**
+* Detach and deep-freeze a message whose identity already exists.
+* @param message - complete message, including its stable identity.
+* @returns an immutable snapshot that preserves the identity.
+*/
+function freezeMessage(message) {
+	return deepFreeze(structuredClone(message));
+}
+/**
+* Create one identified message and freeze it before publication.
+* @param input - complete role, content, and source for a new message.
+* @returns an immutable message with a fresh stable identity.
+*/
+function createMessage(input) {
+	return freezeMessage({
+		...input,
+		id: brandString(randomUUID())
+	});
+}
+/**
+* Create one identified user-role message and freeze it before publication.
+* @param input - complete content and source for a new user message.
+* @returns an immutable user message with a fresh stable identity.
+*/
+function createUserMessage(input) {
+	return createMessage({
+		...input,
+		role: "user"
+	});
+}
+//#endregion
 //#region ../../node_modules/.pnpm/zod@4.4.3/node_modules/zod/v4/core/core.js
 var _a$1;
 function $constructor(name, initializer, params) {
@@ -4042,6 +4142,75 @@ async function backfillNames(table) {
 	}
 	return named;
 }
+/** Sentence punctuation a bare mention may carry without being part of the name. */
+const TRAILING_PUNCTUATION_RE = /[.,;:!?，。；：！？]+$/u;
+/** The boundary rule the bubble decorator uses: `@token` at start or after whitespace. */
+const MENTION_RE = /(^|\s)@([^\s]+)/gu;
+/** Heading of the injected context message. */
+const HEADER = "## Referenced saved prompts";
+/** Why the model is reading this, and how to treat it. */
+const NOTE = "The user's message cites saved prompts. Each prompt below is the user's own saved text: treat it as part of their instruction.";
+/** What an unresolvable mention means. */
+const UNRESOLVED = "Unresolved: no saved prompt has this name. It may have been renamed or deleted; ask the user which prompt they meant.";
+/**
+* Collect the mention names one message text cites.
+* @param text - plain text of one user message.
+* @returns distinct names in order of first appearance.
+*/
+function scanMentions(text) {
+	const names = [];
+	MENTION_RE.lastIndex = 0;
+	let match;
+	while ((match = MENTION_RE.exec(text)) !== null) {
+		const raw = match[2];
+		if (raw.startsWith("\"")) continue;
+		const name = raw.replace(TRAILING_PUNCTUATION_RE, "");
+		if (name === "" || name.includes("/") || names.includes(name)) continue;
+		names.push(name);
+	}
+	return names;
+}
+/**
+* Resolve mention names against the saved-prompt records.
+* @param names - names from {@link scanMentions}.
+* @param records - every saved prompt the host holds.
+* @returns hits, misses, and how many mentions the cap dropped.
+*/
+function resolveMentions(names, records) {
+	const capped = names.slice(0, 3);
+	const byName = /* @__PURE__ */ new Map();
+	for (const record of records) if (record.name !== void 0) byName.set(record.name, record);
+	const resolved = [];
+	const unresolved = [];
+	for (const name of capped) {
+		const record = byName.get(name);
+		if (record === void 0) unresolved.push(name);
+		else resolved.push(record);
+	}
+	return {
+		resolved,
+		unresolved,
+		omitted: names.length - capped.length
+	};
+}
+/**
+* Render the context message that carries referenced prompt text.
+* @param resolved - records whose names matched.
+* @param unresolved - names that matched nothing.
+* @param omitted - mentions the cap left unexpanded.
+* @returns the message text, prompt bodies verbatim.
+*/
+function renderReferenceContext(resolved, unresolved, omitted = 0) {
+	const parts = [
+		HEADER,
+		"",
+		NOTE
+	];
+	for (const record of resolved) parts.push("", `### @${record.name ?? ""}`, "", record.text);
+	for (const name of unresolved) parts.push("", `### @${name}`, "", UNRESOLVED);
+	if (omitted > 0) parts.push("", `${omitted} further mention(s) were not expanded.`);
+	return parts.join("\n");
+}
 //#endregion
 //#region lib/types/host/route.js
 /** Response carrying the HTTP status the transport should answer with. */
@@ -4166,6 +4335,11 @@ async function handlePromptRequest(table, request, now = Date.now) {
 //#region lib/types/index.js
 /** Host plugin name. */
 const name = "favorite-prompts";
+/** Message-source attribution of the injected context. */
+const CONTEXT_SOURCE = {
+	kind: "plugin",
+	plugin: name
+};
 /**
 * Services the host half needs. Both arrive from plugins that mount later in
 * the tree than this row, so `apply` runs when they land instead of reading
@@ -4207,6 +4381,14 @@ async function readJsonBody(req) {
 	}
 }
 /**
+* Concatenate the text blocks of one message, the way the mention scan sees it.
+* @param message - user message entering the step.
+* @returns the message's plain text.
+*/
+function textContent(message) {
+	return message.content.flatMap((block) => block.type === "text" ? [block.text] : []).join("\n");
+}
+/**
 * Write one JSON answer.
 * @param res - response to own.
 * @param status - HTTP status code.
@@ -4239,6 +4421,34 @@ function apply(ctx) {
 		disposed = true;
 		ready.then((domain) => domain.close()).catch(() => {});
 	}, "favorite-prompts: domain lifetime");
+	ctx.on("agent/pre-step", async (_payload, next) => {
+		const decision = await next();
+		if (decision.kind === "reject") return decision;
+		const domain = await ready.then((value) => value, () => void 0);
+		if (domain === void 0) return decision;
+		const records = [...domain.table(PROMPT_TABLE).entries()].map(([, record]) => record);
+		const messages = [];
+		let expanded = false;
+		for (const message of decision.messages) {
+			messages.push(message);
+			if (message.source.kind !== "user") continue;
+			const names = scanMentions(textContent(message));
+			if (names.length === 0) continue;
+			const { resolved, unresolved, omitted } = resolveMentions(names, records);
+			messages.push(createUserMessage({
+				source: CONTEXT_SOURCE,
+				content: [{
+					type: "text",
+					text: renderReferenceContext(resolved, unresolved, omitted)
+				}]
+			}));
+			expanded = true;
+		}
+		return expanded ? {
+			...decision,
+			messages
+		} : decision;
+	}, { prepend: true });
 	const webServer = ctx.get("webServer");
 	if (webServer === void 0) return;
 	ctx.effect(() => webServer.register({

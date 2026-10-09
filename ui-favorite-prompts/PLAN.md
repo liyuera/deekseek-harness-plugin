@@ -2373,3 +2373,9 @@ cd deepseek-harness-plugin && git add ui-favorite-prompts && git commit -m "feat
 ### D3（Task 1）：构建期依赖用软链，`node_modules` 不入库
 
 仓库 `.gitignore` 忽略 `node_modules/`，因此 `react`/`react-dom`/`zod`/`@testing-library/react` 与各 `@deepseek-ai/*` 都通过软链指向 harness 工作区（`@deepseek-ai/*` → `packages/...`，第三方 → `node_modules/.pnpm/...`）。换机器重建时需要按 Task 1 Step 10 重新建链。
+
+### D4（T11）：宿主展开的依赖与内联
+
+- `createUserMessage` 从 **`@deepseek-ai/dsh-llm/message`** 子路径导入，不是主入口：主入口（`index.ts`）在本插件的测试别名环境下解析不了（它经 typert-protocol 等一串依赖），而 `message.ts` 的依赖图只有 brand / util-crypto / util-values。该子路径是包 `exports` 里正式导出的一项。
+- `nodeLibraryConfig` 只按**精确 specifier** 判定外部化（`production.has(specifier)`），`@deepseek-ai/dsh-llm/message` 与依赖键 `@deepseek-ai/dsh-llm` 不相等，所以它连同三个 util 被**内联**进 `lib/index.js`；宿主包因此只外置 `@deepseek-ai/dsh-storage-domain`。这些内联的都是纯工厂/纯助手，不涉及模块级状态或身份共享，内联是安全的。
+- 测试侧：`agent/pre-step` 用 `ctx.waterfall('agent/pre-step', payload, fallback)` 直接驱动真实的 Cordis waterfall（`dsh-agent` 只作类型导入，运行时被擦除）。

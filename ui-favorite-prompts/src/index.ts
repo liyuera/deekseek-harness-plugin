@@ -6,14 +6,21 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { DomainError, type Domain, type DomainFacility } from '@deepseek-ai/dsh-storage-domain'
+// The `message` subpath keeps this import off the LLM entry's wider graph.
+import { createUserMessage, type UserMessage } from '@deepseek-ai/dsh-llm/message'
+import type { PreStepDecision } from '@deepseek-ai/dsh-agent'
 import type { WebServer } from '@deepseek-ai/dsh-host-webserver'
 import { favoritesDomain } from './domain.ts'
 import { backfillNames, type NameableTable } from './host/backfill.ts'
+import { renderReferenceContext, resolveMentions, scanMentions } from './host/expand.ts'
 import { handlePromptRequest, type PromptTable } from './host/route.ts'
 import { PROMPT_ROUTE, PROMPT_TABLE, type PromptRequest, type PromptResponse } from './schema.ts'
 
 /** Host plugin name. */
 export const name = 'favorite-prompts'
+
+/** Message-source attribution of the injected context. */
+const CONTEXT_SOURCE = { kind: 'plugin', plugin: name } as const
 
 /**
  * Services the host half needs. Both arrive from plugins that mount later in
@@ -63,6 +70,15 @@ async function readJsonBody(req: IncomingMessage): Promise<unknown> {
 }
 
 /**
+ * Concatenate the text blocks of one message, the way the mention scan sees it.
+ * @param message - user message entering the step.
+ * @returns the message's plain text.
+ */
+function textContent(message: UserMessage): string {
+  return message.content.flatMap(block => block.type === 'text' ? [block.text] : []).join('\n')
+}
+
+/**
  * Write one JSON answer.
  * @param res - response to own.
  * @param status - HTTP status code.
@@ -104,6 +120,34 @@ export function apply(ctx: Context): void {
     disposed = true
     void ready.then(domain => domain.close()).catch(() => {})
   }, 'favorite-prompts: domain lifetime')
+
+  // A message that cites saved prompts gains one context message carrying their
+  // text. Only the messages this step claims are scanned, so a turn never
+  // expands the same mention twice.
+  ctx.on('agent/pre-step', async (_payload, next): Promise<PreStepDecision> => {
+    const decision = await next()
+    if (decision.kind === 'reject') return decision
+    // A domain that failed to open must not break the turn: the mention stays
+    // ordinary text and the route reports the failure to the browser.
+    const domain = await ready.then(value => value, () => undefined)
+    if (domain === undefined) return decision
+    const records = [...domain.table(PROMPT_TABLE).entries()].map(([, record]) => record)
+    const messages: UserMessage[] = []
+    let expanded = false
+    for (const message of decision.messages) {
+      messages.push(message)
+      if (message.source.kind !== 'user') continue
+      const names = scanMentions(textContent(message))
+      if (names.length === 0) continue
+      const { resolved, unresolved, omitted } = resolveMentions(names, records)
+      messages.push(createUserMessage({
+        source: CONTEXT_SOURCE,
+        content: [{ type: 'text', text: renderReferenceContext(resolved, unresolved, omitted) }],
+      }))
+      expanded = true
+    }
+    return expanded ? { ...decision, messages } : decision
+  }, { prepend: true })
 
   const webServer = ctx.get('webServer') as WebServer | undefined
   if (webServer === undefined) return

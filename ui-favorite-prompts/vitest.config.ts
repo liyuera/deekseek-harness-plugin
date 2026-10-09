@@ -30,6 +30,11 @@ const ALIASES: Array<[string, string]> = [
   ['@deepseek-ai/dsh-client-ui-conversation/client$', 'packages/client/ui-conversation/src/client/index.ts'],
   ['@deepseek-ai/dsh-client-ui-chat/client$', 'packages/client/ui-chat/src/client/index.ts'],
   ['@deepseek-ai/dsh-client-ui-input-trigger/client$', 'packages/client/ui-input-trigger/src/client/index.ts'],
+
+  ['@deepseek-ai/dsh-llm/message$', 'packages/llm/llm/src/message.ts'],
+  ['@deepseek-ai/dsh-brand$', 'packages/util/brand/src/index.ts'],
+  ['@deepseek-ai/dsh-util-crypto$', 'packages/util/crypto/src/index.ts'],
+  ['@deepseek-ai/dsh-util-values$', 'packages/util/values/src/index.ts'],
   ['@deepseek-ai/dsh-session/surface$', 'packages/core/session/src/surface.ts'],
   ['@deepseek-ai/dsh-session/types$', 'packages/core/session/src/types.ts'],
   ['@deepseek-ai/dsh-host-webserver$', 'packages/host/webserver/src/index.ts'],
