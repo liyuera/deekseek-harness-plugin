@@ -1,4 +1,7 @@
-/** One bookmark strip under a user message, with an inline undo window. */
+/**
+ * One bookmark strip under a user message: the citation line for saved prompts
+ * this message cites, plus the bookmark action with an inline undo window.
+ */
 import { type ReactNode } from 'react';
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store';
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';

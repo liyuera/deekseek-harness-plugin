@@ -3,7 +3,7 @@ import { DomainError } from '@deepseek-ai/dsh-storage-domain';
 import { createUserMessage } from '@deepseek-ai/dsh-llm/message';
 import { favoritesDomain } from "./domain.js";
 import { backfillNames } from "./host/backfill.js";
-import { renderReferenceContext, resolveMentions, scanMentions } from "./host/expand.js";
+import { renderReferenceContext, resolveMessageMentions } from "./host/expand.js";
 import { referenceSource } from "./host/source.js";
 import { handlePromptRequest } from "./host/route.js";
 import { PROMPT_ROUTE, PROMPT_TABLE } from "./schema.js";
@@ -127,10 +127,9 @@ export function apply(ctx) {
             messages.push(message);
             if (message.source.kind !== 'user')
                 continue;
-            const names = scanMentions(textContent(message));
-            if (names.length === 0)
+            const { names, resolved, unresolved, omitted } = resolveMessageMentions(textContent(message), records);
+            if (resolved.length === 0 && unresolved.length === 0)
                 continue;
-            const { resolved, unresolved, omitted } = resolveMentions(names, records);
             messages.push(createUserMessage({
                 source: referenceSource(names),
                 content: [{ type: 'text', text: renderReferenceContext(resolved, unresolved, omitted) }],

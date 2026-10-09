@@ -130,3 +130,66 @@ describe('FavoriteStrip', () => {
     expect(screen.getByRole('button', { name: zh['strip.unfavorite'] })).toBeTruthy()
   })
 })
+
+describe('FavoriteStrip citations', () => {
+  const saved: PromptRecord[] = [
+    { id: 'a', name: '生成commit', text: '根据git diff 的结果，给我生成commit msg', createdAt: 1 },
+    { id: 'b', name: '运行测试', text: 'Run the tests', createdAt: 2 },
+  ]
+
+  /** Render the strip for one message text over a ready store. */
+  async function renderStrip(text: string, rows: PromptRecord[] = saved): Promise<void> {
+    const favorites = createFavoritesStore(transport(rows))
+    await favorites.actions.refresh()
+    render(<FavoriteStrip {...propsFor(favorites, text)} />)
+  }
+
+  it('lists the names this message cites', async () => {
+    await renderStrip('照 @生成commit 办')
+    expect(screen.getByRole('button', { name: zh['strip.expand'] }).textContent)
+      .toContain('引用了 @生成commit')
+  })
+
+  it('keeps citation order and marks the ones that no longer exist', async () => {
+    await renderStrip('@运行测试 和 @已删除的 都看一下')
+    const summary = screen.getByRole('button', { name: zh['strip.expand'] }).textContent ?? ''
+    expect(summary.indexOf('@运行测试')).toBeLessThan(summary.indexOf('@已删除的'))
+    expect(summary).toContain('（未找到）')
+  })
+
+  it('reports mentions beyond the expansion cap', async () => {
+    await renderStrip('@生成commit @运行测试 @c @d')
+    expect(screen.getByRole('button', { name: zh['strip.expand'] }).textContent).toContain('另有 1 条未展开')
+  })
+
+  it('stays out of the way when the message cites nothing', async () => {
+    await renderStrip('就是普通的一句话')
+    expect(screen.queryByRole('button', { name: zh['strip.expand'] })).toBeNull()
+    expect(screen.getByRole('button', { name: zh['strip.favorite'] })).toBeTruthy()
+  })
+
+  it('renders no citation line before the list is known', () => {
+    const favorites = createFavoritesStore(transport(saved))
+    // No refresh: the store is still loading, so nothing can be resolved.
+    render(<FavoriteStrip {...propsFor(favorites, '照 @生成commit 办')} />)
+    expect(screen.queryByRole('button', { name: zh['strip.expand'] })).toBeNull()
+  })
+
+  it('shows the cited text on demand and hides it again', async () => {
+    await renderStrip('照 @生成commit 办')
+    const toggle = screen.getByRole('button', { name: zh['strip.expand'] })
+    expect(screen.queryByText('根据git diff 的结果，给我生成commit msg')).toBeNull()
+    await act(async () => { toggle.click() })
+    expect(screen.getByText('根据git diff 的结果，给我生成commit msg')).toBeTruthy()
+    expect(screen.getByRole('button', { name: zh['strip.collapse'] }).getAttribute('aria-expanded')).toBe('true')
+    await act(async () => { screen.getByRole('button', { name: zh['strip.collapse'] }).click() })
+    expect(screen.queryByText('根据git diff 的结果，给我生成commit msg')).toBeNull()
+  })
+
+  it('shows every cited prompt in the expanded body', async () => {
+    await renderStrip('@运行测试 @生成commit')
+    await act(async () => { screen.getByRole('button', { name: zh['strip.expand'] }).click() })
+    expect(screen.getByText('Run the tests')).toBeTruthy()
+    expect(screen.getByText('根据git diff 的结果，给我生成commit msg')).toBeTruthy()
+  })
+})

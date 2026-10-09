@@ -5305,12 +5305,6 @@ async function backfillNames(table) {
 const TRAILING_PUNCTUATION_RE = /[.,;:!?，。；：！？]+$/u;
 /** The boundary rule the bubble decorator uses: `@token` at start or after whitespace. */
 const MENTION_RE = /(^|\s)@([^\s]+)/gu;
-/** Heading of the injected context message. */
-const HEADER = "## Referenced saved prompts";
-/** Why the model is reading this, and how to treat it. */
-const NOTE = "The user's message cites saved prompts. Each prompt below is the user's own saved text: treat it as part of their instruction.";
-/** What an unresolvable mention means. */
-const UNRESOLVED = "Unresolved: no saved prompt has this name. It may have been renamed or deleted; ask the user which prompt they meant.";
 /**
 * Collect the mention names one message text cites.
 * @param text - plain text of one user message.
@@ -5330,31 +5324,52 @@ function scanMentions(text) {
 	return names;
 }
 /**
-* Resolve mention names against the saved-prompt records.
+* Resolve mention names through a caller-supplied lookup.
 * @param names - names from {@link scanMentions}.
-* @param records - every saved prompt the host holds.
+* @param lookup - finds the cited prompt for a name, or `undefined` when none.
 * @returns hits, misses, and how many mentions the cap dropped.
 */
-function resolveMentions(names, records) {
+function resolveMentions(names, lookup) {
 	const capped = names.slice(0, 3);
-	const byName = /* @__PURE__ */ new Map();
-	for (const record of records) if (record.name !== void 0) byName.set(record.name, record);
 	const resolved = [];
 	const unresolved = [];
 	for (const name of capped) {
-		const record = byName.get(name);
-		if (record === void 0) unresolved.push(name);
-		else resolved.push(record);
+		const found = lookup(name);
+		if (found === void 0) unresolved.push(name);
+		else resolved.push(found);
 	}
 	return {
+		names: [...capped],
 		resolved,
 		unresolved,
 		omitted: names.length - capped.length
 	};
 }
+//#endregion
+//#region lib/types/host/expand.js
+/** Heading of the injected context message. */
+const HEADER = "## Referenced saved prompts";
+/** Why the model is reading this, and how to treat it. */
+const NOTE = "The user's message cites saved prompts. Each prompt below is the user's own saved text: treat it as part of their instruction.";
+/** What an unresolvable mention means. */
+const UNRESOLVED = "Unresolved: no saved prompt has this name. It may have been renamed or deleted; ask the user which prompt they meant.";
+/**
+* Resolve one message's mentions against the saved-prompt records.
+* @param text - plain text of one user message.
+* @param records - every saved prompt the host holds.
+* @returns hits, misses, and how many mentions the cap dropped.
+*/
+function resolveMessageMentions(text, records) {
+	const byName = /* @__PURE__ */ new Map();
+	for (const record of records) if (record.name !== void 0) byName.set(record.name, {
+		name: record.name,
+		text: record.text
+	});
+	return resolveMentions(scanMentions(text), (name) => byName.get(name));
+}
 /**
 * Render the context message that carries referenced prompt text.
-* @param resolved - records whose names matched.
+* @param resolved - prompts whose names matched.
 * @param unresolved - names that matched nothing.
 * @param omitted - mentions the cap left unexpanded.
 * @returns the message text, prompt bodies verbatim.
@@ -5365,7 +5380,7 @@ function renderReferenceContext(resolved, unresolved, omitted = 0) {
 		"",
 		NOTE
 	];
-	for (const record of resolved) parts.push("", `### @${record.name ?? ""}`, "", record.text);
+	for (const record of resolved) parts.push("", `### @${record.name}`, "", record.text);
 	for (const name of unresolved) parts.push("", `### @${name}`, "", UNRESOLVED);
 	if (omitted > 0) parts.push("", `${omitted} further mention(s) were not expanded.`);
 	return parts.join("\n");
@@ -5604,9 +5619,8 @@ function apply(ctx) {
 		for (const message of decision.messages) {
 			messages.push(message);
 			if (message.source.kind !== "user") continue;
-			const names = scanMentions(textContent(message));
-			if (names.length === 0) continue;
-			const { resolved, unresolved, omitted } = resolveMentions(names, records);
+			const { names, resolved, unresolved, omitted } = resolveMessageMentions(textContent(message), records);
+			if (resolved.length === 0 && unresolved.length === 0) continue;
 			messages.push(createUserMessage({
 				source: referenceSource(names),
 				content: [{

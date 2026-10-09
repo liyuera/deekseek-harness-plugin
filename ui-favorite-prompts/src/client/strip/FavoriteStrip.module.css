@@ -87,3 +87,80 @@
     transition: none;
   }
 }
+
+/* Citation line: what this message cited, always readable (unlike the action
+   row above it, which fades until hover). */
+.block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.citations {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.citationsToggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px;
+  max-width: 100%;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--dsh-content-font-size-secondary, 13px);
+  line-height: calc(20px + var(--dsh-content-font-delta, 0px));
+  color: var(--dsw-alias-label-tertiary);
+  cursor: pointer;
+}
+
+.citationsToggle:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+}
+
+.citationsToggle:focus-visible {
+  outline: 2px solid var(--dsw-alias-link);
+  outline-offset: 1px;
+}
+
+.citationName {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.citationNote {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.citationsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 520px;
+  max-height: 240px;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 0.5px solid var(--dsw-alias-border-l3);
+  border-radius: 10px;
+}
+
+.citation {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.citationText {
+  font-size: var(--dsh-content-font-size-secondary, 13px);
+  line-height: calc(20px + var(--dsh-content-font-delta, 0px));
+  color: var(--dsw-alias-label-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

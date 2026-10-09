@@ -1,9 +1,4 @@
-/** Most references expanded from one message. */
-export const MAX_REFERENCES_PER_MESSAGE = 3;
-/** Sentence punctuation a bare mention may carry without being part of the name. */
-const TRAILING_PUNCTUATION_RE = /[.,;:!?，。；：！？]+$/u;
-/** The boundary rule the bubble decorator uses: `@token` at start or after whitespace. */
-const MENTION_RE = /(^|\s)@([^\s]+)/gu;
+import { resolveMentions, scanMentions } from "../mentions.js";
 /** Heading of the injected context message. */
 const HEADER = '## Referenced saved prompts';
 /** Why the model is reading this, and how to treat it. */
@@ -12,55 +7,24 @@ const NOTE = "The user's message cites saved prompts. Each prompt below is the u
 /** What an unresolvable mention means. */
 const UNRESOLVED = 'Unresolved: no saved prompt has this name. It may have been renamed or '
     + 'deleted; ask the user which prompt they meant.';
+export { resolveMentions, scanMentions };
 /**
- * Collect the mention names one message text cites.
+ * Resolve one message's mentions against the saved-prompt records.
  * @param text - plain text of one user message.
- * @returns distinct names in order of first appearance.
- */
-export function scanMentions(text) {
-    const names = [];
-    MENTION_RE.lastIndex = 0;
-    let match;
-    while ((match = MENTION_RE.exec(text)) !== null) {
-        const raw = match[2];
-        // `@"quoted"` and anything carrying a slash belong to the file/directory
-        // mention grammar, never to a saved-prompt name.
-        if (raw.startsWith('"'))
-            continue;
-        const name = raw.replace(TRAILING_PUNCTUATION_RE, '');
-        if (name === '' || name.includes('/') || names.includes(name))
-            continue;
-        names.push(name);
-    }
-    return names;
-}
-/**
- * Resolve mention names against the saved-prompt records.
- * @param names - names from {@link scanMentions}.
  * @param records - every saved prompt the host holds.
  * @returns hits, misses, and how many mentions the cap dropped.
  */
-export function resolveMentions(names, records) {
-    const capped = names.slice(0, MAX_REFERENCES_PER_MESSAGE);
+export function resolveMessageMentions(text, records) {
     const byName = new Map();
     for (const record of records) {
         if (record.name !== undefined)
-            byName.set(record.name, record);
+            byName.set(record.name, { name: record.name, text: record.text });
     }
-    const resolved = [];
-    const unresolved = [];
-    for (const name of capped) {
-        const record = byName.get(name);
-        if (record === undefined)
-            unresolved.push(name);
-        else
-            resolved.push(record);
-    }
-    return { resolved, unresolved, omitted: names.length - capped.length };
+    return resolveMentions(scanMentions(text), name => byName.get(name));
 }
 /**
  * Render the context message that carries referenced prompt text.
- * @param resolved - records whose names matched.
+ * @param resolved - prompts whose names matched.
  * @param unresolved - names that matched nothing.
  * @param omitted - mentions the cap left unexpanded.
  * @returns the message text, prompt bodies verbatim.
@@ -68,7 +32,7 @@ export function resolveMentions(names, records) {
 export function renderReferenceContext(resolved, unresolved, omitted = 0) {
     const parts = [HEADER, '', NOTE];
     for (const record of resolved)
-        parts.push('', `### @${record.name ?? ''}`, '', record.text);
+        parts.push('', `### @${record.name}`, '', record.text);
     for (const name of unresolved)
         parts.push('', `### @${name}`, '', UNRESOLVED);
     if (omitted > 0)

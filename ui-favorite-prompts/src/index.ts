@@ -12,7 +12,7 @@ import type { PreStepDecision } from '@deepseek-ai/dsh-agent'
 import type { WebServer } from '@deepseek-ai/dsh-host-webserver'
 import { favoritesDomain } from './domain.ts'
 import { backfillNames, type NameableTable } from './host/backfill.ts'
-import { renderReferenceContext, resolveMentions, scanMentions } from './host/expand.ts'
+import { renderReferenceContext, resolveMessageMentions } from './host/expand.ts'
 import { referenceSource } from './host/source.ts'
 import { handlePromptRequest, type PromptTable } from './host/route.ts'
 import { PROMPT_ROUTE, PROMPT_TABLE, type PromptRequest, type PromptResponse } from './schema.ts'
@@ -138,9 +138,8 @@ export function apply(ctx: Context): void {
     for (const message of decision.messages) {
       messages.push(message)
       if (message.source.kind !== 'user') continue
-      const names = scanMentions(textContent(message))
-      if (names.length === 0) continue
-      const { resolved, unresolved, omitted } = resolveMentions(names, records)
+      const { names, resolved, unresolved, omitted } = resolveMessageMentions(textContent(message), records)
+      if (resolved.length === 0 && unresolved.length === 0) continue
       messages.push(createUserMessage({
         source: referenceSource(names),
         content: [{ type: 'text', text: renderReferenceContext(resolved, unresolved, omitted) }],

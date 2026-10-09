@@ -3,6 +3,12 @@
 export declare const zh: {
     nav: string;
     group: string;
+    'strip.cites': string;
+    'strip.citesSeparator': string;
+    'strip.notFound': string;
+    'strip.omitted': string;
+    'strip.expand': string;
+    'strip.collapse': string;
     'strip.favorite': string;
     'strip.unfavorite': string;
     'strip.undo': string;
@@ -31,6 +37,12 @@ export type FavoritePromptsKey = keyof typeof zh;
 export declare const en: {
     nav: string;
     group: string;
+    'strip.cites': string;
+    'strip.citesSeparator': string;
+    'strip.notFound': string;
+    'strip.omitted': string;
+    'strip.expand': string;
+    'strip.collapse': string;
     'strip.favorite': string;
     'strip.unfavorite': string;
     'strip.undo': string;

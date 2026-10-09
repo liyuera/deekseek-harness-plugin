@@ -231,6 +231,50 @@ window.__ModuleLoader__.load({
 				]
 			});
 		}
+		/** Sentence punctuation a bare mention may carry without being part of the name. */
+		const TRAILING_PUNCTUATION_RE = /[.,;:!?，。；：！？]+$/u;
+		/** The boundary rule the bubble decorator uses: `@token` at start or after whitespace. */
+		const MENTION_RE = /(^|\s)@([^\s]+)/gu;
+		/**
+		* Collect the mention names one message text cites.
+		* @param text - plain text of one user message.
+		* @returns distinct names in order of first appearance.
+		*/
+		function scanMentions(text) {
+			const names = [];
+			MENTION_RE.lastIndex = 0;
+			let match;
+			while ((match = MENTION_RE.exec(text)) !== null) {
+				const raw = match[2];
+				if (raw.startsWith("\"")) continue;
+				const name = raw.replace(TRAILING_PUNCTUATION_RE, "");
+				if (name === "" || name.includes("/") || names.includes(name)) continue;
+				names.push(name);
+			}
+			return names;
+		}
+		/**
+		* Resolve mention names through a caller-supplied lookup.
+		* @param names - names from {@link scanMentions}.
+		* @param lookup - finds the cited prompt for a name, or `undefined` when none.
+		* @returns hits, misses, and how many mentions the cap dropped.
+		*/
+		function resolveMentions(names, lookup) {
+			const capped = names.slice(0, 3);
+			const resolved = [];
+			const unresolved = [];
+			for (const name of capped) {
+				const found = lookup(name);
+				if (found === void 0) unresolved.push(name);
+				else resolved.push(found);
+			}
+			return {
+				names: [...capped],
+				resolved,
+				unresolved,
+				omitted: names.length - capped.length
+			};
+		}
 		/**
 		* Fold the differences that do not change which prompt a text is: encoding
 		* form, line endings, and every run of horizontal whitespace (each line's runs
@@ -300,7 +344,7 @@ window.__ModuleLoader__.load({
 		});
 		//#endregion
 		//#region \0dsh-css:/Users/liyu/Documents/www/DeepSeek/deepseek-harness/deepseek-harness-plugin/ui-favorite-prompts/src/client/strip/FavoriteStrip.module.css.mjs
-		const css = "._7vf8da_strip{height:calc(28px + var(--dsh-content-font-delta,0px));justify-content:flex-end;align-items:center;gap:8px;margin-top:-4px;display:flex}._7vf8da_action{width:calc(28px + var(--dsh-content-font-delta,0px));height:calc(28px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:28px;justify-content:center;align-items:center;padding:6px;display:inline-flex}._7vf8da_action svg{width:calc(15px + var(--dsh-content-font-delta,0px));height:calc(15px + var(--dsh-content-font-delta,0px))}._7vf8da_action:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}._7vf8da_action[data-saved]{color:var(--dsw-alias-label-secondary)}._7vf8da_undo{font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;display:inline-flex}._7vf8da_undoButton{font:inherit;color:var(--dsw-alias-link);cursor:pointer;background:0 0;border:none;padding:0}._7vf8da_undoButton:hover{text-underline-offset:3px;text-decoration:underline dotted}@media (hover:hover){._7vf8da_strip{opacity:.35;transition:opacity 80ms}._7vf8da_strip:hover,._7vf8da_strip:focus-within,[data-chat-flow-kind=user]:hover+[data-chat-flow-kind=favorite-strip] ._7vf8da_strip{opacity:1}}@media (prefers-reduced-motion:reduce){._7vf8da_strip{transition:none}}";
+		const css = "._7vf8da_strip{height:calc(28px + var(--dsh-content-font-delta,0px));justify-content:flex-end;align-items:center;gap:8px;margin-top:-4px;display:flex}._7vf8da_action{width:calc(28px + var(--dsh-content-font-delta,0px));height:calc(28px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:28px;justify-content:center;align-items:center;padding:6px;display:inline-flex}._7vf8da_action svg{width:calc(15px + var(--dsh-content-font-delta,0px));height:calc(15px + var(--dsh-content-font-delta,0px))}._7vf8da_action:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}._7vf8da_action[data-saved]{color:var(--dsw-alias-label-secondary)}._7vf8da_undo{font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary);align-items:center;gap:6px;display:inline-flex}._7vf8da_undoButton{font:inherit;color:var(--dsw-alias-link);cursor:pointer;background:0 0;border:none;padding:0}._7vf8da_undoButton:hover{text-underline-offset:3px;text-decoration:underline dotted}@media (hover:hover){._7vf8da_strip{opacity:.35;transition:opacity 80ms}._7vf8da_strip:hover,._7vf8da_strip:focus-within,[data-chat-flow-kind=user]:hover+[data-chat-flow-kind=favorite-strip] ._7vf8da_strip{opacity:1}}@media (prefers-reduced-motion:reduce){._7vf8da_strip{transition:none}}._7vf8da_block{flex-direction:column;align-items:flex-end;display:flex}._7vf8da_citations{flex-direction:column;align-items:flex-end;gap:4px;max-width:100%;display:flex}._7vf8da_citationsToggle{max-width:100%;font-family:inherit;font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-tertiary);cursor:pointer;background:0 0;border:none;border-radius:6px;flex-wrap:wrap;align-items:baseline;gap:2px;padding:2px 6px;display:inline-flex}._7vf8da_citationsToggle:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary)}._7vf8da_citationsToggle:focus-visible{outline:2px solid var(--dsw-alias-link);outline-offset:1px}._7vf8da_citationName{color:var(--dsw-alias-label-secondary)}._7vf8da_citationNote{color:var(--dsw-alias-label-tertiary)}._7vf8da_citationsBody{border:.5px solid var(--dsw-alias-border-l3);border-radius:10px;flex-direction:column;gap:8px;max-width:520px;max-height:240px;padding:8px 10px;display:flex;overflow:auto}._7vf8da_citation{flex-direction:column;gap:2px;display:flex}._7vf8da_citationText{font-size:var(--dsh-content-font-size-secondary,13px);line-height:calc(20px + var(--dsh-content-font-delta,0px));color:var(--dsw-alias-label-primary);white-space:pre-wrap;overflow-wrap:anywhere}";
 		const tagId = "@liyuera/dsh-favorite-prompts/FavoriteStrip.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -311,13 +355,24 @@ window.__ModuleLoader__.load({
 		}
 		var FavoriteStrip_module_css_default = {
 			"action": "_7vf8da_action",
+			"block": "_7vf8da_block",
+			"citation": "_7vf8da_citation",
+			"citationName": "_7vf8da_citationName",
+			"citationNote": "_7vf8da_citationNote",
+			"citationText": "_7vf8da_citationText",
+			"citations": "_7vf8da_citations",
+			"citationsBody": "_7vf8da_citationsBody",
+			"citationsToggle": "_7vf8da_citationsToggle",
 			"strip": "_7vf8da_strip",
 			"undo": "_7vf8da_undo",
 			"undoButton": "_7vf8da_undoButton"
 		};
 		//#endregion
 		//#region lib/types/client/strip/FavoriteStrip.js
-		/** One bookmark strip under a user message, with an inline undo window. */
+		/**
+		* One bookmark strip under a user message: the citation line for saved prompts
+		* this message cites, plus the bookmark action with an inline undo window.
+		*/
 		/** How long the inline undo stays available, in ms. */
 		const UNDO_WINDOW_MS = 5e3;
 		/**
@@ -328,9 +383,27 @@ window.__ModuleLoader__.load({
 		function FavoriteStrip({ node, sessionId, useFavorites, actions, t }) {
 			const key = normalizeText(node.data.text);
 			const saved = useFavorites((state) => state.byText.get(key));
+			const items = useFavorites((state) => state.items);
+			const ready = useFavorites((state) => state.status === "ready");
 			const [removed, setRemoved] = (0, react.useState)(null);
 			const [message, setMessage] = (0, react.useState)(null);
+			const [open, setOpen] = (0, react.useState)(false);
 			const timer = (0, react.useRef)(null);
+			const cited = (0, react.useMemo)(() => {
+				if (!ready) return null;
+				const names = scanMentions(node.data.text);
+				if (names.length === 0) return null;
+				const byName = /* @__PURE__ */ new Map();
+				for (const item of items) if (item.name !== void 0) byName.set(item.name, {
+					name: item.name,
+					text: item.text
+				});
+				return resolveMentions(names, (name) => byName.get(name));
+			}, [
+				ready,
+				items,
+				node.data.text
+			]);
 			(0, react.useEffect)(() => () => {
 				if (timer.current !== null) clearTimeout(timer.current);
 			}, []);
@@ -361,29 +434,84 @@ window.__ModuleLoader__.load({
 				setRemoved(null);
 				setMessage(null);
 			};
+			const citedNames = cited === null ? [] : [...cited.resolved.map((item) => item.name), ...cited.unresolved];
+			const unresolved = new Set(cited?.unresolved ?? []);
 			return (0, react_jsx_runtime.jsxs)("div", {
-				className: FavoriteStrip_module_css_default.strip,
-				children: [message !== null && (0, react_jsx_runtime.jsxs)("span", {
-					className: FavoriteStrip_module_css_default.undo,
-					role: "status",
-					children: [message, removed !== null && (0, react_jsx_runtime.jsx)("button", {
+				className: FavoriteStrip_module_css_default.block,
+				children: [(0, react_jsx_runtime.jsxs)("div", {
+					className: FavoriteStrip_module_css_default.strip,
+					children: [message !== null && (0, react_jsx_runtime.jsxs)("span", {
+						className: FavoriteStrip_module_css_default.undo,
+						role: "status",
+						children: [message, removed !== null && (0, react_jsx_runtime.jsx)("button", {
+							type: "button",
+							className: FavoriteStrip_module_css_default.undoButton,
+							onClick: () => {
+								onUndo();
+							},
+							children: t("strip.undo")
+						})]
+					}), (0, react_jsx_runtime.jsx)("button", {
 						type: "button",
-						className: FavoriteStrip_module_css_default.undoButton,
+						className: FavoriteStrip_module_css_default.action,
+						"data-saved": saved === void 0 ? void 0 : true,
+						"aria-label": saved === void 0 ? t("strip.favorite") : t("strip.unfavorite"),
+						"aria-pressed": saved !== void 0,
 						onClick: () => {
-							onUndo();
+							onToggle();
 						},
-						children: t("strip.undo")
+						children: saved === void 0 ? (0, react_jsx_runtime.jsx)(IconBookmarkOutline16, {}) : (0, react_jsx_runtime.jsx)(IconBookmarkFill16, {})
 					})]
-				}), (0, react_jsx_runtime.jsx)("button", {
-					type: "button",
-					className: FavoriteStrip_module_css_default.action,
-					"data-saved": saved === void 0 ? void 0 : true,
-					"aria-label": saved === void 0 ? t("strip.favorite") : t("strip.unfavorite"),
-					"aria-pressed": saved !== void 0,
-					onClick: () => {
-						onToggle();
-					},
-					children: saved === void 0 ? (0, react_jsx_runtime.jsx)(IconBookmarkOutline16, {}) : (0, react_jsx_runtime.jsx)(IconBookmarkFill16, {})
+				}), cited !== null && citedNames.length > 0 && (0, react_jsx_runtime.jsxs)("div", {
+					className: FavoriteStrip_module_css_default.citations,
+					children: [(0, react_jsx_runtime.jsxs)("button", {
+						type: "button",
+						className: FavoriteStrip_module_css_default.citationsToggle,
+						"aria-expanded": open,
+						"aria-label": open ? t("strip.collapse") : t("strip.expand"),
+						onClick: () => {
+							setOpen((value) => !value);
+						},
+						children: [
+							t("strip.cites"),
+							citedNames.map((name, index) => (0, react_jsx_runtime.jsxs)("span", {
+								className: FavoriteStrip_module_css_default.citationName,
+								children: [
+									index === 0 ? " " : t("strip.citesSeparator"),
+									`@${name}`,
+									unresolved.has(name) && (0, react_jsx_runtime.jsx)("span", {
+										className: FavoriteStrip_module_css_default.citationNote,
+										children: t("strip.notFound")
+									})
+								]
+							}, name)),
+							cited.omitted > 0 && (0, react_jsx_runtime.jsx)("span", {
+								className: FavoriteStrip_module_css_default.citationNote,
+								children: ` (${t("strip.omitted", { count: String(cited.omitted) })})`
+							})
+						]
+					}), open && (0, react_jsx_runtime.jsxs)("div", {
+						className: FavoriteStrip_module_css_default.citationsBody,
+						children: [cited.resolved.map((item) => (0, react_jsx_runtime.jsxs)("div", {
+							className: FavoriteStrip_module_css_default.citation,
+							children: [(0, react_jsx_runtime.jsx)("span", {
+								className: FavoriteStrip_module_css_default.citationName,
+								children: `@${item.name}`
+							}), (0, react_jsx_runtime.jsx)("div", {
+								className: FavoriteStrip_module_css_default.citationText,
+								children: item.text
+							})]
+						}, item.name)), cited.unresolved.map((name) => (0, react_jsx_runtime.jsxs)("div", {
+							className: FavoriteStrip_module_css_default.citation,
+							children: [(0, react_jsx_runtime.jsx)("span", {
+								className: FavoriteStrip_module_css_default.citationName,
+								children: `@${name}`
+							}), (0, react_jsx_runtime.jsx)("div", {
+								className: FavoriteStrip_module_css_default.citationNote,
+								children: t("strip.notFound")
+							})]
+						}, name))]
+					})]
 				})]
 			});
 		}
@@ -694,6 +822,12 @@ window.__ModuleLoader__.load({
 		const zh = {
 			"nav": "收藏提示词",
 			"group": "收藏",
+			"strip.cites": "引用了",
+			"strip.citesSeparator": "、",
+			"strip.notFound": "（未找到）",
+			"strip.omitted": "另有 {count} 条未展开",
+			"strip.expand": "展开引用的提示词",
+			"strip.collapse": "收起引用的提示词",
 			"strip.favorite": "收藏这条提示词",
 			"strip.unfavorite": "取消收藏",
 			"strip.undo": "撤销",
@@ -720,6 +854,12 @@ window.__ModuleLoader__.load({
 		const en = {
 			"nav": "Saved prompts",
 			"group": "Saved",
+			"strip.cites": "Cites",
+			"strip.citesSeparator": ", ",
+			"strip.notFound": " (not found)",
+			"strip.omitted": "{count} more not expanded",
+			"strip.expand": "Show cited prompts",
+			"strip.collapse": "Hide cited prompts",
 			"strip.favorite": "Save this prompt",
 			"strip.unfavorite": "Remove from saved",
 			"strip.undo": "Undo",
