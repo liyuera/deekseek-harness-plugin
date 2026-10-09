@@ -1,20 +1,20 @@
 /**
- * devDock browser data layer v2: mirrors the plugin's settings namespace
- * through settingsScope and exposes the desktop-action bridge. The bridge is
- * a same-origin POST to the plugin's host route (`/dev-dock/action`) because
- * static client bundles have no package-private RPC channel (host.call is a
- * dynamic-plugin builtin); the web server route is registered by the host
- * half and runs deterministic desktop actions.
+ * devDock browser data layer v2: mirrors the plugin's document from the host
+ * through the same-origin `/dev-dock/state` route and exposes the
+ * desktop-action bridge. Both are plain HTTP because static client bundles
+ * have no package-private RPC channel (host.call is a dynamic-plugin
+ * builtin); the host half owns the storage domain behind that route and runs
+ * the deterministic desktop actions.
  * @module @liyuera/dsh-dev-dock/client/data
  */
 import { type SnapshotStore } from '@deepseek-ai/dsh-client-store';
 import type { Context as ClientContext } from '@deepseek-ai/cordis';
 import type { DevDockSettings } from '../schema.ts';
-/** Client-visible data snapshot: settings document plus readiness. */
+/** Client-visible data snapshot: document plus readiness. */
 export interface DevDockData {
-    /** Loading until the first accepted settings section. */
+    /** Loading until the first accepted state read. */
     ready: boolean;
-    /** The settings document; undefined before readiness. */
+    /** The document; undefined before readiness. */
     settings: DevDockSettings | undefined;
 }
 /** One desktop-action request the browser half sends to the host route. */
@@ -65,8 +65,8 @@ export interface DevDockActions {
 export declare const EDITOR_NAMES: readonly ["WebStorm", "VS Code", "IntelliJ IDEA", "Cursor", "Sublime Text", "HBuilderX"];
 /**
  * Create the devDock data layer for one client plugin fiber.
- * @param ctx - client root context (needs settingsScope).
- * @returns the settings mirror and the action facade.
+ * @param ctx - client root context, used to own the mirror's effects.
+ * @returns the document mirror and the action facade.
  */
 export declare function createDevDockData(ctx: ClientContext): {
     store: SnapshotStore<DevDockData>;

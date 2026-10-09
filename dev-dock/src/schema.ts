@@ -1,16 +1,12 @@
 /**
- * devDock settings namespace v2: per-workspace IDE preferences, editor
- * manual paths, terminal preference, and the start-work selection memory.
- * Projects are dsh workspaces, so no separate project registry exists.
- * Persisted through the settings capability (`$DSH_HOME/settings.yaml`,
- * namespace `dev-dock`).
+ * devDock document v2: per-workspace IDE preferences, editor manual paths,
+ * terminal preference, and the start-work selection memory. Projects are dsh
+ * workspaces, so no separate project registry exists. Persisted through the
+ * storage capability (`$DSH_HOME/storages/dev_dock.json`, domain `dev_dock`).
  * @module @liyuera/dsh-dev-dock/schema
  */
 
-import z from '@deepseek-ai/schemastery'
-// dsh-settings 已移除运行时名称空间工厂函数（settingsNamespace），
-// 命名空间 id 现以 Branded 类型标记；字符串字面量经 register() 内建 brand。
-import type { SettingsNamespace } from '@deepseek-ai/dsh-settings'
+import { z } from 'zod'
 
 /** Workspace id (dsh workspace registry id) one IDE preference is keyed by. */
 export type WorkspacePrefKey = string
@@ -20,12 +16,12 @@ export interface EditorRecord {
   /** Canonical editor name (WebStorm, VS Code, IntelliJ IDEA, Cursor, Sublime Text, HBuilderX). */
   name: string
   /** Auto-detected executable/app path (empty when not installed). */
-  detectedPath?: string
+  detectedPath?: string | undefined
   /** User-configured executable/app path (HBuilderX relies on this). */
-  manualPath?: string
+  manualPath?: string | undefined
 }
 
-/** Whole devDock settings document. */
+/** Whole devDock document. */
 export interface DevDockSettings {
   /** Per-workspace IDE preference (falls back to auto-detection defaults). */
   workspacePrefs: Array<{ workspaceId: WorkspacePrefKey; editor: string }>
@@ -37,26 +33,39 @@ export interface DevDockSettings {
   startWork: string[]
 }
 
-/** Branded settings namespace of this plugin. */
-// 直接以字面量 brand（register 会校验小写连字符格式），不再经过已移除的工厂函数。
-export const DEV_DOCK_NAMESPACE = 'dev-dock' as SettingsNamespace
+/**
+ * Storage domain holding the document. `UNIT_NAME_RE` forbids hyphens, so the
+ * domain name is underscored while the HTTP paths keep the hyphenated form.
+ */
+export const DEV_DOCK_DOMAIN = 'dev_dock'
 
-/** Schemastery schema for the whole document (registered by the host half). */
-export const DevDockSettingsSchema: z<DevDockSettings> = z.object({
+/** The four fields the browser half may write, one at a time. */
+export const DEV_DOCK_FIELDS = ['workspacePrefs', 'editors', 'terminalApp', 'startWork'] as const
+
+/** One field name the browser half may write. */
+export type DevDockField = (typeof DEV_DOCK_FIELDS)[number]
+
+/**
+ * Document schema. Doubles as the storage domain's global schema (validated at
+ * the durable read boundary) and as the write guard for the browser route: a
+ * patch that would store a document this schema rejects is refused before it
+ * reaches the medium.
+ */
+export const DevDockDocumentSchema: z.ZodType<DevDockSettings> = z.object({
   workspacePrefs: z.array(z.object({
-    workspaceId: z.string().required(),
-    editor: z.string().required(),
+    workspaceId: z.string().min(1),
+    editor: z.string().min(1),
   })).default([]),
   editors: z.array(z.object({
-    name: z.string().required(),
-    detectedPath: z.string(),
-    manualPath: z.string(),
+    name: z.string().min(1),
+    detectedPath: z.string().optional(),
+    manualPath: z.string().optional(),
   })).default([]),
-  terminalApp: z.union([z.const('default'), z.const('iterm')]).default('default'),
+  terminalApp: z.union([z.literal('default'), z.literal('iterm')]).default('default'),
   startWork: z.array(z.string()).default([]),
 })
 
-/** Empty settings document used as the schema base. */
+/** Document served before the first write. */
 export const EMPTY_DEV_DOCK_SETTINGS: DevDockSettings = {
   workspacePrefs: [],
   editors: [],

@@ -6,7 +6,7 @@ import { jsx as _jsx } from "react/jsx-runtime";
  * group beside the resident chrome.
  */
 import { useEffect, useRef, useState } from 'react';
-import { IconCheckOutline16 } from '@deepseek-ai/dsh-client-ui-primitives';
+import { IconCheckOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives';
 import { DevIdeAppIcon, DevTerminalAppIcon } from "./icons.js";
 import { StartTile } from "./StartTile.js";
 import css from './SessionActions.module.css';
@@ -86,7 +86,7 @@ export function ComposerActions({ sessionId, useWorkspaces, useDevDockData, data
             const title = state === 'error'
                 ? t('header.error', { error: errors[kind] ?? '' })
                 : t(KIND_KEY[kind]);
-            return (_jsx("button", { type: "button", className: `${css.button} ${state === 'error' ? css.error : ''}`, title: title, "aria-label": title, "aria-disabled": state === 'busy', onClick: () => { void run(kind); }, children: state === 'ok' ? _jsx(IconCheckOutline16, { size: 16 }) : kindIcon(kind) }, kind));
+            return (_jsx("button", { type: "button", className: `${css.button} ${state === 'error' ? css.error : ''}`, title: title, "aria-label": title, "aria-disabled": state === 'busy', onClick: () => { void run(kind); }, children: state === 'ok' ? _jsx(IconCheckOutlineRegular, { size: 16 }) : kindIcon(kind) }, kind));
         }) }));
 }
 //# sourceMappingURL=ComposerActions.js.map

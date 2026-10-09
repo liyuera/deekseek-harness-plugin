@@ -3,16 +3,16 @@
   "description": "Frontend project engineering management for dsh: project registry, editor detection, quick-start, open project in IDE or system terminal",
   "version": "1.0.3",
   "type": "module",
-  "main": "lib/types/index.js",
+  "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./lib/types/index.d.ts",
-      "default": "./lib/types/index.js"
+      "default": "./lib/index.js"
     },
     "./invariant": {
       "types": "./lib/types/invariant.d.ts",
-      "default": "./lib/types/invariant.js"
+      "default": "./lib/invariant.js"
     },
     "./client": {
       "types": "./lib/types/client/index.d.ts",
@@ -49,8 +49,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@deepseek-ai/dsh-native-command": "^0.1.2-alpha.4",
-    "@deepseek-ai/schemastery": "^3.18.2",
     "clsx": "^2.0.0"
   },
   "peerDependencies": {
@@ -62,19 +60,22 @@
     "@deepseek-ai/dsh-client-store": "^0.1.2-alpha.4",
     "@deepseek-ai/dsh-client-ui-conversation": "^0.1.2-alpha.4",
     "@deepseek-ai/dsh-client-ui-layout": "^0.1.2-alpha.4",
-    "@deepseek-ai/dsh-client-ui-primitives": "^0.1.2-alpha.4",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-renderer": "^0.1.2-alpha.4",
     "@deepseek-ai/dsh-client-ui-settings": "^0.1.2-alpha.4",
     "@deepseek-ai/dsh-client-ui-sidebar": "^0.1.2-alpha.4",
     "@deepseek-ai/dsh-client-ui-slots": "^0.1.2-alpha.4",
     "@deepseek-ai/dsh-invariants": "^0.1.2-alpha.4",
+    "@deepseek-ai/dsh-native-command": "^0.1.2-alpha.4",
     "@deepseek-ai/dsh-session": "^0.1.2-alpha.4",
-    "@deepseek-ai/dsh-settings": "^0.1.2-alpha.4",
+    "@deepseek-ai/dsh-storage-domain": "^0.1.6-alpha.2",
+    "@deepseek-ai/schemastery": "^3.18.2",
     "@testing-library/react": "^16.3.2",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.1",
     "react": "^18.2.0",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "zod": "^4.4.3"
   },
   "files": [
     "lib/index.js",

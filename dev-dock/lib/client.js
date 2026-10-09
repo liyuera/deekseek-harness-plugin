@@ -10,12 +10,12 @@ window.__ModuleLoader__.load({
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 		//#region lib/types/client/data.js
 		/**
-		* devDock browser data layer v2: mirrors the plugin's settings namespace
-		* through settingsScope and exposes the desktop-action bridge. The bridge is
-		* a same-origin POST to the plugin's host route (`/dev-dock/action`) because
-		* static client bundles have no package-private RPC channel (host.call is a
-		* dynamic-plugin builtin); the web server route is registered by the host
-		* half and runs deterministic desktop actions.
+		* devDock browser data layer v2: mirrors the plugin's document from the host
+		* through the same-origin `/dev-dock/state` route and exposes the
+		* desktop-action bridge. Both are plain HTTP because static client bundles
+		* have no package-private RPC channel (host.call is a dynamic-plugin
+		* builtin); the host half owns the storage domain behind that route and runs
+		* the deterministic desktop actions.
 		* @module @liyuera/dsh-dev-dock/client/data
 		*/
 		/** Canonical editor names across platforms (union for stable UI display). */
@@ -29,30 +29,58 @@ window.__ModuleLoader__.load({
 		];
 		/**
 		* Create the devDock data layer for one client plugin fiber.
-		* @param ctx - client root context (needs settingsScope).
-		* @returns the settings mirror and the action facade.
+		* @param ctx - client root context, used to own the mirror's effects.
+		* @returns the document mirror and the action facade.
 		*/
 		function createDevDockData(ctx) {
-			const scope = ctx.settingsScope.bind({
-				namespace: "dev-dock",
-				decode: decodeSettings
-			});
 			const store = (0, _deepseek_ai_dsh_client_store.createSnapshotStore)({
 				ready: false,
 				settings: void 0
 			});
-			const reflect = () => {
-				const snapshot = scope.getSnapshot();
+			const adopt = (raw) => {
+				const settings = decodeSettings(raw);
+				if (settings === void 0) return;
 				store.set({
-					ready: snapshot.status === "ready",
-					settings: snapshot.value
+					ready: true,
+					settings
 				});
 			};
-			reflect();
-			const unsubscribe = scope.subscribe(reflect);
-			ctx.effect(() => unsubscribe, "dev-dock: settings mirror");
+			const refresh = async () => {
+				try {
+					const answer = await (await fetch("/dev-dock/state", { method: "GET" })).json();
+					if (answer.ok === true) adopt(answer.settings);
+				} catch {}
+			};
+			refresh();
+			ctx.effect(() => {
+				const onFocus = () => {
+					refresh();
+				};
+				window.addEventListener("focus", onFocus);
+				return () => {
+					window.removeEventListener("focus", onFocus);
+				};
+			}, "dev-dock: focus refresh");
 			const write = async (field, value) => {
-				await scope.set(field, value);
+				const snapshot = store.getSnapshot().settings;
+				if (snapshot !== void 0) store.set({
+					ready: true,
+					settings: {
+						...snapshot,
+						[field]: value
+					}
+				});
+				try {
+					const answer = await (await fetch("/dev-dock/state", {
+						method: "POST",
+						headers: { "content-type": "application/json" },
+						body: JSON.stringify({
+							field,
+							value
+						})
+					})).json();
+					if (answer.ok === true) adopt(answer.settings);
+				} catch {}
 			};
 			return {
 				store,
@@ -61,23 +89,21 @@ window.__ModuleLoader__.load({
 						const current = store.getSnapshot().settings;
 						if (current === void 0) return;
 						const rest = current.workspacePrefs.filter((p) => p.workspaceId !== workspaceId);
-						const next = editor === "" ? rest : [...rest, {
+						await write("workspacePrefs", editor === "" ? rest : [...rest, {
 							workspaceId,
 							editor
-						}];
-						await write("workspacePrefs", next);
+						}]);
 					},
 					async setEditorManualPath(name, manualPath) {
 						const current = store.getSnapshot().settings;
 						if (current === void 0) return;
-						const next = current.editors.find((e) => e.name === name) === void 0 ? [...current.editors, {
+						await write("editors", current.editors.find((e) => e.name === name) === void 0 ? [...current.editors, {
 							name,
 							manualPath
 						}] : current.editors.map((e) => e.name === name ? {
 							...e,
 							manualPath
-						} : e);
-						await write("editors", next);
+						} : e));
 					},
 					async setTerminalApp(app) {
 						await write("terminalApp", app);
@@ -701,7 +727,7 @@ window.__ModuleLoader__.load({
 						onClick: () => {
 							run(kind);
 						},
-						children: state === "ok" ? (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCheckOutline16, { size: 16 }) : kindIcon(kind)
+						children: state === "ok" ? (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCheckOutlineRegular, { size: 16 }) : kindIcon(kind)
 					}, kind);
 				})
 			});
@@ -785,7 +811,7 @@ window.__ModuleLoader__.load({
 					children: [(0, react_jsx_runtime.jsx)("span", { children: display }), (0, react_jsx_runtime.jsx)("span", {
 						className: `${DevDockSettingsPage_module_css_default.chevron} ${open ? DevDockSettingsPage_module_css_default.chevronOpen : ""}`,
 						"aria-hidden": true,
-						children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})
+						children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutlineRegular, {})
 					})]
 				})
 			});
@@ -804,7 +830,7 @@ window.__ModuleLoader__.load({
 			const [iconFailed, setIconFailed] = (0, react.useState)({});
 			const prefs = settings?.workspacePrefs ?? [];
 			const editors = settings?.editors ?? [];
-			const editorNames = [.../* @__PURE__ */ new Set([...EDITOR_OPTIONS, ...editors.map((e) => e.name)])];
+			const editorNames = [...new Set([...EDITOR_OPTIONS, ...editors.map((e) => e.name)])];
 			const prefOf = (workspaceId) => prefs.find((p) => p.workspaceId === workspaceId)?.editor ?? "";
 			const setPref = async (workspaceId, editor) => {
 				await dataActions.setWorkspacePref(workspaceId, editor);
@@ -1035,11 +1061,7 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region lib/types/client/index.js
 		/** Required services for data binding and slot contributions. */
-		const inject = [
-			"slots",
-			"locale",
-			"settingsScope"
-		];
+		const inject = ["slots", "locale"];
 		/**
 		* Client plugin body: register dictionaries and every surface entry.
 		* @param ctx - client root context.

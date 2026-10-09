@@ -5,7 +5,7 @@
  * goes through the host route.
  */
 import { useState } from 'react'
-import { Button, IconChevronDownOutline14, Input, Menu } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, IconChevronDownOutlineRegular, Input, Menu } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { EDITOR_NAMES, type DevDockActions, type DevDockData } from './data.ts'
 import { DevIdeIcon, DevTerminalIcon } from './icons.tsx'
@@ -66,7 +66,7 @@ function WorkspaceEditorSelect({
         >
           <span>{display}</span>
           <span className={`${css.chevron} ${open ? css.chevronOpen : ''}`} aria-hidden>
-            <IconChevronDownOutline14 />
+            <IconChevronDownOutlineRegular />
           </span>
         </button>
       )}

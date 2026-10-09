@@ -5,7 +5,7 @@
  * group beside the resident chrome.
  */
 import { useEffect, useRef, useState } from 'react'
-import { IconCheckOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconCheckOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { DevDockActions, DevDockData } from './data.ts'
 import { DevIdeAppIcon, DevTerminalAppIcon } from './icons.tsx'
@@ -128,7 +128,7 @@ export function ComposerActions({ sessionId, useWorkspaces, useDevDockData, data
             aria-disabled={state === 'busy'}
             onClick={() => { void run(kind) }}
           >
-            {state === 'ok' ? <IconCheckOutline16 size={16} /> : kindIcon(kind)}
+            {state === 'ok' ? <IconCheckOutlineRegular size={16} /> : kindIcon(kind)}
           </button>
         )
       })}
