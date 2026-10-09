@@ -6,6 +6,10 @@
  * through its module table; loading it under Node is neither possible nor
  * meaningful. These specs assert this plugin's own component behavior, so the
  * one control they need is stubbed with the same public surface.
+ *
+ * This directory is only for what a spec cannot reach at all, or for a double
+ * three or more specs share. A double one or two specs use stays inside them:
+ * it reads better, and an unshared double has no drift to prevent.
  */
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
