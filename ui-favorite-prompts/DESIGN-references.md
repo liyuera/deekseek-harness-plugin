@@ -139,7 +139,7 @@ export function renderReferenceContext(
 
 单条消息最多展开的引用数：`MAX_REFERENCES_PER_MESSAGE = 3`。
 
-`src/index.ts` 增加监听（`apply` 需要小改：domain 生命周期与 webServer 解耦，**展开不依赖 webServer**，只有路由依赖）：
+`src/index.ts` 增加监听（domain 生命周期与路由已经分开；插件激活等 `inject` 里的 `webServer` 与 `storageDomain`）：
 
 ```ts
 ctx.on('agent/pre-step', async (_payload, next) => {

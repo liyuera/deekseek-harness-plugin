@@ -13,10 +13,13 @@ export declare const name = "favorite-prompts";
  */
 export declare const inject: string[];
 /**
- * Mount the domain, name any records that predate mentions, and serve the
- * browser half's route. The domain and the mention expansion are independent of
- * the web server, so a composition without one still cites saved prompts.
- * @param ctx - host context carrying `storageDomain` (and `webServer` for the route).
+ * Mount the domain, name any records that predate mentions, expand `@name`
+ * citations in user messages, and serve the browser half's route.
+ *
+ * Both services are declared in `inject`: the profile mounts their providers
+ * after this row, so reading the context at activate time would find nothing and
+ * leave the plugin inert for the rest of the process.
+ * @param ctx - host context carrying `storageDomain` and `webServer`.
  */
 export declare function apply(ctx: Context): void;
 //# sourceMappingURL=index.d.ts.map
